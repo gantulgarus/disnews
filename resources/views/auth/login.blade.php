@@ -30,7 +30,7 @@
         body {
             background-size: 200px;
             background-repeat: repeat;
-            background-image: url("{{ asset('images/ooorganize.svg') }}");
+            background-image: url("{{ asset('images/ ') }}");
         }
     </style>
 </head>
@@ -44,12 +44,11 @@
             <!-- Logo Section -->
             <div class="text-center mb-4">
                 <a href="." class="navbar-brand navbar-brand-autodark">
-                    <img src="{{ asset('images/ndc.png') }}" alt="Ndc" class="img-fluid" style="height: 128px;">
+                    <img src="{{ asset('images/logoMN.png') }}" alt="Ndc" class="img-fluid" style="height: 100px;">
                 </a>
             </div>
             <!-- Title Section -->
             <div class="text-center mb-3">
-                <h1 class="fw-bold fs-3 mb-2">Диспетчерийн үндэсний төв ТӨХХК</h1>
                 <h2 class="fw-semibold fs-4 text-muted">Хоногийн үйл ажиллагааны мэдээллийн систем</h2>
             </div>
 
