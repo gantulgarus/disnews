@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\PowerPlantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PowerPlantController;
+use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController; 
@@ -14,9 +16,10 @@ use App\Http\Controllers\TnewsController;
 //     return view('welcome');
 // });
 
-Route::get('/', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
