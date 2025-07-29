@@ -52,7 +52,7 @@
                         <div class="mb-3">
                             <label class="form-label">{{ __('Имэйл хаяг') }}</label>
                             <input type="email" name="email" value="{{ old('email') }}" class="form-control"
-                                placeholder="your@email.com" autocomplete="off">
+                                autocomplete="off">
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -63,12 +63,11 @@
                                 {{ __('Нууц үг') }}
                             </label>
                             <div class="input-group input-group-flat">
-                                <input type="password" name="password" class="form-control" placeholder="Your password"
-                                    autocomplete="off">
+                                <input type="password" name="password" class="form-control" autocomplete="off">
 
-                                <span class="input-group-text">
+                                {{-- <span class="input-group-text">
                                     <a href="#" class="link-secondary" title="Show password"
-                                        data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                                        data-bs-toggle="tooltip">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
                                             height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                                             fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -78,7 +77,7 @@
                                                 d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                         </svg>
                                     </a>
-                                </span>
+                                </span> --}}
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
