@@ -41,11 +41,12 @@
                         'power-plants.index',
                         'power-plant-daily-reports.index',
                         'daily-balance-journals.index',
+                        'order-journals.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
                 @endphp
 
-                
+
 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
@@ -81,7 +82,8 @@
                                     href="{{ route('daily-balance-journals.index') }}">
                                     Тооцооны журнал
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
+                                    href="{{ route('order-journals.index') }}">
                                     Захиалгын журнал
                                 </a>
                             </div>
@@ -161,9 +163,9 @@
                     <a class="nav-link {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
                         href="{{ route('tnews.index') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round"
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
                                 class="icon icon-tabler icons-tabler-outline icon-tabler-settings-bolt">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <path
@@ -174,7 +176,7 @@
                         </span>
 
                         <span class="nav-link-title">
-                            Тасралтын мэдээ 
+                            Тасралтын мэдээ
                         </span>
 
                     </a>
@@ -184,9 +186,9 @@
                     <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}"
                         href="{{ route('users.index') }}">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round"
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
                                 class="icon icon-tabler icons-tabler-outline icon-tabler-settings-bolt">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <path
@@ -199,7 +201,7 @@
                         <span class="nav-link-title">
                             Хэрэглэгч
                         </span>
-                        
+
                     </a>
                 </li>
 

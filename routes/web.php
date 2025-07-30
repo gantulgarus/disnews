@@ -1,13 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PowerPlantController;
+use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\PowerPlantDailyReportController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\TnewsController;
 
 
 
@@ -34,6 +35,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserController::class);
     Route::resource('tnews', TnewsController::class);
+
+    Route::resource('order-journals', OrderJournalController::class);
 });
 
 require __DIR__ . '/auth.php';
