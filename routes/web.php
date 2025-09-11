@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PowerPlantController;
@@ -11,15 +12,6 @@ use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
 
-
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-// Route::get('/', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -30,13 +22,17 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('power-plant-daily-reports', PowerPlantDailyReportController::class);
     Route::resource('power-plants', PowerPlantController::class);
-    Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
     Route::get('daily-balance-journals/report', [DailyBalanceJournalController::class, 'dailyMatrixReport'])->name('daily-balance-journals.report');
+    Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
 
     Route::resource('users', UserController::class);
     Route::resource('tnews', TnewsController::class);
 
     Route::resource('order-journals', OrderJournalController::class);
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
+    Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
 });
 
 require __DIR__ . '/auth.php';

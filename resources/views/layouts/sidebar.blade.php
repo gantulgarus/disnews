@@ -42,8 +42,13 @@
                         'power-plant-daily-reports.index',
                         'daily-balance-journals.index',
                         'order-journals.index',
+                        'tnews.index',
+                        'reports.dailyReport',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
+
+                    $reportRoutes = ['reports.index'];
+                    $isReportsActive = request()->routeIs(...$reportRoutes);
                 @endphp
 
 
@@ -70,13 +75,17 @@
                     <div class="dropdown-menu {{ $isOperationActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
+                                <a class="dropdown-item {{ request()->routeIs('reports.dailyReport') ? 'active' : '' }}"
+                                    href="{{ route('reports.dailyReport') }}">
+                                    Хоногийн мэдээ
+                                </a>
                                 <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
                                     href="{{ route('power-plants.index') }}">
                                     Станц
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('power-plant-daily-reports.index') ? 'active' : '' }}"
                                     href="{{ route('power-plant-daily-reports.index') }}">
-                                    Тоноглол
+                                    Тоноглолын төлөв
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
                                     href="{{ route('daily-balance-journals.index') }}">
@@ -85,6 +94,22 @@
                                 <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
                                     href="{{ route('order-journals.index') }}">
                                     Захиалгын журнал
+                                </a>
+                                <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
+                                    href="{{ route('tnews.index') }}">
+                                    Тасралтын мэдээ
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    Телефон мэдээ
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    СМС илгээх
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    Түлшний мэдээ
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    Ачааллын график
                                 </a>
                             </div>
                         </div>
@@ -119,6 +144,15 @@
                                 <a class="dropdown-item" href="#">
                                     Дулааны горим
                                 </a>
+                                <a class="dropdown-item" href="#">
+                                    Импорт, Экспорт
+                                </a>
+                                <a class="dropdown-item" href="{{ route('reports.powerPlantReport') }}">
+                                    СЭХ-ний горим, гүйцэтгэл
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    ДЦС-ын горим, гүйцэтгэл
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -144,10 +178,11 @@
                         <span class="nav-link-title">Тайлан</span>
                     </a>
 
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ $isReportsActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item {{ request()->routeIs('reports.index') ? 'active' : '' }}"
+                                    href="{{ route('reports.index') }}">
                                     Тайлан 1
                                 </a>
                                 <a class="dropdown-item" href="#">
@@ -156,30 +191,6 @@
                             </div>
                         </div>
                     </div>
-                </li>
-
-
-                <li class="nav-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}">
-                    <a class="nav-link {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
-                        href="{{ route('tnews.index') }}">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-settings-bolt">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M13.256 20.473c-.855 .907 -2.583 .643 -2.931 -.79a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.07 .26 1.488 1.29 1.254 2.15" />
-                                <path d="M19 16l-2 3h4l-2 3" />
-                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                            </svg>
-                        </span>
-
-                        <span class="nav-link-title">
-                            Тасралтын мэдээ
-                        </span>
-
-                    </a>
                 </li>
 
                 <li class="nav-item {{ request()->routeIs('users.index') ? 'active' : '' }}">

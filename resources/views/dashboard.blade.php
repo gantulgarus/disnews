@@ -26,9 +26,9 @@
 
                         <canvas id="lineChart" width="100%" height="40"></canvas>
 
-                        <hr>
+                        {{-- <hr> --}}
 
-                        <h4 class="mt-4">Цагийн харьцуулсан хүснэгт</h4>
+                        {{-- <h4 class="mt-4">Цагийн харьцуулсан хүснэгт</h4>
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
@@ -46,7 +46,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                        </table>
+                        </table> --}}
                     </div>
                 </div>
             </div>

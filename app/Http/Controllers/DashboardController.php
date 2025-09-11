@@ -19,11 +19,18 @@ class DashboardController extends Controller
         $endDate = Carbon::parse($date)->addDay()->startOfDay();    // 00:00:00 next day
 
         // Get Regime data
-        $regimeData = Regime::select('DATE', 'VALUE')
-            ->where('TS_NR', 31198)
-            ->whereBetween('DATE', [$startDate, $endDate])
-            ->orderBy('DATE')
-            ->get();
+        $regimeRecord = Regime::where('plant_name', 'Хэрэглээ')
+            ->whereDate('date', $date)
+            ->first();
+
+        $regimeValues = collect();
+
+        if ($regimeRecord) {
+            for ($i = 1; $i <= 24; $i++) {
+                $regimeValues->push($regimeRecord->{'t' . $i});
+            }
+        }
+
 
         // Get ZConclusion data with fixed GROUP BY clause
         $zconclusionData = ZConclusion::select(
@@ -48,19 +55,9 @@ class DashboardController extends Controller
             $allHours->push(str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00');
         }
 
-        // Map regime data
-        $regimeMap = $regimeData->mapWithKeys(function ($item) {
-            return [Carbon::parse($item->DATE)->format('H:00') => (float)$item->VALUE];
-        });
-
         // Map zconclusion data
         $zconclusionMap = $zconclusionData->mapWithKeys(function ($item) {
             return [$item->hour => (float)$item->value];
-        });
-
-        // Prepare values for all hours
-        $regimeValues = $allHours->map(function ($hour) use ($regimeMap) {
-            return $regimeMap->get($hour);
         });
 
         $zconclusionValues = $allHours->map(function ($hour) use ($zconclusionMap) {
@@ -73,20 +70,6 @@ class DashboardController extends Controller
             'value' => null,
             'source' => null
         ];
-
-        // Find peak in Regime data
-        // if ($regimeValues->filter()->isNotEmpty()) {
-        //     $regimePeakValue = $regimeValues->max();
-        //     $regimePeakTime = $allHours[$regimeValues->search($regimePeakValue)];
-
-        //     if ($peakLoad['value'] === null || $regimePeakValue > $peakLoad['value']) {
-        //         $peakLoad = [
-        //             'time' => $regimePeakTime,
-        //             'value' => $regimePeakValue,
-        //             'source' => 'Regime'
-        //         ];
-        //     }
-        // }
 
         // Find peak in ZConclusion data
         if ($zconclusionValues->filter()->isNotEmpty()) {
