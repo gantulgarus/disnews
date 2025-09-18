@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Цахилгаан станцын өдөр тутмын тайлан</h1>
-        <a href="{{ route('power-plant-daily-reports.create') }}" class="btn btn-primary mb-3">Нэмэх</a>
+        {{-- <a href="{{ route('power-plant-daily-reports.create') }}" class="btn btn-primary mb-3">Нэмэх</a> --}}
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -111,14 +111,14 @@
 
                             <td>
                                 <!-- Actions (Edit, Delete, etc.) -->
-                                {{-- <a href="{{ route('power-plant-daily-reports.edit', $report->id) }}"
+                                <a href="{{ route('power-plant-daily-reports.edit', $report->id) }}"
                                     class="btn btn-warning">Засах</a>
                                 <form action="{{ route('power-plant-daily-reports.destroy', $report->id) }}" method="POST"
                                     style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">Устгах</button>
-                                </form> --}}
+                                </form>
                             </td>
                         </tr>
                     @endforeach

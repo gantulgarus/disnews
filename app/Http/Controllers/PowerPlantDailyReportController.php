@@ -33,7 +33,12 @@ class PowerPlantDailyReportController extends Controller
         $powerPlantId = $request->get('power_plant_id');
         $powerPlant = PowerPlant::with(['boilers', 'turbineGenerators'])->findOrFail($powerPlantId);
 
-        return view('power_plant_daily_reports.create', compact('powerPlant'));
+        // тухайн станцын хамгийн сүүлийн мэдээг авах
+        $lastReport = PowerPlantDailyReport::where('power_plant_id', $powerPlantId)
+            ->latest('created_at')
+            ->first();
+
+        return view('power_plant_daily_reports.create', compact('powerPlant', 'lastReport'));
     }
 
 
@@ -77,7 +82,7 @@ class PowerPlantDailyReportController extends Controller
         $report->save();
 
         // Redirect with success message
-        return redirect()->route('power-plant-daily-reports.index')->with('success', 'Тайлан амжилттай хадгалагдлаа.');
+        return redirect()->route('power-plants.index')->with('success', 'Тайлан амжилттай хадгалагдлаа.');
     }
 
 

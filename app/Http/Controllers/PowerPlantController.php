@@ -19,7 +19,9 @@ class PowerPlantController extends Controller
         $powerPlants = PowerPlant::with(['boilers', 'turbineGenerators'])->get();
 
         // Өдөр тутмын төлөвийн мэдээлэлтэй станцуудын жагсаалт
-        $dailyReports = PowerPlantDailyReport::all();
+        $dailyReports = PowerPlantDailyReport::latest('created_at')
+            ->get()
+            ->groupBy('power_plant_id');
 
         return view('power_plants.index', compact('powerPlants', 'dailyReports'));
     }
