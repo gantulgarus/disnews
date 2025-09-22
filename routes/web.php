@@ -34,15 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
-    // Route::resource('power-distribution-works', PowerDistributionWorkController::class);
-    // Replace the resource line with:
-    Route::get('power-distribution-works', [PowerDistributionWorkController::class, 'index'])->name('power-distribution-works.index');
-    Route::get('power-distribution-works/create', [PowerDistributionWorkController::class, 'create'])->name('power-distribution-works.create');
-    Route::post('power-distribution-works', [PowerDistributionWorkController::class, 'store'])->name('power-distribution-works.store');
-    Route::get('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'show'])->name('power-distribution-works.show');
-    Route::get('power-distribution-works/{id}/edit', [PowerDistributionWorkController::class, 'edit'])->name('power-distribution-works.edit');
-    Route::put('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'update'])->name('power-distribution-works.update');
-    Route::delete('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'destroy'])->name('power-distribution-works.destroy');
+    Route::resource('powerdistribution-works', PowerDistributionWorkController::class);
 });
 
 require __DIR__ . '/auth.php';
