@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\DailyBalanceJournalController;
+use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
 
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
+    Route::resource('power_distribution_works', PowerDistributionWorkController::class);
 });
 
 require __DIR__ . '/auth.php';

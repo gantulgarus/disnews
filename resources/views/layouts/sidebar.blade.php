@@ -44,6 +44,7 @@
                         'order-journals.index',
                         'tnews.index',
                         'reports.dailyReport',
+                        'power_distribution_works.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
 
@@ -98,6 +99,10 @@
                                 <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
                                     href="{{ route('tnews.index') }}">
                                     Тасралтын мэдээ
+                                </a>
+                                <a class="dropdown-item {{ request()->routeIs('power_distribution_works.index') ? 'active' : '' }}"
+                                    href="{{ route('power_distribution_works.index') }}">
+                                    Захиалгат ажил
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     Телефон мэдээ
