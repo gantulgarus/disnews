@@ -27,9 +27,9 @@
                         <td>{{ $work->restricted_energy }}</td>
                         <td>{{ $work->date }}</td>
                         <td>
-                            <a href="{{ route('power_distribution_works.edit', $work) }}"
+                            <a href="{{ route('power-distribution-works.edit', $work) }}"
                                 class="btn btn-sm btn-warning">Засах</a>
-                            <form action="{{ route('power_distribution_works.destroy', $work) }}" method="POST"
+                            <form action="{{ route('power-distribution-works.destroy', $work) }}" method="POST"
                                 style="display:inline;">
                                 @csrf
                                 @method('DELETE')
