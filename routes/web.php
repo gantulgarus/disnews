@@ -34,7 +34,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
-    Route::resource('power-distribution-works', PowerDistributionWorkController::class);
+    // Route::resource('power-distribution-works', PowerDistributionWorkController::class);
+    // Replace the resource line with:
+    Route::get('power-distribution-works', [PowerDistributionWorkController::class, 'index'])->name('power-distribution-works.index');
+    Route::resource('power-distribution-works', PowerDistributionWorkController::class)->except(['index']);
 });
 
 require __DIR__ . '/auth.php';
