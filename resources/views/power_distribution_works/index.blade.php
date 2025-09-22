@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Захиалгат ажлууд</h1>
-        <a href="{{ route('power_distribution_works.create') }}" class="btn btn-primary mb-3">Шинэ ажил нэмэх</a>
+        <a href="{{ route('power-distribution-works.create') }}" class="btn btn-primary mb-3">Шинэ ажил нэмэх</a>
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif

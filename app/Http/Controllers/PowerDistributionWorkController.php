@@ -38,7 +38,7 @@ class PowerDistributionWorkController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        return redirect()->route('power_distribution_works.index')
+        return redirect()->route('power-distribution-works.index')
             ->with('success', 'Захиалгат ажил амжилттай нэмэгдлээ.');
     }
 
@@ -64,14 +64,14 @@ class PowerDistributionWorkController extends Controller
 
         $powerDistributionWork->update($request->all());
 
-        return redirect()->route('power_distribution_works.index')
+        return redirect()->route('power-distribution-works.index')
             ->with('success', 'Захиалгат ажил амжилттай шинэчлэгдлээ.');
     }
 
     public function destroy(PowerDistributionWork $powerDistributionWork)
     {
         $powerDistributionWork->delete();
-        return redirect()->route('power_distribution_works.index')
+        return redirect()->route('power-distribution-works.index')
             ->with('success', 'Захиалгат ажил устгагдлаа.');
     }
 }

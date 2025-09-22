@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Шинэ захиалгат ажил нэмэх</h1>
-        <form action="{{ route('power_distribution_works.store') }}" method="POST">
+        <form action="{{ route('power-distribution-works.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label>ТЗЭ</label>

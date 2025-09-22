@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
-    Route::resource('power_distribution_works', PowerDistributionWorkController::class);
+    Route::resource('power-distribution-works', PowerDistributionWorkController::class);
 });
 
 require __DIR__ . '/auth.php';
