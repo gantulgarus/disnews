@@ -100,10 +100,10 @@
                                     href="{{ route('tnews.index') }}">
                                     Тасралтын мэдээ
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
+                                {{-- <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
                                     href="{{ route('power-distribution-works.index') }}">
                                     Захиалгат ажил
-                                </a>
+                                </a> --}}
                                 <a class="dropdown-item" href="#">
                                     Телефон мэдээ
                                 </a>
