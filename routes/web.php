@@ -37,7 +37,12 @@ Route::middleware('auth')->group(function () {
     // Route::resource('power-distribution-works', PowerDistributionWorkController::class);
     // Replace the resource line with:
     Route::get('power-distribution-works', [PowerDistributionWorkController::class, 'index'])->name('power-distribution-works.index');
-    Route::resource('power-distribution-works', PowerDistributionWorkController::class)->except(['index']);
+    Route::get('power-distribution-works/create', [PowerDistributionWorkController::class, 'create'])->name('power-distribution-works.create');
+    Route::post('power-distribution-works', [PowerDistributionWorkController::class, 'store'])->name('power-distribution-works.store');
+    Route::get('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'show'])->name('power-distribution-works.show');
+    Route::get('power-distribution-works/{id}/edit', [PowerDistributionWorkController::class, 'edit'])->name('power-distribution-works.edit');
+    Route::put('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'update'])->name('power-distribution-works.update');
+    Route::delete('power-distribution-works/{id}', [PowerDistributionWorkController::class, 'destroy'])->name('power-distribution-works.destroy');
 });
 
 require __DIR__ . '/auth.php';
