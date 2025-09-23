@@ -7,96 +7,98 @@
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title">24 цагийн системийн нийт чадлын график</h3>
-                        {{-- <div id="chart-mentions" class="chart-lg"></div> --}}
-                        <form method="GET" class="mb-3">
-                            <input type="date" name="date" value="{{ $date }}">
-                            <button type="submit">Харах</button>
+
+                        {{-- dateForm шинэчилсэн: id өгсөн, method-г авахгүй (AJAX ашиглана) --}}
+                        <form id="dateForm" class="mb-3">
+                            <input id="dateInput" type="date" name="date" value="{{ now()->toDateString() }}">
+                            <button type="submit" class="btn btn-primary btn-sm">Харах</button>
                         </form>
 
-                        @if ($peakLoad['value'])
-                            <div class="alert alert-primary">
-                                <h4>Хамгийн их ачаалал {{ $date }}</h4>
-                                <p>
-                                    <strong>Цаг:</strong> {{ $peakLoad['time'] }}<br>
-                                    <strong>Утга:</strong> {{ $peakLoad['formatted_value'] }}<br>
-                                    {{-- <strong>Эх сурвалж:</strong> {{ $peakLoad['source'] }} --}}
-                                </p>
-                            </div>
-                        @endif
+                        {{-- Сервер талын @if ($peakLoad['value']) ... block-ыг устга. JS дээр #peak-ээр харуулна --}}
+                        <div id="chart-area">
+                            <div id="loading">Уншиж байна...</div>
+                            <canvas id="lineChart" style="display:none;" width="100%" height="40"></canvas>
+                            <div id="error" class="alert alert-danger d-none"></div>
+                            <div id="peak" class="alert alert-primary d-none"></div>
+                        </div>
 
-                        <canvas id="lineChart" width="100%" height="40"></canvas>
-
-                        {{-- <hr> --}}
-
-                        {{-- <h4 class="mt-4">Цагийн харьцуулсан хүснэгт</h4>
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Цаг</th>
-                                    <th>Regime VALUE</th>
-                                    <th>ZConclusion VALUE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($times as $index => $time)
-                                    <tr>
-                                        <td>{{ $time }}</td>
-                                        <td>{{ $regimeValues[$index] ?? '—' }}</td>
-                                        <td>{{ $zconclusionValues[$index] ?? '—' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table> --}}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('lineChart').getContext('2d');
+        let chart;
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @json($times),
-                    datasets: [{
+        async function loadChart(date) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('lineChart').style.display = 'none';
+            document.getElementById('error').classList.add('d-none');
+            document.getElementById('peak').classList.add('d-none');
+
+            try {
+                const res = await fetch("{{ route('dashboard.data') }}?date=" + date);
+                const data = await res.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success) {
+                    document.getElementById('error').innerText = data.error || 'Алдаа гарлаа';
+                    document.getElementById('error').classList.remove('d-none');
+                    return;
+                }
+
+                document.getElementById('lineChart').style.display = 'block';
+
+                if (chart) chart.destroy();
+                const ctx = document.getElementById('lineChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.times,
+                        datasets: [{
                             label: 'Горим',
-                            data: @json($regimeValues),
+                            data: data.regimeValues,
                             borderColor: 'blue',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            tension: 0.3,
-                            spanGaps: true, // хоосон утгуудыг холбох
-                        },
-                        {
-                            label: 'Гүйцэтгэл',
-                            data: @json($zconclusionValues),
-                            borderColor: 'red',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
                             tension: 0.3,
                             spanGaps: true,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Цаг'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Чадал (МВт)'
-                            }
-                        }
+                        }, {
+                            label: 'Гүйцэтгэл',
+                            data: data.zconclusionValues,
+                            borderColor: 'red',
+                            tension: 0.3,
+                            spanGaps: true,
+                        }]
                     }
+                });
+
+                if (data.peakLoad && data.peakLoad.value) {
+                    document.getElementById('peak').innerHTML =
+                        `<h4>Хамгийн их ачаалал ${data.date}</h4>
+                 <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
+                 <strong>Утга:</strong> ${data.peakLoad.formatted_value}</p>`;
+                    document.getElementById('peak').classList.remove('d-none');
                 }
-            });
+
+            } catch (e) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').innerText = "Холболтын алдаа гарлаа";
+                document.getElementById('error').classList.remove('d-none');
+            }
+        }
+
+        // анхдагч ачаалал (dateInput байгаа эсэхийг шална)
+        const dateInput = document.getElementById('dateInput');
+        if (dateInput) {
+            loadChart(dateInput.value);
+        }
+
+        // огноо өөрчлөхөд дахин дуудах
+        document.getElementById('dateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            loadChart(document.getElementById('dateInput').value);
         });
     </script>
 @endsection
