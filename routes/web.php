@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
@@ -36,6 +37,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
     Route::resource('power-distribution-works', PowerDistributionWorkController::class);
+});
+
+Route::get('/test-db', function () {
+    try {
+        DB::connection('second_db')->getPdo();
+        return "Second DB connection works!";
+    } catch (\Exception $e) {
+        return "Connection failed: " . $e->getMessage();
+    }
 });
 
 require __DIR__ . '/auth.php';
