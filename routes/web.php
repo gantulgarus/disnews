@@ -13,8 +13,8 @@ use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
 
-Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-Route::get('/dashboard/data', [DashboardController::class, 'data'])->middleware(['auth', 'verified'])->name('dashboard.data');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
