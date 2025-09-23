@@ -48,4 +48,16 @@ Route::get('/test-db', function () {
     }
 });
 
+Route::get('/debug-db', function () {
+    $config = config('database.connections.second_db');
+    return response()->json([
+        'host' => $config['host'],
+        'port' => $config['port'],
+        'database' => $config['database'],
+        'username' => $config['username'],
+        // 'socket' => $config['unix_socket'],
+        'full_config' => $config
+    ]);
+});
+
 require __DIR__ . '/auth.php';
