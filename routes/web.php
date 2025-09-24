@@ -5,9 +5,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
@@ -22,17 +26,23 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('power-plant-daily-reports', PowerPlantDailyReportController::class);
     Route::resource('power-plants', PowerPlantController::class);
+    Route::resource('permission_levels', PermissionLevelController::class);
+
     Route::get('daily-balance-journals/report', [DailyBalanceJournalController::class, 'dailyMatrixReport'])->name('daily-balance-journals.report');
     Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
+    Route::resource('divisions', DivisionController::class);
+    Route::resource('dis_coal', DisCoalController::class);
 
     Route::resource('users', UserController::class);
     Route::resource('tnews', TnewsController::class);
 
     Route::resource('order-journals', OrderJournalController::class);
-
+    Route::resource('organizations', OrganizationController::class);
+    
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
+
 });
 
 require __DIR__ . '/auth.php';

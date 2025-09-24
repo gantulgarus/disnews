@@ -38,8 +38,8 @@ public function store(Request $request)
         'date' => 'required|date',
         'time' => 'required',
         'TZE' => 'required|string|max:255',
-        'tasralt' => 'required|string',
-        'ArgaHemjee' => 'nullable|string',
+        'tasralt' => 'required|string|max:1024',
+        'ArgaHemjee' => 'nullable|string|max:1024',
         'HyzErchim' => 'nullable|string',
 
     ]);
@@ -55,9 +55,9 @@ public function update(Request $request, $id)
     $validated = $request->validate([
         'date' => 'required|date',
         'time' => 'required',
-        'TZE' => 'required|string',
-        'tasralt' => 'required|string',
-        'ArgaHemjee' => 'nullable|string',
+        'TZE' => 'required|string|max:255',
+        'tasralt' => 'required|string|max:1024',
+        'ArgaHemjee' => 'nullable|string|max:1024',
         'HyzErchim' => 'nullable|string',
     ]);
 

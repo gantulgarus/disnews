@@ -41,10 +41,10 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|min:6'
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'phone' => 'nullable|string|max:8',
+            'password' => 'required|min:8'
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -80,17 +80,15 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
        $validated = $request->validate([
-        
-            'organization_id' => $request->organization_id,
-            'name' => 'required|string',
-            'phone' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+        'organization_id' => 'required|exists:organizations,id',
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        'phone' => 'nullable|string|max:8',
+    ]);
 
-        ]);
+    $user->update($validated);
 
-        $user->update($validated);
-
-        return redirect()->route('users.index')->with('success', 'Хэрэглэгч амжилттай шинэчлэгдлээ.');
+    return redirect()->route('users.index')->with('success', 'Хэрэглэгч амжилттай шинэчлэгдлээ.');
     }
 
     /**

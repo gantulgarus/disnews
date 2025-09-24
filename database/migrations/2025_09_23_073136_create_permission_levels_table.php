@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organizations', function (Blueprint $table) {
+        Schema::create('permission_levels', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('org_code')->unique(); 
+            $table->string('name');
+            $table->string('code')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organizations');
+        Schema::dropIfExists('permission_levels');
     }
 };

@@ -193,9 +193,10 @@
                     </div>
                 </li>
 
-                <li class="nav-item {{ request()->routeIs('users.index') ? 'active' : '' }}">
-                    <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}"
-                        href="{{ route('users.index') }}">
+
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                        data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -208,14 +209,36 @@
                                 <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                             </svg>
                         </span>
-
-                        <span class="nav-link-title">
-                            Хэрэглэгч
-                        </span>
-
+                        <span class="nav-link-title">Тохиргоо</span>
                     </a>
-                </li>
 
+                    <div class="dropdown-menu" >
+                        <div class="dropdown-menu-columns">
+                            <div class="dropdown-menu-column">
+                                 <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
+                                    href="{{ route('organizations.index') }}">
+                                    Байгууллага
+                                 </a>
+
+                                 <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
+                                    href="{{ route('divisions.index') }}">
+                                    Албан тушаал
+                                 </a>
+
+                                  <a class="dropdown-item {{ request()->routeIs('permission_levels.index') ? 'active' : '' }}"
+                                    href="{{ route('permission_levels.index') }}">
+                                    Эрхийн түвшин
+                                 </a>
+
+                                <a class="dropdown-item {{ request()->routeIs('users.index') ? 'active' : '' }}"
+                                    href="{{ route('users.index') }}">
+                                    Хэрэглэгч
+                                 </a>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </li>
 
             </ul>
         </div>

@@ -22,21 +22,20 @@
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
             <tr>
+                <th>Байгууллага</th>
                 <th>Нэр</th>
                 <th>Имэйл</th>
                 <th>Гар утас</th>
-                <th>Байгууллага</th>
                 <th>Үйлдэл</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($users as $user)
                 <tr>
+                     <td>{{ $user->organization?->name }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone }}</td>
-                    <td>{{ $user->organization?->name }}</td>
-                    
                     <td>
                         <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">Засах</a>
 
