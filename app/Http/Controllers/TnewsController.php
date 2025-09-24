@@ -13,7 +13,7 @@ class TnewsController extends Controller
     public function index()
     {
         $Tnews = Tnews::all();
-        return view('Tnews.index', compact('Tnews'));
+        return view('tnews.index', compact('Tnews'));
     }
 
     public function create()
