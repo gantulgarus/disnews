@@ -163,5 +163,63 @@
                 </div>
             </div>
         </div>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">№</th>
+                                <th>Огноо</th>
+                                <th>ТЗЭ</th>
+                                <th>Тасралт</th>
+                                <th>Тайлбар</th>
+                                <th>Дутуу түгээсэн ЭХ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($tasralts as $index => $tasralt)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $tasralt->date }}</td>
+                                    <td>{{ $tasralt->TZE }}</td>
+                                    <td>{{ $tasralt->tasralt }}</td>
+                                    <td>{{ $tasralt->ArgaHemjee }}</td>
+                                    <td>{{ $tasralt->HyzErchim }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ТЗЭ</th>
+                                <th>Засварын ажлын утга</th>
+                                <th>Тайлбар</th>
+                                <th>Хязгаарласан эрчим хүч</th>
+                                <th>Огноо</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($power_distribution_works as $work)
+                                <tr>
+                                    <td>{{ $work->tze }}</td>
+                                    <td>{{ $work->repair_work }}</td>
+                                    <td>{{ $work->description }}</td>
+                                    <td>{{ $work->restricted_energy }}</td>
+                                    <td>{{ $work->date }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection

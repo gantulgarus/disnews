@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 
 use Carbon\Carbon;
+use App\Models\Tnews;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\DailyBalanceJournal;
+use App\Models\PowerDistributionWork;
 use App\Models\PowerPlantDailyReport;
 
 class ReportController extends Controller
@@ -35,8 +37,14 @@ class ReportController extends Controller
             ->with('powerPlant')
             ->get();
 
+        $tasralts = Tnews::all();
 
-        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports'));
+        $power_distribution_works = PowerDistributionWork::whereDate('date', $date)
+            ->with('user')
+            ->get();
+
+
+        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports', 'tasralts', 'power_distribution_works'));
     }
 
     public function powerPlantReport(Request $request)
