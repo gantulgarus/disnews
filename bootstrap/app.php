@@ -16,8 +16,4 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })
-    ->withSchedule(function (Schedule $schedule) {
-        // Өдөр бүр өглөө 06:00 цагт ажиллуулна
-        $schedule->command('fetch:station-thermo')->hourly();
     })->create();
