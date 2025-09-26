@@ -25,6 +25,8 @@ class FetchStationThermoData extends Command
      */
     public function handle()
     {
+        info("Cron Job running at " . now());
+
         // Date параметр орж ирээгүй бол өнөөдрийн огноо авна
         $date = $this->argument('date') ?? now()->format('Y-m-d');
 
