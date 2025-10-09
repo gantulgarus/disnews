@@ -1,5 +1,15 @@
 @extends('layouts.admin')
 
+@section('style')
+    <style>
+        .table thead th {
+            background-color: #4299e1;
+            /* Tabler primary blue */
+            color: #fff;
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="container-fluid">
         <h3 class="mb-4">Диспетчерийн хоногийн мэдээ</h3>
@@ -18,7 +28,7 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover text-center">
-                        <thead class="table-light">
+                        <thead class="table-primary">
                             <tr>
                                 <th></th>
                                 <th>Огноо</th>
@@ -279,7 +289,7 @@
                                 <th>ТЗЭ</th>
                                 <th>Тасралт</th>
                                 <th>Тайлбар</th>
-                                <th>Дутуу түгээсэн ЭХ</th>
+                                <th>Дутуу түгээсэн ЦЭХ</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -24,6 +24,7 @@
             font-feature-settings: "cv03", "cv04", "cv11";
         }
     </style>
+    @yield('style')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
