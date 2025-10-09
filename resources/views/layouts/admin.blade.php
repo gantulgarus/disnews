@@ -104,6 +104,7 @@
     <script src="{{ asset('assets/dist/js/demo.min.js?1692870487') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    @yield('scripts')
 </body>
 
 </html>

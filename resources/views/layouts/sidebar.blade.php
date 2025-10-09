@@ -100,10 +100,10 @@
                                     href="{{ route('tnews.index') }}">
                                     Тасралтын мэдээ
                                 </a>
-                                {{-- <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
+                                <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
                                     href="{{ route('power-distribution-works.index') }}">
                                     Захиалгат ажил
-                                </a> --}}
+                                </a>
                                 <a class="dropdown-item" href="#">
                                     Телефон мэдээ
                                 </a>
@@ -146,8 +146,11 @@
                                 <a class="dropdown-item" href="#">
                                     Цахилгааны горим
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{ route('station_thermo.index') }}">
                                     Дулааны горим
+                                </a>
+                                <a class="dropdown-item" href="{{ route('station_thermo.news') }}">
+                                    Дулааны мэдээ
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     Импорт, Экспорт
@@ -199,7 +202,7 @@
                 </li>
 
 
-                  <li class="nav-item dropdown">
+                <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -217,29 +220,29 @@
                         <span class="nav-link-title">Тохиргоо</span>
                     </a>
 
-                    <div class="dropdown-menu" >
+                    <div class="dropdown-menu">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                 <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
+                                <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
                                     href="{{ route('organizations.index') }}">
                                     Байгууллага
-                                 </a>
+                                </a>
 
-                                 <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
+                                <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
                                     href="{{ route('divisions.index') }}">
                                     Албан тушаал
-                                 </a>
+                                </a>
 
-                                  <a class="dropdown-item {{ request()->routeIs('permission_levels.index') ? 'active' : '' }}"
+                                <a class="dropdown-item {{ request()->routeIs('permission_levels.index') ? 'active' : '' }}"
                                     href="{{ route('permission_levels.index') }}">
                                     Эрхийн түвшин
-                                 </a>
+                                </a>
 
                                 <a class="dropdown-item {{ request()->routeIs('users.index') ? 'active' : '' }}"
                                     href="{{ route('users.index') }}">
                                     Хэрэглэгч
-                                 </a>
-                                
+                                </a>
+
                             </div>
                         </div>
                     </div>

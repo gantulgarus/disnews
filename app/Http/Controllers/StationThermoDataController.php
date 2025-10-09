@@ -43,6 +43,11 @@ class StationThermoDataController extends Controller
             ->with('success', 'Мэдээлэл амжилттай хадгалагдлаа');
     }
 
+    public function show($id)
+    {
+        abort(404);
+    }
+
     public function edit($id)
     {
         $item = StationThermoData::findOrFail($id);
@@ -71,5 +76,21 @@ class StationThermoDataController extends Controller
 
         return redirect()->route('station_thermo.index')
             ->with('success', 'Мэдээлэл амжилттай устгагдлаа');
+    }
+
+    public function news(Request $request)
+    {
+        $query = StationThermoData::query();
+
+        // Огноо filter
+        $date = $request->date ?? Carbon::today()->toDateString(); // request-аар огноо ирээгүй бол өнөөдрийн огноо
+        $query->where('infodate', $date);
+
+        $data = $query->orderBy('infodate', 'asc')
+            ->orderBy('infotime', 'asc')
+            ->paginate(24)
+            ->withQueryString(); // paginate дотор query string хадгалах
+
+        return view('station_thermo.news', compact('data', 'date'));
     }
 }

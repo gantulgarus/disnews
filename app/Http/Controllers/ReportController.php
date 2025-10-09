@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Models\Tnews;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
+use App\Models\StationThermoData;
 use Illuminate\Support\Facades\DB;
 use App\Models\DailyBalanceJournal;
 use App\Models\PowerDistributionWork;
@@ -43,8 +44,13 @@ class ReportController extends Controller
             ->with('user')
             ->get();
 
+        // 6:00 цагийн мэдээг авах
+        $station_thermo_data = StationThermoData::where('infodate', $date)
+            ->where('infotime', '06:00:00')
+            ->first();
 
-        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports', 'tasralts', 'power_distribution_works'));
+
+        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports', 'tasralts', 'power_distribution_works', 'station_thermo_data'));
     }
 
     public function powerPlantReport(Request $request)

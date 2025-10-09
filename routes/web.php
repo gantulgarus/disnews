@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
     Route::resource('power-distribution-works', PowerDistributionWorkController::class);
+    Route::get('station_thermo/news', [StationThermoDataController::class, 'news'])->name('station_thermo.news');
     Route::resource('station_thermo', StationThermoDataController::class);
 });
 

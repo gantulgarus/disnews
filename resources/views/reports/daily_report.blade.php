@@ -165,6 +165,111 @@
         </div>
         <div class="card mt-4">
             <div class="card-body">
+                <h5 class="card-title">Дулаан дамжуулах сүлжээний усны горим барилтын мэдээ 06:00 цаг</h5>
+                <div class="table-responsive">
+                    @if ($station_thermo_data)
+                        <table class="table table-bordered table-striped">
+                            <thead class="text-wrap">
+                                <tr>
+                                    <th rowspan="2">Станцууд</th>
+                                    <th rowspan="2" class="text-wrap">Сүлжээний усны зарцуулалт (Т/ц)</th>
+                                    <th rowspan="2" class="text-wrap">Нэмэлт усны зарцуулалт (Т/ц)</th>
+                                    <th colspan="2" class="text-wrap">Сүлжээний шууд усны даралт P1 (ата)</th>
+                                    <th colspan="2" class="text-wrap">Сүлжээний буцах усны даралт P2 (ата)</th>
+                                    <th colspan="2" class="text-wrap">Сүлжээний шууд усны халуун T1 (°C)</th>
+                                    <th colspan="2" class="text-wrap">Сүлжээний буцах усны халуун T2 (°C)</th>
+                                </tr>
+                                <tr>
+                                    <th>Байвал зохих</th>
+                                    <th>Байгаа нь</th>
+                                    <th>Байвал зохих</th>
+                                    <th>Байгаа нь</th>
+                                    <th>Байвал зохих</th>
+                                    <th>Байгаа нь</th>
+                                    <th>Байвал зохих</th>
+                                    <th>Байгаа нь</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ДЦС-2</td>
+                                    <td>{{ $station_thermo_data->pp2g1 }}</td>
+                                    <td>{{ $station_thermo_data->pp2gn }}</td>
+                                    <td>7</td>
+                                    <td>{{ $station_thermo_data->pp2p1 }}</td>
+                                    <td>2.5</td>
+                                    <td>{{ $station_thermo_data->pp2p2 }}</td>
+                                    <td>88</td>
+                                    <td>{{ $station_thermo_data->pp2t1 }}</td>
+                                    <td>49</td>
+                                    <td>{{ $station_thermo_data->pp2t2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>ДЦС-3 (ДДХ)</td>
+                                    <td>{{ $station_thermo_data->pp3lg1 }}</td>
+                                    <td>{{ $station_thermo_data->pp3lgn }}</td>
+                                    <td>10</td>
+                                    <td>{{ $station_thermo_data->pp3lp1 }}</td>
+                                    <td>1.8</td>
+                                    <td>{{ $station_thermo_data->pp3lp2 }}</td>
+                                    <td>88</td>
+                                    <td>{{ $station_thermo_data->pp3lt1 }}</td>
+                                    <td>49</td>
+                                    <td>{{ $station_thermo_data->pp3lt2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>ДЦС-3 (ӨДХ)</td>
+                                    <td>{{ $station_thermo_data->pp3hg1 }}</td>
+                                    <td>{{ $station_thermo_data->pp3hgn }}</td>
+                                    <td>10</td>
+                                    <td>{{ $station_thermo_data->pp3hp1 }}</td>
+                                    <td>1.8</td>
+                                    <td>{{ $station_thermo_data->pp3hp2 }}</td>
+                                    <td>88</td>
+                                    <td>{{ $station_thermo_data->pp3ht1 }}</td>
+                                    <td>49</td>
+                                    <td>{{ $station_thermo_data->pp3ht2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>ДЦС-4</td>
+                                    <td>{{ $station_thermo_data->pp4g }}</td>
+                                    <td>{{ $station_thermo_data->pp4gn }}</td>
+                                    <td>11.5</td>
+                                    <td>{{ $station_thermo_data->pp4p1 }}</td>
+                                    <td>2</td>
+                                    <td>{{ $station_thermo_data->pp4p2 }}</td>
+                                    <td>88</td>
+                                    <td>{{ $station_thermo_data->pp4t1 }}</td>
+                                    <td>49</td>
+                                    <td>{{ $station_thermo_data->pp4t2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Амгалан ДС</td>
+                                    <td>{{ $station_thermo_data->amg1 }}</td>
+                                    <td>{{ $station_thermo_data->amgn }}</td>
+                                    <td>7</td>
+                                    <td>{{ $station_thermo_data->amp1 }}</td>
+                                    <td>2</td>
+                                    <td>{{ $station_thermo_data->amp2 }}</td>
+                                    <td>88</td>
+                                    <td>{{ $station_thermo_data->amt1 }}</td>
+                                    <td>49</td>
+                                    <td>{{ $station_thermo_data->amt2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="alert alert-warning text-center">
+                            Өглөөний 6 цагийн мэдээ олдсонгүй.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Цахилгаан, дулаан дамжуулах, түгээх сүлжээнд гарсан тасралт, авсан арга хэмжээ</h5>
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped">
                         <thead>
@@ -193,8 +298,10 @@
                 </div>
             </div>
         </div>
+
         <div class="card mt-4">
             <div class="card-body">
+                <h5 class="card-title">Цахилгаан, дулаан дамжуулах, түгээх сүлжээнд хийгдсэн захиалгат ажил</h5>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -221,5 +328,4 @@
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
