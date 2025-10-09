@@ -121,6 +121,11 @@
                     </div>
                 </li>
 
+                @php
+                    $regimeRoutes = ['station_thermo.index', 'station_thermo.news', 'reports.powerPlantReport'];
+                    $isRegimeActive = request()->routeIs(...$regimeRoutes);
+                @endphp
+
 
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
@@ -140,22 +145,25 @@
                         <span class="nav-link-title">Горим төлөвлөлт</span>
                     </a>
 
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ $isRegimeActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
                                 <a class="dropdown-item" href="#">
                                     Цахилгааны горим
                                 </a>
-                                <a class="dropdown-item" href="{{ route('station_thermo.index') }}">
+                                <a class="dropdown-item {{ request()->routeIs('station_thermo.index') ? 'active' : '' }}"
+                                    href="{{ route('station_thermo.index') }}">
                                     Дулааны горим
                                 </a>
-                                <a class="dropdown-item" href="{{ route('station_thermo.news') }}">
+                                <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
+                                    href="{{ route('station_thermo.news') }}">
                                     Дулааны мэдээ
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     Импорт, Экспорт
                                 </a>
-                                <a class="dropdown-item" href="{{ route('reports.powerPlantReport') }}">
+                                <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
+                                    href="{{ route('reports.powerPlantReport') }}">
                                     СЭХ-ний горим, гүйцэтгэл
                                 </a>
                                 <a class="dropdown-item" href="#">
