@@ -16,14 +16,9 @@ class PowerPlantController extends Controller
     public function index()
     {
         // Станцуудын жагсаалт
-        $powerPlants = PowerPlant::with(['boilers', 'turbineGenerators'])->get();
+        $powerPlants = PowerPlant::orderBy('name')->get();
 
-        // Өдөр тутмын төлөвийн мэдээлэлтэй станцуудын жагсаалт
-        $dailyReports = PowerPlantDailyReport::latest('created_at')
-            ->get()
-            ->groupBy('power_plant_id');
-
-        return view('power_plants.index', compact('powerPlants', 'dailyReports'));
+        return view('power_plants.index', compact('powerPlants'));
     }
 
     /**
@@ -31,8 +26,7 @@ class PowerPlantController extends Controller
      */
     public function create()
     {
-        $powerPlants = PowerPlant::all(); // Станцын жагсаалт
-        return view('power_plants.create', compact('powerPlants'));
+        return view('power_plants.create');
     }
 
     /**
@@ -41,44 +35,15 @@ class PowerPlantController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'power_plant_id' => 'required|exists:power_plants,id',
-            'boilers.*.name' => 'required|string',
-            'turbine_generators.*.name' => 'required|string',
-            'status' => 'required|string',
-            'report_date' => 'required|date',
+            'name' => 'required|string|max:255',
+            'short_name' => 'required|string|max:255',
+            'z' => 'nullable|string',
+            't' => 'nullable|string',
         ]);
 
-        // Станцын мэдээлэл олж авах
-        $powerPlant = PowerPlant::findOrFail($request->power_plant_id);
+        PowerPlant::create($request->only('name', 'short_name', 'z', 't'));
 
-        // Зуухны мэдээллийг хадгалах
-        foreach ($request->boilers as $boiler) {
-            $boilerInstance = Boiler::create([
-                'power_plant_id' => $powerPlant->id,
-                'name' => $boiler['name']
-            ]);
-            $powerPlant->boilers()->save($boilerInstance);
-        }
-
-        // Турбингенераторын мэдээллийг хадгалах
-        foreach ($request->turbine_generators as $turbineGenerator) {
-            $turbineGeneratorInstance = TurbineGenerator::create([
-                'power_plant_id' => $powerPlant->id,
-                'name' => $turbineGenerator['name']
-            ]);
-            $powerPlant->turbineGenerators()->save($turbineGeneratorInstance);
-        }
-
-        // Төлөвийн мэдээллийг PowerPlantDailyReport-д хадгалах
-        PowerPlantDailyReport::create([
-            'report_date' => $request->report_date,
-            'boiler_id' => $request->boiler_id,
-            'turbine_generator_id' => $request->turbine_generator_id,
-            'status' => $request->status,
-            'notes' => $request->notes
-        ]);
-
-        return redirect()->route('power-plants.index')->with('success', 'Станц, зуух, турбингенератор амжилттай нэмэгдлээ.');
+        return redirect()->route('power-plants.index')->with('success', 'Шинэ станц амжилттай бүртгэгдлээ.');
     }
 
     /**
@@ -106,58 +71,71 @@ class PowerPlantController extends Controller
             'name' => 'required|string|max:255',
             'short_name' => 'required|string|max:255',
             'boilers.*.id' => 'nullable|exists:boilers,id',
-            'boilers.*.name' => 'required|string|max:255',
+            'boilers.*.name' => 'nullable|string|max:255',
             'turbine_generators.*.id' => 'nullable|exists:turbine_generators,id',
-            'turbine_generators.*.name' => 'required|string|max:255',
+            'turbine_generators.*.name' => 'nullable|string|max:255',
         ]);
 
         // Update main power plant info
         $powerPlant->update($request->only('name', 'short_name'));
 
-        // Keep track of existing boiler and turbine IDs
+        // === Handle Boilers ===
         $updatedBoilerIds = [];
-        foreach ($request->boilers as $boilerData) {
-            if (!empty($boilerData['id'])) {
-                $boiler = Boiler::find($boilerData['id']);
-                if ($boiler && $boiler->power_plant_id == $powerPlant->id) {
-                    $boiler->update(['name' => $boilerData['name']]);
-                    $updatedBoilerIds[] = $boiler->id;
+        if ($request->has('boilers') && is_array($request->boilers)) {
+            foreach ($request->boilers as $boilerData) {
+                if (!empty($boilerData['id'])) {
+                    $boiler = Boiler::find($boilerData['id']);
+                    if ($boiler && $boiler->power_plant_id == $powerPlant->id) {
+                        $boiler->update(['name' => $boilerData['name']]);
+                        $updatedBoilerIds[] = $boiler->id;
+                    }
+                } elseif (!empty($boilerData['name'])) {
+                    $newBoiler = Boiler::create([
+                        'power_plant_id' => $powerPlant->id,
+                        'name' => $boilerData['name'],
+                    ]);
+                    $updatedBoilerIds[] = $newBoiler->id;
                 }
-            } else {
-                $newBoiler = Boiler::create([
-                    'power_plant_id' => $powerPlant->id,
-                    'name' => $boilerData['name'],
-                ]);
-                $updatedBoilerIds[] = $newBoiler->id;
             }
         }
 
         // Delete removed boilers
-        $powerPlant->boilers()->whereNotIn('id', $updatedBoilerIds)->delete();
+        if (count($updatedBoilerIds)) {
+            $powerPlant->boilers()->whereNotIn('id', $updatedBoilerIds)->delete();
+        } else {
+            $powerPlant->boilers()->delete(); // Хэрэв хоосон ирвэл бүгдийг устгах
+        }
 
-        // Handle turbine generators
+        // === Handle Turbine Generators ===
         $updatedTurbineIds = [];
-        foreach ($request->turbine_generators as $turbineData) {
-            if (!empty($turbineData['id'])) {
-                $turbine = TurbineGenerator::find($turbineData['id']);
-                if ($turbine && $turbine->power_plant_id == $powerPlant->id) {
-                    $turbine->update(['name' => $turbineData['name']]);
-                    $updatedTurbineIds[] = $turbine->id;
+        if ($request->has('turbine_generators') && is_array($request->turbine_generators)) {
+            foreach ($request->turbine_generators as $turbineData) {
+                if (!empty($turbineData['id'])) {
+                    $turbine = TurbineGenerator::find($turbineData['id']);
+                    if ($turbine && $turbine->power_plant_id == $powerPlant->id) {
+                        $turbine->update(['name' => $turbineData['name']]);
+                        $updatedTurbineIds[] = $turbine->id;
+                    }
+                } elseif (!empty($turbineData['name'])) {
+                    $newTurbine = TurbineGenerator::create([
+                        'power_plant_id' => $powerPlant->id,
+                        'name' => $turbineData['name'],
+                    ]);
+                    $updatedTurbineIds[] = $newTurbine->id;
                 }
-            } else {
-                $newTurbine = TurbineGenerator::create([
-                    'power_plant_id' => $powerPlant->id,
-                    'name' => $turbineData['name'],
-                ]);
-                $updatedTurbineIds[] = $newTurbine->id;
             }
         }
 
         // Delete removed turbines
-        $powerPlant->turbineGenerators()->whereNotIn('id', $updatedTurbineIds)->delete();
+        if (count($updatedTurbineIds)) {
+            $powerPlant->turbineGenerators()->whereNotIn('id', $updatedTurbineIds)->delete();
+        } else {
+            $powerPlant->turbineGenerators()->delete();
+        }
 
         return redirect()->route('power-plants.index')->with('success', 'Станцын мэдээлэл амжилттай шинэчлэгдлээ.');
     }
+
 
 
 
@@ -166,6 +144,47 @@ class PowerPlantController extends Controller
      */
     public function destroy(PowerPlant $powerPlant)
     {
-        //
+        // Станцыг устгахын өмнө холбоотой мэдээллийг шалгах
+        $hasReports = PowerPlantDailyReport::where('power_plant_id', $powerPlant->id)->exists();
+        $hasBoilers = Boiler::where('power_plant_id', $powerPlant->id)->exists();
+        $hasTurbines = TurbineGenerator::where('power_plant_id', $powerPlant->id)->exists();
+
+        if ($hasReports || $hasBoilers || $hasTurbines) {
+            return redirect()->route('power-plants.index')->with('error', 'Энэ станцыг устгах боломжгүй. Холбоотой мэдээлэл байна.');
+        }
+
+        $powerPlant->delete();
+
+        return redirect()->route('power-plants.index')->with('success', 'Станц амжилттай устгагдлаа.');
+    }
+
+    // --- 2. Зуух, турбин нэмэх хуудас ---
+    public function addEquipment(PowerPlant $powerPlant)
+    {
+        $powerPlants = PowerPlant::orderBy('name')->get();
+        return view('power_plants.add_equipment', compact('powerPlants', 'powerPlant'));
+    }
+
+
+    // --- 2. Зуух, турбин хадгалах ---
+    public function storeEquipment(Request $request)
+    {
+        $request->validate([
+            'power_plant_id' => 'required|exists:power_plants,id',
+            'boilers.*.name' => 'required|string',
+            'turbine_generators.*.name' => 'required|string',
+        ]);
+
+        $powerPlant = PowerPlant::findOrFail($request->power_plant_id);
+
+        foreach ($request->boilers as $boiler) {
+            $powerPlant->boilers()->create(['name' => $boiler['name']]);
+        }
+
+        foreach ($request->turbine_generators as $tg) {
+            $powerPlant->turbineGenerators()->create(['name' => $tg['name']]);
+        }
+
+        return redirect()->route('power-plants.index')->with('success', 'Зуух болон турбин амжилттай нэмэгдлээ.');
     }
 }

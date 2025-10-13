@@ -133,4 +133,16 @@ class PowerPlantDailyReportController extends Controller
 
         return redirect()->route('power-plant-daily-reports.index')->with('success', 'Тайлан устгагдлаа.');
     }
+
+    public function status()
+    {
+        $powerPlants = PowerPlant::with(['boilers', 'turbineGenerators'])->get();
+
+        // Өдөр тутмын төлөвийн мэдээлэлтэй станцуудын жагсаалт
+        $dailyReports = PowerPlantDailyReport::latest('created_at')
+            ->get()
+            ->groupBy('power_plant_id');
+
+        return view('power_plant_daily_reports.status', compact('dailyReports', 'powerPlants'));
+    }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\DailyBalanceJournalController;
+use App\Http\Controllers\ElectricDailyRegimeController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
@@ -29,8 +30,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('power-plant-daily-reports/news', [PowerPlantDailyReportController::class, 'status'])->name('power-plant-daily-reports.status');
     Route::resource('power-plant-daily-reports', PowerPlantDailyReportController::class);
     Route::resource('power-plants', PowerPlantController::class);
+    // Нэмэлт маршрутууд
+    // web.php
+    Route::get('power-plants/{powerPlant}/add-equipment', [PowerPlantController::class, 'addEquipment'])->name('power-plants.add-equipment');
+    Route::post('power-plants/store-equipment', [PowerPlantController::class, 'storeEquipment'])->name('power-plants.store-equipment');
+
     Route::resource('permission_levels', PermissionLevelController::class);
 
     Route::get('daily-balance-journals/report', [DailyBalanceJournalController::class, 'dailyMatrixReport'])->name('daily-balance-journals.report');
@@ -50,6 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('power-distribution-works', PowerDistributionWorkController::class);
     Route::get('station_thermo/news', [StationThermoDataController::class, 'news'])->name('station_thermo.news');
     Route::resource('station_thermo', StationThermoDataController::class);
+    Route::resource('electric_daily_regimes', ElectricDailyRegimeController::class);
 });
 
 require __DIR__ . '/auth.php';
