@@ -10,20 +10,21 @@ class PowerPlant extends Model
         'short_name',
         'name',
         'z',
-        't'
+        't',
+        'Order'
     ];
 
-    public function boilers()
+    public function equipments()
     {
-        return $this->hasMany(Boiler::class);
+        return $this->hasMany(Equipment::class);
     }
 
-    public function turbineGenerators()
+    public function powerInfos()
     {
-        return $this->hasMany(TurbineGenerator::class);
+        return $this->hasMany(StationPowerInfo::class);
     }
-    public function dailyReports()
+    public function equipmentStatuses()
     {
-        return $this->hasMany(PowerPlantDailyReport::class);
+        return $this->hasMany(EquipmentStatus::class);
     }
 }

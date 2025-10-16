@@ -2,18 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Regime;
+use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        return view('dashboard'); // зөвхөн layout ачаална
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        // Тухайн өдрийн станц бүрийн чадлын мэдээлэлтэй татах
+        $powerPlants = PowerPlant::with(['powerInfos' => function ($q) use ($date) {
+            $q->whereDate('date', $date);
+        }])->get();
+        // dd($powerPlants);
+
+        // Нийт чадлын нийлбэрийг тооцоолох
+        $totalP = 0;
+        $totalPmax = 0;
+        $totalPmin = 0;
+
+        foreach ($powerPlants as $plant) {
+            $info = $plant->powerInfos->first();
+            if ($info) {
+                $totalP += $info->p ?? 0;
+                $totalPmax += $info->p_max ?? 0;
+                $totalPmin += $info->p_min ?? 0;
+            }
+        }
+
+        return view('dashboard', compact('powerPlants', 'date', 'totalP', 'totalPmax', 'totalPmin')); // зөвхөн layout ачаална
     }
 
     public function data(Request $request)

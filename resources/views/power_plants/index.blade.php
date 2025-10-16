@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container">
         <div class="page-header">
             <h1 class="page-title">Эх үүсвэрийн лавлах сан</h1>
         </div>
@@ -29,43 +29,22 @@
         <table class="table table-bordered table-sm align-middle">
             <thead class="table-light">
                 <tr>
+                    <td>#</td>
                     <th>Нэр</th>
                     <th>Богино нэр</th>
-                    <th>Зуух</th>
-                    <th>Турбингенератор</th>
+                    <th>Эрэмбэ</th>
                     <th>Үйлдэл</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($powerPlants as $powerPlant)
                     <tr>
+                        <td>{{ $loop->iteration }}</td>
                         <td>{{ $powerPlant->name }}</td>
                         <td>{{ $powerPlant->short_name }}</td>
+                        <td>{{ $powerPlant->Order }}</td>
                         <td>
-                            @if ($powerPlant->boilers->isEmpty())
-                                <span class="text-muted">Байхгүй</span>
-                            @else
-                                <ul>
-                                    @foreach ($powerPlant->boilers as $boiler)
-                                        <li>{{ $boiler->name }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($powerPlant->turbineGenerators->isEmpty())
-                                <span class="text-muted">Байхгүй</span>
-                            @else
-                                <ul>
-                                    @foreach ($powerPlant->turbineGenerators as $turbineGenerator)
-                                        <li>{{ $turbineGenerator->name }}</li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('power-plants.edit', $powerPlant) }}" class="btn btn-sm btn-warning">Тоноглол
-                                нэмэх, засах</a>
+                            <a href="{{ route('power-plants.edit', $powerPlant) }}" class="btn btn-sm btn-warning">Засах</a>
 
                             <form action="{{ route('power-plants.destroy', $powerPlant) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Устгахдаа итгэлтэй байна уу?');">

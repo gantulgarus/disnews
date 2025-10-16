@@ -6,10 +6,13 @@
             <h1 class="page-title">Станцуудын төлөвийн мэдээлэл</h1>
             <p class="page-subtitle text-muted">Цахилгаан станцуудын тоног төхөөрөмжийн төлөв байдлын мэдээлэл</p>
         </div>
+        <div>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{{ route('power-plants.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus-circle me-1"></i> Шинэ станц нэмэх
+            <a href="{{ route('daily-equipment-report.create') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-1"></i> Төлвийн мэдээ оруулах
+            </a>
+            <a href="{{ route('daily-equipment-report.index') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-1"></i> Төлвийн мэдээ
             </a>
         </div>
 

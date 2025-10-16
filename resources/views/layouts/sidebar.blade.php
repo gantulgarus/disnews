@@ -38,7 +38,7 @@
 
                 @php
                     $operationRoutes = [
-                        'power-plant-daily-reports.index',
+                        'daily-equipment-report.index',
                         'daily-balance-journals.index',
                         'order-journals.index',
                         'tnews.index',
@@ -79,8 +79,8 @@
                                     href="{{ route('reports.dailyReport') }}">
                                     Хоногийн мэдээ
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('power-plant-daily-reports.status`') ? 'active' : '' }}"
-                                    href="{{ route('power-plant-daily-reports.status') }}">
+                                <a class="dropdown-item {{ request()->routeIs('daily-equipment-report.index') ? 'active' : '' }}"
+                                    href="{{ route('daily-equipment-report.index') }}">
                                     Тоноглолын төлөв
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
@@ -235,6 +235,10 @@
                                 <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
                                     href="{{ route('power-plants.index') }}">
                                     Эх үүсвэр
+                                </a>
+                                <a class="dropdown-item {{ request()->routeIs('equipments.index') ? 'active' : '' }}"
+                                    href="{{ route('equipments.index') }}">
+                                    Тоноглол
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
                                     href="{{ route('organizations.index') }}">

@@ -16,7 +16,7 @@ class PowerPlantController extends Controller
     public function index()
     {
         // Станцуудын жагсаалт
-        $powerPlants = PowerPlant::orderBy('name')->get();
+        $powerPlants = PowerPlant::orderBy('Order')->get();
 
         return view('power_plants.index', compact('powerPlants'));
     }
@@ -37,11 +37,10 @@ class PowerPlantController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'short_name' => 'required|string|max:255',
-            'z' => 'nullable|string',
-            't' => 'nullable|string',
+            'Order' => 'required|integer'
         ]);
 
-        PowerPlant::create($request->only('name', 'short_name', 'z', 't'));
+        PowerPlant::create($request->only('name', 'short_name', 'Order'));
 
         return redirect()->route('power-plants.index')->with('success', 'Шинэ станц амжилттай бүртгэгдлээ.');
     }
@@ -70,68 +69,11 @@ class PowerPlantController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'short_name' => 'required|string|max:255',
-            'boilers.*.id' => 'nullable|exists:boilers,id',
-            'boilers.*.name' => 'nullable|string|max:255',
-            'turbine_generators.*.id' => 'nullable|exists:turbine_generators,id',
-            'turbine_generators.*.name' => 'nullable|string|max:255',
+            'Order' => 'required|integer',
         ]);
 
         // Update main power plant info
-        $powerPlant->update($request->only('name', 'short_name'));
-
-        // === Handle Boilers ===
-        $updatedBoilerIds = [];
-        if ($request->has('boilers') && is_array($request->boilers)) {
-            foreach ($request->boilers as $boilerData) {
-                if (!empty($boilerData['id'])) {
-                    $boiler = Boiler::find($boilerData['id']);
-                    if ($boiler && $boiler->power_plant_id == $powerPlant->id) {
-                        $boiler->update(['name' => $boilerData['name']]);
-                        $updatedBoilerIds[] = $boiler->id;
-                    }
-                } elseif (!empty($boilerData['name'])) {
-                    $newBoiler = Boiler::create([
-                        'power_plant_id' => $powerPlant->id,
-                        'name' => $boilerData['name'],
-                    ]);
-                    $updatedBoilerIds[] = $newBoiler->id;
-                }
-            }
-        }
-
-        // Delete removed boilers
-        if (count($updatedBoilerIds)) {
-            $powerPlant->boilers()->whereNotIn('id', $updatedBoilerIds)->delete();
-        } else {
-            $powerPlant->boilers()->delete(); // Хэрэв хоосон ирвэл бүгдийг устгах
-        }
-
-        // === Handle Turbine Generators ===
-        $updatedTurbineIds = [];
-        if ($request->has('turbine_generators') && is_array($request->turbine_generators)) {
-            foreach ($request->turbine_generators as $turbineData) {
-                if (!empty($turbineData['id'])) {
-                    $turbine = TurbineGenerator::find($turbineData['id']);
-                    if ($turbine && $turbine->power_plant_id == $powerPlant->id) {
-                        $turbine->update(['name' => $turbineData['name']]);
-                        $updatedTurbineIds[] = $turbine->id;
-                    }
-                } elseif (!empty($turbineData['name'])) {
-                    $newTurbine = TurbineGenerator::create([
-                        'power_plant_id' => $powerPlant->id,
-                        'name' => $turbineData['name'],
-                    ]);
-                    $updatedTurbineIds[] = $newTurbine->id;
-                }
-            }
-        }
-
-        // Delete removed turbines
-        if (count($updatedTurbineIds)) {
-            $powerPlant->turbineGenerators()->whereNotIn('id', $updatedTurbineIds)->delete();
-        } else {
-            $powerPlant->turbineGenerators()->delete();
-        }
+        $powerPlant->update($request->only('name', 'short_name', 'Order'));
 
         return redirect()->route('power-plants.index')->with('success', 'Станцын мэдээлэл амжилттай шинэчлэгдлээ.');
     }

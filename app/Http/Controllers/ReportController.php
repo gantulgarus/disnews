@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Tnews;
+use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
 use App\Models\StationThermoData;
@@ -34,9 +35,18 @@ class ReportController extends Controller
             ->get();
 
 
-        $powerPlantDailyReports = PowerPlantDailyReport::whereDate('report_date', $date)
-            ->with('powerPlant')
-            ->get();
+        // $powerPlantDailyReports = PowerPlantDailyReport::whereDate('report_date', $date)
+        //     ->with('powerPlant')
+        //     ->get();
+
+        $powerPlants = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->get();
 
         $tasralts = Tnews::all();
 
@@ -50,7 +60,7 @@ class ReportController extends Controller
             ->first();
 
 
-        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports', 'tasralts', 'power_distribution_works', 'station_thermo_data'));
+        return view('reports.daily_report', compact('date', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data'));
     }
 
     public function powerPlantReport(Request $request)

@@ -9,6 +9,7 @@ use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\ElectricDailyRegimeController;
+use App\Http\Controllers\DailyEquipmentReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
@@ -30,7 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('power-plant-daily-reports/news', [PowerPlantDailyReportController::class, 'status'])->name('power-plant-daily-reports.status');
+    Route::get('power-plant-daily-reports/status', [PowerPlantDailyReportController::class, 'status'])->name('power-plant-daily-reports.status');
     Route::resource('power-plant-daily-reports', PowerPlantDailyReportController::class);
     Route::resource('power-plants', PowerPlantController::class);
     // Нэмэлт маршрутууд
@@ -58,6 +60,23 @@ Route::middleware('auth')->group(function () {
     Route::get('station_thermo/news', [StationThermoDataController::class, 'news'])->name('station_thermo.news');
     Route::resource('station_thermo', StationThermoDataController::class);
     Route::resource('electric_daily_regimes', ElectricDailyRegimeController::class);
+
+    // Daily Equipment Report Routes
+    // Route::get('daily-equipment-report/create', [DailyEquipmentReportController::class, 'create'])->name('daily-equipment-report.create');
+    Route::get('/daily-equipment-report/create/{powerPlant}', [DailyEquipmentReportController::class, 'create'])->name('daily-equipment-report.create');
+    Route::post('daily-equipment-report/store', [DailyEquipmentReportController::class, 'store'])->name('daily-equipment-report.store');
+    Route::get('get-equipments/{powerPlantId}', [DailyEquipmentReportController::class, 'getEquipmentsByStation']); // AJAX route
+    Route::get('/daily-equipment-report', [DailyEquipmentReportController::class, 'index'])
+        ->name('daily-equipment-report.index');
+    // Edit / Update report
+    Route::get('/daily-equipment-report/{powerPlant}/edit', [DailyEquipmentReportController::class, 'edit'])->name('daily-equipment-report.edit');
+    Route::put('/daily-equipment-report/{powerPlant}', [DailyEquipmentReportController::class, 'update'])->name('daily-equipment-report.update');
+    Route::get('/daily-equipment-report/details/{powerPlant}', [DailyEquipmentReportController::class, 'details'])
+        ->name('daily-equipment-report.details');
+    Route::delete('/daily-equipment-report/{powerPlant}', [DailyEquipmentReportController::class, 'destroy'])
+        ->name('daily-equipment-report.destroy');
+
+    Route::resource('equipments', EquipmentController::class);
 });
 
 require __DIR__ . '/auth.php';

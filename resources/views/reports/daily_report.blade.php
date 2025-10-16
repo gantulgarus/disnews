@@ -75,16 +75,16 @@
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
+                    <table class="table table-bordered table-sm align-middle mt-2">
+                        <thead class="table-light">
                             <tr>
-                                <th rowspan="2">№</th>
-                                <th rowspan="2">Огноо</th>
-                                <th rowspan="2">Станц</th>
+                                <th rowspan="2">Станцууд</th>
                                 <th colspan="3" class="text-center">Зуух</th>
-                                <th colspan="3" class="text-center">Турбин</th>
+                                <th colspan="3" class="text-center">Турбогенератор</th>
+                                <th colspan="3" class="text-center">Багц</th>
+                                <th colspan="3" class="text-center">Инвертер</th>
                                 <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">Pmax (МВт)</th>
+                                <th rowspan="2">P max (МВт)</th>
                                 <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                             </tr>
                             <tr>
@@ -94,85 +94,77 @@
                                 <th>Ажилд</th>
                                 <th>Бэлтгэлд</th>
                                 <th>Засварт</th>
+                                <th>Ажилд</th>
+                                <th>Бэлтгэлд</th>
+                                <th>Засварт</th>
+                                <th>Ажилд</th>
+                                <th>Бэлтгэлд</th>
+                                <th>Засварт</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($powerPlantDailyReports as $index => $report)
+                            @forelse ($powerPlants as $plant)
+                                @php
+                                    $boilers = $plant->equipments->where('equipment_type_id', 1);
+                                    $turbos = $plant->equipments->where('equipment_type_id', 2);
+                                    $inverters = $plant->equipments->where('equipment_type_id', 3);
+                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
+                                    $info = $plant->powerInfos->first();
+                                @endphp
+
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $report->report_date }}</td>
-                                    <td>{{ $report->powerPlant->name }}</td>
+                                    <td>{{ $plant->name }}</td>
 
-                                    <!-- Boiler Working -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->boiler_working))->map(function ($boiler_id) {
-                                                    return \App\Models\Boiler::find($boiler_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
+                                    {{-- Зуух --}}
+                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
 
-
-                                    <!-- Boiler Preparation -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->boiler_preparation))->map(function ($boiler_id) {
-                                                    return \App\Models\Boiler::find($boiler_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
+                                    {{-- Турбогенератор --}}
+                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
 
-                                    <!-- Boiler Repair -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->boiler_repair))->map(function ($boiler_id) {
-                                                    return \App\Models\Boiler::find($boiler_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
+                                    {{-- Багц --}}
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
 
-                                    <!-- Turbine Working -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->turbine_working))->map(function ($turbine_id) {
-                                                    return \App\Models\TurbineGenerator::find($turbine_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
+                                    {{-- Инвертер --}}
+                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
 
-                                    <!-- Turbine Preparation -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->turbine_preparation))->map(function ($turbine_id) {
-                                                    return \App\Models\TurbineGenerator::find($turbine_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
-                                    </td>
-
-                                    <!-- Turbine Repair -->
-                                    <td>
-                                        {{ implode(
-                                            ', ',
-                                            collect(json_decode($report->turbine_repair))->map(function ($turbine_id) {
-                                                    return \App\Models\TurbineGenerator::find($turbine_id)->name ?? 'Нэр олдсонгүй';
-                                                })->toArray(),
-                                        ) }}
-                                    </td>
-                                    <td>{{ $report->power_max ?? '-' }}</td>
-                                    <td>{{ $report->power ?? '-' }}</td>
-                                    <td>{{ $report->notes ?? '-' }}</td>
+                                    <td>{{ $info?->p }}</td>
+                                    <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->remark }}</td>
                                 </tr>
-                            @endforeach
+
+                            @empty
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
+                                </tr>
+                            @endforelse
                         </tbody>
+
                     </table>
                 </div>
             </div>
         </div>
+
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Дулаан дамжуулах сүлжээний усны горим барилтын мэдээ 06:00 цаг</h5>
