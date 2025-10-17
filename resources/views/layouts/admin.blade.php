@@ -24,6 +24,7 @@
             font-feature-settings: "cv03", "cv04", "cv11";
         }
     </style>
+    @yield('style')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -104,6 +105,7 @@
     <script src="{{ asset('assets/dist/js/demo.min.js?1692870487') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    @yield('scripts')
 </body>
 
 </html>

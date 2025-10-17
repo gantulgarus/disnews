@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Tnews;
+use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
+use App\Models\StationThermoData;
 use Illuminate\Support\Facades\DB;
 use App\Models\DailyBalanceJournal;
 use App\Models\PowerDistributionWork;
@@ -33,18 +35,44 @@ class ReportController extends Controller
             ->get();
 
 
-        $powerPlantDailyReports = PowerPlantDailyReport::whereDate('report_date', $date)
-            ->with('powerPlant')
-            ->get();
+        // $powerPlantDailyReports = PowerPlantDailyReport::whereDate('report_date', $date)
+        //     ->with('powerPlant')
+        //     ->get();
 
-        $tasralts = Tnews::all();
+        $powerPlants = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->orderBy('Order')->get()
+            ->map(function ($plant) {
+                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
+                $plant->total_p = $plant->powerInfos->sum('p');
+                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                return $plant;
+            });
+
+        $tasralts = Tnews::whereDate('date', $date)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $power_distribution_works = PowerDistributionWork::whereDate('date', $date)
             ->with('user')
             ->get();
 
+        // 6:00 цагийн мэдээг авах
+        $station_thermo_data = StationThermoData::where('infodate', $date)
+            ->where('infotime', '06:00:00')
+            ->first();
 
-        return view('reports.daily_report', compact('date', 'journals', 'powerPlantDailyReports', 'tasralts', 'power_distribution_works'));
+        // ✅ Хэрвээ нийт дүн хэрэгтэй бол
+        $total_p = $powerPlants->sum('total_p');
+        $total_pmax = $powerPlants->sum('total_pmax');
+
+
+        return view('reports.daily_report', compact('date', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax'));
     }
 
     public function powerPlantReport(Request $request)
