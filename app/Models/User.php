@@ -30,7 +30,7 @@ class User extends Authenticatable
         'organization_id',
         'div_code',
         'permission_code',
-        
+
 
     ];
 
@@ -42,12 +42,11 @@ class User extends Authenticatable
     public function division()
     {
         return $this->belongsTo(Division::class, 'div_code', 'Div_code');
-
     }
 
     public function permissionLevel()
     {
-        return $this->belongsTo(PermissionLevel::class, 'permission_code', 'code');
+        return $this->belongsTo(PermissionLevel::class, 'permission_level_id');
     }
 
     /**

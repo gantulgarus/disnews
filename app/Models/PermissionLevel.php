@@ -8,16 +8,8 @@ class PermissionLevel extends Model
 {
     protected $fillable = ['name', 'code'];
 
-
-    protected $primaryKey = 'code';
-
- 
-    public $incrementing = false;
-
-
-
     public function users()
     {
-        return $this->hasMany(User::class, 'permission_code', 'code');
+        return $this->hasMany(User::class, 'permission_level_id');
     }
 }
