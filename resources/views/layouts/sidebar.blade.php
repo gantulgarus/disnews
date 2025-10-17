@@ -110,7 +110,8 @@
                                 <a class="dropdown-item" href="#">
                                     СМС илгээх
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
+                                    href="{{ route('dis_coal.index') }}">
                                     Түлшний мэдээ
                                 </a>
                                 <a class="dropdown-item" href="#">

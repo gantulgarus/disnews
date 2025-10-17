@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Organization;
+use App\Models\Division;
+use App\Models\PermissionLevel;
 
 
 class User extends Authenticatable
@@ -26,12 +28,26 @@ class User extends Authenticatable
         'password',
         'phone',
         'organization_id',
+        'div_code',
+        'permission_code',
+        
 
     ];
 
     public function organization()
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'div_code', 'Div_code');
+
+    }
+
+    public function permissionLevel()
+    {
+        return $this->belongsTo(PermissionLevel::class, 'permission_code', 'code');
     }
 
     /**

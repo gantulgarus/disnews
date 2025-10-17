@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
+
     <div class="container-fluid">
         <h3 class="mb-4">Диспетчерийн хоногийн мэдээ</h3>
 
@@ -163,6 +164,7 @@
                 </div>
             </div>
         </div>
+
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
@@ -193,6 +195,7 @@
                 </div>
             </div>
         </div>
+
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
@@ -221,5 +224,6 @@
                 </div>
             </div>
         </div>
+
     </div>
 @endsection

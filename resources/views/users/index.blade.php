@@ -26,6 +26,7 @@
                 <th>Нэр</th>
                 <th>Имэйл</th>
                 <th>Гар утас</th>
+                <th>Хэрэглэгчийн эрх</th>
                 <th>Үйлдэл</th>
             </tr>
         </thead>
@@ -36,6 +37,8 @@
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->phone }}</td>
+                    <td>{{ $user->permissionLevel?->name ?? '-' }}</td>
+                    
                     <td>
                         <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">Засах</a>
 

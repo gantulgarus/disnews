@@ -4,15 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Organization;
+use App\Models\PermissionLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 
 {
-    /**
-     * Display a listing of the resource.
-     */
+
 
     public function index()
     {
@@ -20,20 +19,17 @@ class UserController extends Controller
          return view('users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+  
     public function create()
     {
      
          $organizations = Organization::all(); // Fetch all organization records
-         return view('users.create', compact('organizations'));
+         $permissions = PermissionLevel::all();
+         return view('users.create', compact('organizations','permissions'));
         // return view('users.create');
         
     }
 
-
-    
     /**
      * Store a newly created resource in storage.
      */
@@ -41,6 +37,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
+            'permission_code' => 'nullable|string|exists:permission_levels,code',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:8',
@@ -64,14 +61,12 @@ class UserController extends Controller
         return view('users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
 
     public function edit(User $user)
     {
-        $organizations = Organization::all(); // Fetch all organization records
-        return view('users.edit', compact('user', 'organizations'));
+          $organizations = Organization::all();
+          $permissions = PermissionLevel::all(); // Fetch all permission levels
+          return view('users.edit', compact('user', 'organizations', 'permissions'));
     }
 
     /**
@@ -84,6 +79,7 @@ class UserController extends Controller
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         'phone' => 'nullable|string|max:8',
+        'permission_code' => 'nullable|string|exists:permission_levels,code', 
     ]);
 
     $user->update($validated);
