@@ -30,8 +30,7 @@ class User extends Authenticatable
         'organization_id',
         'div_code',
         'permission_code',
-
-
+        'permission_level_id',
     ];
 
     public function organization()
