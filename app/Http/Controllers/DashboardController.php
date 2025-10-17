@@ -19,7 +19,7 @@ class DashboardController extends Controller
         // Тухайн өдрийн станц бүрийн чадлын мэдээлэлтэй татах
         $powerPlants = PowerPlant::with(['powerInfos' => function ($q) use ($date) {
             $q->whereDate('date', $date);
-        }])->get();
+        }])->orderBy('Order')->get();
         // dd($powerPlants);
 
         // Нийт чадлын нийлбэрийг тооцоолох

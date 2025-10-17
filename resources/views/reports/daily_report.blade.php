@@ -78,6 +78,7 @@
                     <table class="table table-bordered table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
+                                <th rowspan="2">#</th>
                                 <th rowspan="2">Станцууд</th>
                                 <th colspan="3" class="text-center">Зуух</th>
                                 <th colspan="3" class="text-center">Турбогенератор</th>
@@ -114,6 +115,7 @@
                                 @endphp
 
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Зуух --}}
@@ -158,6 +160,11 @@
                                     <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                 </tr>
                             @endforelse
+                            <tr class="fw-bold">
+                                <td colspan="14">Нийт дүн</td>
+                                <td>{{ number_format($total_p, 2) }}</td>
+                                <td>{{ number_format($total_pmax, 2) }}</td>
+                            </tr>
                         </tbody>
 
                     </table>
@@ -285,9 +292,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($tasralts as $index => $tasralt)
+                            @foreach ($tasralts as $tasralt)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $tasralt->date }}</td>
                                     <td>{{ $tasralt->TZE }}</td>
                                     <td>{{ $tasralt->tasralt }}</td>
@@ -308,6 +315,7 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th>№</th>
                                 <th>ТЗЭ</th>
                                 <th>Засварын ажлын утга</th>
                                 <th>Тайлбар</th>
@@ -318,6 +326,7 @@
                         <tbody>
                             @foreach ($power_distribution_works as $work)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $work->tze }}</td>
                                     <td>{{ $work->repair_work }}</td>
                                     <td>{{ $work->description }}</td>

@@ -3,9 +3,18 @@
 @section('content')
     <div class="container-xl">
         {{-- dateForm шинэчилсэн: id өгсөн, method-г авахгүй (AJAX ашиглана) --}}
-        <form id="dateForm" class="mb-3">
+        {{-- <form id="dateForm" class="mb-3">
             <input id="dateInput" type="date" name="date" value="{{ now()->toDateString() }}">
             <button type="submit" class="btn btn-primary btn-sm">Харах</button>
+        </form> --}}
+        <form id="dateForm" method="GET" class="mb-4 row g-2 align-items-end">
+            <div class="col-auto">
+                {{-- <label for="date" class="form-label">Огноо:</label> --}}
+                <input type="date" name="date" id="dateInput" value="{{ $date }}" class="form-control">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Харах</button>
+            </div>
         </form>
         <div class="row row-deck row-cards">
             <div class="col-lg-12">
@@ -27,6 +36,13 @@
                 </div>
             </div>
         </div>
+        <div class="card mt-3 border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h5 class="fw-bold text-success mb-0">
+                    Нийт чадал: {{ number_format($totalPmax, 2) }} МВт
+                </h5>
+            </div>
+        </div>
         <div class="row mt-4">
             @foreach ($powerPlants as $plant)
                 @php
@@ -36,9 +52,9 @@
                     <div class="card shadow-sm border-0 h-100">
                         <div class="card-body text-center">
                             <h5 class="card-title fw-bold">{{ $plant->name }}</h5>
-                            <p class="mt-2 mb-0 text-muted">Одоогийн чадал:</p>
+                            <p class="mt-2 mb-0 text-muted">Max чадал:</p>
                             <h3 class="text-primary fw-bold">
-                                {{ number_format($info->p ?? 0, 2) }} МВт
+                                {{ number_format($info->p_max ?? 0, 2) }} МВт
                             </h3>
                         </div>
                     </div>
@@ -46,13 +62,7 @@
             @endforeach
         </div>
 
-        <div class="card mt-3 border-0 shadow-sm bg-light">
-            <div class="card-body text-center">
-                <h5 class="fw-bold text-success mb-0">
-                    Нийт чадал: {{ number_format($totalP, 2) }} МВт
-                </h5>
-            </div>
-        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
