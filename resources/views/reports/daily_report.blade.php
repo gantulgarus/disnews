@@ -11,7 +11,6 @@
 @endsection
 
 @section('content')
-
     <div class="container-fluid">
         <h3 class="mb-4">Диспетчерийн хоногийн мэдээ</h3>
 
@@ -25,32 +24,30 @@
             </div>
         </form>
 
+        {{-- Total System --}}
         <div class="card">
             <div class="card-body">
-                <div class="table-responsive">
+                <div class="table-responsive" style="overflow-x:auto;">
                     <table class="table table-bordered table-striped table-hover text-center">
                         <thead class="table-primary">
                             <tr>
                                 <th></th>
-                                <th>Огноо</th>
                                 <th>Pmax/min (МВт)</th>
-                                <th>Э.боловсруулалт (мян кВт.цаг)</th>
-                                <th>Э.түгээлт (мян кВт.цаг)</th>
-                                <th>Э.импорт (мян кВт.цаг)</th>
-                                <th>Э.экспорт (мян кВт.цаг)</th>
-                                <th>Pимп.max (МВт)</th>
-                                <th>Э.хязгаарлалт (кВт.цаг)</th>
+                                <th class="text-wrap">Э.боловсруулалт (мян кВт.цаг)</th>
+                                <th class="text-wrap">Э.түгээлт (мян кВт.цаг)</th>
+                                <th class="text-wrap">Э.импорт (мян кВт.цаг)</th>
+                                <th class="text-wrap">Э.экспорт (мян кВт.цаг)</th>
+                                <th class="text-wrap">Pимп.max (МВт)</th>
+                                <th class="text-wrap">Э.хязгаарлалт (кВт.цаг)</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($journals as $journal)
                                 <tr>
                                     <td>Хоногт</td>
-                                    <td>{{ $journal->report_date }}</td>
-                                    <td>—</td>
+                                    <td></td>
                                     <td>{{ number_format($journal->total_processed, 2) }}</td>
                                     <td>{{ number_format($journal->total_distribution, 2) }}</td>
-                                    <td>—</td>
                                     <td>—</td>
                                     <td>—</td>
                                     <td>—</td>
@@ -58,13 +55,12 @@
                             @endforeach
                             <tr>
                                 <td>Сарын эхнээс</td>
-                                <td></td>
+                                <td>{{ $system_data->max_value }}/{{ $system_data->min_value }}</td>
                                 <td>—</td>
                                 <td></td>
                                 <td></td>
                                 <td>—</td>
-                                <td>—</td>
-                                <td>—</td>
+                                <td>{{ $import_data->max_value }}</td>
                                 <td>—</td>
                             </tr>
                         </tbody>
@@ -73,6 +69,8 @@
             </div>
         </div>
 
+
+        {{-- ДЦС --}}
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
@@ -83,19 +81,11 @@
                                 <th rowspan="2">Станцууд</th>
                                 <th colspan="3" class="text-center">Зуух</th>
                                 <th colspan="3" class="text-center">Турбогенератор</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th colspan="3" class="text-center">Инвертер</th>
                                 <th rowspan="2">P (МВт)</th>
                                 <th rowspan="2">P max (МВт)</th>
                                 <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                             </tr>
                             <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
                                 <th>Ажилд</th>
                                 <th>Бэлтгэлд</th>
                                 <th>Засварт</th>
@@ -109,8 +99,6 @@
                                 @php
                                     $boilers = $plant->equipments->where('equipment_type_id', 1);
                                     $turbos = $plant->equipments->where('equipment_type_id', 2);
-                                    $inverters = $plant->equipments->where('equipment_type_id', 3);
-                                    $batches = $plant->equipments->where('equipment_type_id', 4);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
                                     $info = $plant->powerInfos->first();
                                 @endphp
@@ -134,6 +122,65 @@
                                     </td>
                                     <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
+
+                                    <td>{{ $info?->p }}</td>
+                                    <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->remark }}</td>
+                                </tr>
+
+                            @empty
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
+                                </tr>
+                            @endforelse
+                            <tr class="fw-bold">
+                                <td colspan="8">Нийт дүн</td>
+                                <td>{{ number_format($total_p, 2) }}</td>
+                                <td>{{ number_format($total_pmax, 2) }}</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- СЭХ --}}
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mt-2">
+                        <thead class="table-light">
+                            <tr>
+                                <th rowspan="2">#</th>
+                                <th rowspan="2">Станцууд</th>
+                                <th colspan="3" class="text-center">Багц</th>
+                                <th colspan="3" class="text-center">Инвертер</th>
+                                <th rowspan="2">P (МВт)</th>
+                                <th rowspan="2">P max (МВт)</th>
+                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                            </tr>
+                            <tr>
+                                <th>Ажилд</th>
+                                <th>Бэлтгэлд</th>
+                                <th>Засварт</th>
+                                <th>Ажилд</th>
+                                <th>Бэлтгэлд</th>
+                                <th>Засварт</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($sunWindPlants as $plant)
+                                @php
+                                    $inverters = $plant->equipments->where('equipment_type_id', 3);
+                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
+                                    $info = $plant->powerInfos->first();
+                                @endphp
+
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $plant->name }}</td>
 
                                     {{-- Багц --}}
                                     <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
@@ -162,9 +209,9 @@
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="14">Нийт дүн</td>
-                                <td>{{ number_format($total_p, 2) }}</td>
-                                <td>{{ number_format($total_pmax, 2) }}</td>
+                                <td colspan="8">Нийт дүн</td>
+                                <td>{{ number_format($sun_wind_total_p, 2) }}</td>
+                                <td>{{ number_format($sun_wind_total_pmax, 2) }}</td>
                             </tr>
                         </tbody>
 
@@ -173,6 +220,69 @@
             </div>
         </div>
 
+        {{-- Battery --}}
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mt-2">
+                        <thead class="table-light">
+                            <tr>
+                                <th rowspan="2">#</th>
+                                <th rowspan="2">Станцууд</th>
+                                <th colspan="3" class="text-center">Багц</th>
+                                <th rowspan="2">P (МВт)</th>
+                                <th rowspan="2">P max (МВт)</th>
+                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                            </tr>
+                            <tr>
+                                <th>Ажилд</th>
+                                <th>Бэлтгэлд</th>
+                                <th>Засварт</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($battery_powers as $plant)
+                                @php
+                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
+                                    $info = $plant->powerInfos->first();
+                                @endphp
+
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $plant->name }}</td>
+
+                                    {{-- Багц --}}
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
+                                    </td>
+                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
+                                    </td>
+
+                                    <td>{{ $info?->p }}</td>
+                                    <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->remark }}</td>
+                                </tr>
+
+                            @empty
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
+                                </tr>
+                            @endforelse
+                            <tr class="fw-bold">
+                                <td colspan="5">Нийт дүн</td>
+                                <td>{{ number_format($battery_total_p, 2) }}</td>
+                                <td>{{ number_format($battery_total_pmax, 2) }}</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Дулааны мэдээ --}}
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Дулаан дамжуулах сүлжээний усны горим барилтын мэдээ 06:00 цаг</h5>
@@ -277,6 +387,62 @@
             </div>
         </div>
 
+        {{-- Түлшний мэдээ --}}
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="text-center">
+                            <tr>
+                                <th rowspan="2">Станц</th>
+                                <th colspan="3" class="text-center">Вагон буулгалт</th>
+                                <th colspan="6" class="text-center">Нүүрс /тонн/</th>
+                                <th colspan="3" class="text-center">Мазут /тонн/</th>
+                            </tr>
+                            <tr>
+
+                                <th>Ирсэн</th>
+                                <th>Буусан</th>
+                                <th>Үлдсэн</th>
+
+                                <th>Орлого</th>
+                                <th>Зарлага</th>
+                                <th>Вагоны <br>тоо</th>
+                                <th>Үлдэгдэл</th>
+                                <th>Хоногийн <br>нөөц</th>
+                                <th>Өвлийн их <br>ачааллын<br>нөөц</th>
+
+                                <th>Орлого</th>
+                                <th>Зарлага</th>
+                                <th>Үлдэгдэл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($disCoals as $disCoal)
+                                <tr>
+
+                                    <td class="text-center">{{ $disCoal->ORG_NAME }}</td>
+                                    <td class="text-center">{{ $disCoal->CAME_TRAIN }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->UNLOADING_TRAIN }}</td>
+                                    <td class="text-center">{{ $disCoal->ULDSEIN_TRAIN }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->COAL_INCOME }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->COAL_OUTCOME }}</td>
+                                    <td class="text-center">{{ $disCoal->COAL_TRAIN_QUANTITY }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->COAL_REMAIN }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->COAL_REMAIN_BYDAY }}</td>
+                                    <td class="text-center">{{ $disCoal->COAL_REMAIN_BYWINTERDAY }}</td>
+                                    <td class="text-center">{{ $disCoal->MAZUT_INCOME }}</td>
+                                    <td class="text-center">{{ $disCoal->MAZUT_OUTCOME }}</td>
+                                    <td class="text-center table-secondary">{{ $disCoal->MAZUT_REMAIN }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Тасралт --}}
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Цахилгаан, дулаан дамжуулах, түгээх сүлжээнд гарсан тасралт, авсан арга хэмжээ</h5>
@@ -309,6 +475,7 @@
             </div>
         </div>
 
+        {{-- Захиалгат ажил --}}
         <div class="card mt-4">
             <div class="card-body">
                 <h5 class="card-title">Цахилгаан, дулаан дамжуулах, түгээх сүлжээнд хийгдсэн захиалгат ажил</h5>
@@ -340,5 +507,4 @@
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection

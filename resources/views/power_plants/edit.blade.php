@@ -25,9 +25,35 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Станцын төрөл</label>
+                    <select name="power_plant_type_id" class="form-select" required>
+                        <option value="">Сонгох</option>
+                        @foreach ($powerPlantTypes as $type)
+                            <option value="{{ $type->id }}"
+                                {{ old('power_plant_type_id', $powerPlant->power_plant_type_id) == $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="region" class="form-label">Бүс</label>
+                    <select name="region" id="region" class="form-select">
+                        <option value="ТБЭХС" {{ old('region', $powerPlant->region ?? '') == 'ТБЭХС' ? 'selected' : '' }}>
+                            ТБЭХС</option>
+                        <option value="ДБЭХС" {{ old('region', $powerPlant->region ?? '') == 'ДБЭХС' ? 'selected' : '' }}>
+                            ДБЭХС</option>
+                        <option value="АУЭХС" {{ old('region', $powerPlant->region ?? '') == 'АУЭХС' ? 'selected' : '' }}>
+                            АУЭХС</option>
+                        <option value="ББЭХС" {{ old('region', $powerPlant->region ?? '') == 'ББЭХС' ? 'selected' : '' }}>
+                            ББЭХС</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Эрэмбэ</label>
-                    <input type="text" name="Order" class="form-control" value="{{ old('Order', $powerPlant->Order) }}"
-                        required>
+                    <input type="text" name="Order" class="form-control"
+                        value="{{ old('Order', $powerPlant->Order) }}" required>
                 </div>
 
                 <!-- Save Button -->

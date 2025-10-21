@@ -32,6 +32,8 @@
                     <td>#</td>
                     <th>Нэр</th>
                     <th>Богино нэр</th>
+                    <th>Төрөл</th>
+                    <th>Бүс</th>
                     <th>Эрэмбэ</th>
                     <th>Үйлдэл</th>
                 </tr>
@@ -42,6 +44,8 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $powerPlant->name }}</td>
                         <td>{{ $powerPlant->short_name }}</td>
+                        <td>{{ $powerPlant->powerPlantType->name ?? 'Төрөл тодорхойгүй' }}</td>
+                        <td>{{ $powerPlant->region }}</td>
                         <td>{{ $powerPlant->Order }}</td>
                         <td>
                             <a href="{{ route('power-plants.edit', $powerPlant) }}" class="btn btn-sm btn-warning">Засах</a>

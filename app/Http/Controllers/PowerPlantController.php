@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Boiler;
 use App\Models\PowerPlant;
 use Illuminate\Http\Request;
+use App\Models\PowerPlantType;
 use App\Models\TurbineGenerator;
 use App\Models\PowerPlantDailyReport;
 
@@ -26,7 +27,8 @@ class PowerPlantController extends Controller
      */
     public function create()
     {
-        return view('power_plants.create');
+        $powerPlantTypes = PowerPlantType::orderBy('name')->get();
+        return view('power_plants.create', compact('powerPlantTypes'));
     }
 
     /**
@@ -37,10 +39,12 @@ class PowerPlantController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'short_name' => 'required|string|max:255',
+            'power_plant_type_id' => 'required|exists:power_plant_types,id',
+            'region' => 'required|string',
             'Order' => 'required|integer'
         ]);
 
-        PowerPlant::create($request->only('name', 'short_name', 'Order'));
+        PowerPlant::create($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order'));
 
         return redirect()->route('power-plants.index')->with('success', 'Шинэ станц амжилттай бүртгэгдлээ.');
     }
@@ -58,7 +62,9 @@ class PowerPlantController extends Controller
      */
     public function edit(PowerPlant $powerPlant)
     {
-        return view('power_plants.edit', compact('powerPlant'));
+        $powerPlantTypes = PowerPlantType::orderBy('name')->get();
+
+        return view('power_plants.edit', compact('powerPlant', 'powerPlantTypes'));
     }
 
     /**
@@ -69,11 +75,13 @@ class PowerPlantController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'short_name' => 'required|string|max:255',
+            'power_plant_type_id' => 'required|exists:power_plant_types,id',
+            'region' => 'required|string',
             'Order' => 'required|integer',
         ]);
 
         // Update main power plant info
-        $powerPlant->update($request->only('name', 'short_name', 'Order'));
+        $powerPlant->update($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order'));
 
         return redirect()->route('power-plants.index')->with('success', 'Станцын мэдээлэл амжилттай шинэчлэгдлээ.');
     }

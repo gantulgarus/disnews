@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\StationThermoData;
 use Illuminate\Support\Facades\DB;
 use App\Models\DailyBalanceJournal;
+use App\Models\DisCoal;
 use App\Models\PowerDistributionWork;
 use App\Models\PowerPlantDailyReport;
 
@@ -24,6 +25,21 @@ class ReportController extends Controller
     {
         $date = $request->input('date', now()->toDateString());
 
+        // Өмнөх өдөр
+        $previousStart = Carbon::parse($date)->subDay()->startOfDay();
+        $previousEnd   = Carbon::parse($date)->subDay()->endOfDay();
+
+        $getData = function ($var, $calculation) use ($previousStart, $previousEnd) {
+            return ZConclusion::selectRaw('MAX(value) AS max_value, MIN(value) AS min_value')
+                ->whereBetween(DB::raw('FROM_UNIXTIME(timestamp_s)'), [$previousStart, $previousEnd])
+                ->where('var', $var)
+                ->where('calculation', $calculation)
+                ->first();
+        };
+
+        $system_data = $getData('system_total_p', '50');
+        $import_data = $getData('import_total_p', '50');
+
         $journals = DailyBalanceJournal::select(
             DB::raw('DATE(entry_date_time) as report_date'),
             DB::raw('COALESCE(SUM(processed_amount), 0) as total_processed'),
@@ -34,11 +50,6 @@ class ReportController extends Controller
             ->orderBy('report_date', 'desc')
             ->get();
 
-
-        // $powerPlantDailyReports = PowerPlantDailyReport::whereDate('report_date', $date)
-        //     ->with('powerPlant')
-        //     ->get();
-
         $powerPlants = PowerPlant::with([
             'equipmentStatuses' => function ($q) use ($date) {
                 $q->whereDate('date', $date);
@@ -46,7 +57,37 @@ class ReportController extends Controller
             'powerInfos' => function ($q) use ($date) {
                 $q->whereDate('date', $date);
             }
-        ])->orderBy('Order')->get()
+        ])->where('power_plant_type_id', 1)->where('region', 'ТБЭХС')->orderBy('Order')->get()
+            ->map(function ($plant) {
+                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
+                $plant->total_p = $plant->powerInfos->sum('p');
+                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                return $plant;
+            });
+
+        $sunWindPlants = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->where('power_plant_type_id', 2)->where('region', 'ТБЭХС')->orderBy('Order')->get()
+            ->map(function ($plant) {
+                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
+                $plant->total_p = $plant->powerInfos->sum('p');
+                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                return $plant;
+            });
+
+        $battery_powers = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->where('power_plant_type_id', 3)->where('region', 'ТБЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
@@ -70,9 +111,18 @@ class ReportController extends Controller
         // ✅ Хэрвээ нийт дүн хэрэгтэй бол
         $total_p = $powerPlants->sum('total_p');
         $total_pmax = $powerPlants->sum('total_pmax');
+        $sun_wind_total_p = $sunWindPlants->sum('total_p');
+        $sun_wind_total_pmax = $sunWindPlants->sum('total_pmax');
+        $battery_total_p = $battery_powers->sum('total_p');
+        $battery_total_pmax = $battery_powers->sum('total_pmax');
+
+        // Түлшний мэдээ
+        $disCoals = DisCoal::whereDate('date', $date)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
 
-        return view('reports.daily_report', compact('date', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax'));
+        return view('reports.daily_report', compact('date', 'system_data', 'import_data', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax', 'disCoals', 'sunWindPlants', 'sun_wind_total_p', 'sun_wind_total_pmax', 'battery_powers', 'battery_total_p', 'battery_total_pmax'));
     }
 
     public function powerPlantReport(Request $request)
