@@ -15,6 +15,7 @@ use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\StationThermoDataController;
+use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\ElectricDailyRegimeController;
 use App\Http\Controllers\DailyEquipmentReportController;
@@ -59,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('power-distribution-works', PowerDistributionWorkController::class);
     Route::get('station_thermo/news', [StationThermoDataController::class, 'news'])->name('station_thermo.news');
     Route::resource('station_thermo', StationThermoDataController::class);
+
+    Route::get('/electric-daily-regimes/report', [ElectricDailyRegimeController::class, 'report'])->name('electric_daily_regimes.report');
     Route::resource('electric_daily_regimes', ElectricDailyRegimeController::class);
 
     // Daily Equipment Report Routes
@@ -77,6 +80,9 @@ Route::middleware('auth')->group(function () {
         ->name('daily-equipment-report.destroy');
 
     Route::resource('equipments', EquipmentController::class);
+    Route::get('thermo-daily-regimes/report', [ThermoDailyRegimeController::class, 'report'])
+        ->name('thermo-daily-regimes.report');
+    Route::resource('thermo-daily-regimes', ThermoDailyRegimeController::class);
 });
 
 require __DIR__ . '/auth.php';

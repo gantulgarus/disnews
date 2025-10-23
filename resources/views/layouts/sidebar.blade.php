@@ -120,9 +120,11 @@
                 @php
                     $regimeRoutes = [
                         'electric_daily_regimes.index',
+                        'electric_daily_regimes.report',
                         'station_thermo.news',
                         'reports.powerPlantReport',
                         'electric_daily_regimes',
+                        'thermo-daily-regimes',
                     ];
                     $isRegimeActive = request()->routeIs(...$regimeRoutes);
                 @endphp
@@ -153,13 +155,17 @@
                                     href="{{ route('electric_daily_regimes.index') }}">
                                     Цахилгааны горим
                                 </a>
-                                {{-- <a class="dropdown-item {{ request()->routeIs('station_thermo.index') ? 'active' : '' }}"
-                                    href="{{ route('station_thermo.index') }}">
+                                <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
+                                    href="{{ route('electric_daily_regimes.report') }}">
+                                    Цахилгааны мэдээ
+                                </a>
+                                <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
+                                    href="{{ route('thermo-daily-regimes.index') }}">
                                     Дулааны горим
-                                </a> --}}
+                                </a>
                                 <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
                                     href="{{ route('station_thermo.news') }}">
-                                    Дулааны горим
+                                    Дулааны мэдээ
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     Импорт, Экспорт
