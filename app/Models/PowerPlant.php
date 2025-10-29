@@ -13,7 +13,8 @@ class PowerPlant extends Model
         'region',
         'z',
         't',
-        'Order'
+        'Order',
+        'organization_id'
     ];
 
     public function equipments()
@@ -32,5 +33,10 @@ class PowerPlant extends Model
     public function powerPlantType()
     {
         return $this->belongsTo(PowerPlantType::class);
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
     }
 }

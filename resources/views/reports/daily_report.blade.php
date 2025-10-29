@@ -55,12 +55,14 @@
                             @endforeach
                             <tr>
                                 <td>Сарын эхнээс</td>
-                                <td>{{ $system_data->max_value }}/{{ $system_data->min_value }}</td>
+                                <td class="fw-bold fs-3">
+                                    {{ number_format($system_data->max_value) }}/{{ number_format($system_data->min_value) }}
+                                </td>
                                 <td>—</td>
                                 <td></td>
                                 <td></td>
                                 <td>—</td>
-                                <td>{{ $import_data->max_value }}</td>
+                                <td class="fw-bold fs-3">{{ $import_data->max_value }}</td>
                                 <td>—</td>
                             </tr>
                         </tbody>

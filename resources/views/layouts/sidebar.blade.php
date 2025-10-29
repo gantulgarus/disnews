@@ -121,10 +121,10 @@
                     $regimeRoutes = [
                         'electric_daily_regimes.index',
                         'electric_daily_regimes.report',
+                        'thermo-daily-regimes.index',
                         'station_thermo.news',
                         'reports.powerPlantReport',
                         'electric_daily_regimes',
-                        'thermo-daily-regimes',
                     ];
                     $isRegimeActive = request()->routeIs(...$regimeRoutes);
                 @endphp

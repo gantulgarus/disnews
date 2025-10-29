@@ -37,6 +37,18 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Байгууллага</label>
+                    <select name="organization_id" class="form-select" required>
+                        <option value="" disabled selected>Сонгох</option>
+                        @foreach ($organizations as $organization)
+                            <option value="{{ $organization->id }}"
+                                {{ old('organization_id', $powerPlant->organization_id) == $organization->id ? 'selected' : '' }}>
+                                {{ $organization->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label for="region" class="form-label">Бүс</label>
                     <select name="region" id="region" class="form-select">
                         <option value="ТБЭХС" {{ old('region', $powerPlant->region ?? '') == 'ТБЭХС' ? 'selected' : '' }}>

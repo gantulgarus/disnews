@@ -35,6 +35,7 @@
                     <th>Төрөл</th>
                     <th>Бүс</th>
                     <th>Эрэмбэ</th>
+                    <th>Байгууллага</th>
                     <th>Үйлдэл</th>
                 </tr>
             </thead>
@@ -47,8 +48,10 @@
                         <td>{{ $powerPlant->powerPlantType->name ?? 'Төрөл тодорхойгүй' }}</td>
                         <td>{{ $powerPlant->region }}</td>
                         <td>{{ $powerPlant->Order }}</td>
+                        <td>{{ $powerPlant->organization->name ?? 'Байгууллага тодорхойгүй' }}</td>
                         <td>
-                            <a href="{{ route('power-plants.edit', $powerPlant) }}" class="btn btn-sm btn-warning">Засах</a>
+                            <a href="{{ route('power-plants.edit', $powerPlant) }}"
+                                class="btn btn-sm btn-warning">Засах</a>
 
                             <form action="{{ route('power-plants.destroy', $powerPlant) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Устгахдаа итгэлтэй байна уу?');">

@@ -7,6 +7,7 @@ use App\Models\Regime;
 use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
+use App\Models\PowerPlantType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -16,27 +17,61 @@ class DashboardController extends Controller
     {
         $date = $request->input('date', now()->format('Y-m-d'));
 
-        // Тухайн өдрийн станц бүрийн чадлын мэдээлэлтэй татах
-        $powerPlants = PowerPlant::with(['powerInfos' => function ($q) use ($date) {
+        // // Тухайн өдрийн станц бүрийн чадлын мэдээлэлтэй татах
+        // $powerPlants = PowerPlant::with(['powerInfos' => function ($q) use ($date) {
+        //     $q->whereDate('date', $date);
+        // }])->orderBy('Order')->get();
+        // // dd($powerPlants);
+
+        // // Нийт чадлын нийлбэрийг тооцоолох
+        // $totalP = 0;
+        // $totalPmax = 0;
+        // $totalPmin = 0;
+
+        // foreach ($powerPlants as $plant) {
+        //     $info = $plant->powerInfos->first();
+        //     if ($info) {
+        //         $totalP += $info->p ?? 0;
+        //         $totalPmax += $info->p_max ?? 0;
+        //         $totalPmin += $info->p_min ?? 0;
+        //     }
+        // }
+        // Станцын төрлөөр групплэх
+        $powerPlantTypes = PowerPlantType::with(['powerPlants.powerInfos' => function ($q) use ($date) {
             $q->whereDate('date', $date);
-        }])->orderBy('Order')->get();
-        // dd($powerPlants);
+        }])->get();
 
-        // Нийт чадлын нийлбэрийг тооцоолох
-        $totalP = 0;
-        $totalPmax = 0;
-        $totalPmin = 0;
+        // Төрлөөр нь чадлын нийлбэрийг тооцох
+        $typeSums = [];
 
-        foreach ($powerPlants as $plant) {
-            $info = $plant->powerInfos->first();
-            if ($info) {
-                $totalP += $info->p ?? 0;
-                $totalPmax += $info->p_max ?? 0;
-                $totalPmin += $info->p_min ?? 0;
+        foreach ($powerPlantTypes as $type) {
+            $sumP = 0;
+            $sumPmax = 0;
+            $sumPmin = 0;
+
+            foreach ($type->powerPlants as $plant) {
+                $info = $plant->powerInfos->first();
+                if ($info) {
+                    $sumP += $info->p ?? 0;
+                    $sumPmax += $info->p_max ?? 0;
+                    $sumPmin += $info->p_min ?? 0;
+                }
             }
+
+            $typeSums[] = [
+                'type_name' => $type->name,
+                'sumP' => $sumP,
+                'sumPmax' => $sumPmax,
+                'sumPmin' => $sumPmin,
+            ];
         }
 
-        return view('dashboard', compact('powerPlants', 'date', 'totalP', 'totalPmax', 'totalPmin')); // зөвхөн layout ачаална
+        // Нийт дүнг тооцох
+        $totalP = collect($typeSums)->sum('sumP');
+        $totalPmax = collect($typeSums)->sum('sumPmax');
+        $totalPmin = collect($typeSums)->sum('sumPmin');
+
+        return view('dashboard', compact('date', 'typeSums', 'totalP', 'totalPmax', 'totalPmin')); // зөвхөн layout ачаална
     }
 
     public function data(Request $request)

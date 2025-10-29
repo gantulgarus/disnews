@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Boiler;
 use App\Models\PowerPlant;
+use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Models\PowerPlantType;
 use App\Models\TurbineGenerator;
@@ -28,7 +29,8 @@ class PowerPlantController extends Controller
     public function create()
     {
         $powerPlantTypes = PowerPlantType::orderBy('name')->get();
-        return view('power_plants.create', compact('powerPlantTypes'));
+        $organizations = Organization::orderBy('name')->get();
+        return view('power_plants.create', compact('powerPlantTypes', 'organizations'));
     }
 
     /**
@@ -41,10 +43,11 @@ class PowerPlantController extends Controller
             'short_name' => 'required|string|max:255',
             'power_plant_type_id' => 'required|exists:power_plant_types,id',
             'region' => 'required|string',
-            'Order' => 'required|integer'
+            'Order' => 'required|integer',
+            'organization_id' => 'required|exists:organizations,id',
         ]);
 
-        PowerPlant::create($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order'));
+        PowerPlant::create($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id'));
 
         return redirect()->route('power-plants.index')->with('success', 'Шинэ станц амжилттай бүртгэгдлээ.');
     }
@@ -63,8 +66,9 @@ class PowerPlantController extends Controller
     public function edit(PowerPlant $powerPlant)
     {
         $powerPlantTypes = PowerPlantType::orderBy('name')->get();
+        $organizations = Organization::orderBy('name')->get();
 
-        return view('power_plants.edit', compact('powerPlant', 'powerPlantTypes'));
+        return view('power_plants.edit', compact('powerPlant', 'powerPlantTypes', 'organizations'));
     }
 
     /**
@@ -78,10 +82,11 @@ class PowerPlantController extends Controller
             'power_plant_type_id' => 'required|exists:power_plant_types,id',
             'region' => 'required|string',
             'Order' => 'required|integer',
+            'organization_id' => 'required|exists:organizations,id',
         ]);
 
         // Update main power plant info
-        $powerPlant->update($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order'));
+        $powerPlant->update($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id'));
 
         return redirect()->route('power-plants.index')->with('success', 'Станцын мэдээлэл амжилттай шинэчлэгдлээ.');
     }

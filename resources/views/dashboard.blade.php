@@ -16,6 +16,35 @@
                 <button type="submit" class="btn btn-primary">Харах</button>
             </div>
         </form>
+
+        <div class="card mt-3 border-0 shadow-sm bg-light">
+            <div class="card-body text-center">
+                <h5 class="fw-bold text-success mb-0">
+                    Нийт чадал: {{ number_format($totalPmax, 2) }} МВт
+                </h5>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            @foreach ($typeSums as $type)
+                <div class="col-md-3 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title fw-bold">{{ $type['type_name'] }}</h5>
+                            <p class="mt-2 mb-0 text-muted">Max чадал:</p>
+                            <h3 class="text-primary fw-bold">
+                                {{ number_format($type['sumPmax'], 2) }} МВт
+                            </h3>
+                            {{-- <p class="mt-2 mb-0 text-muted">P чадал:</p>
+                            <h4 class="text-success fw-bold">
+                                {{ number_format($type['sumP'], 2) }} МВт
+                            </h4> --}}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
         <div class="row row-deck row-cards">
             <div class="col-lg-12">
                 <div class="card">
@@ -36,7 +65,7 @@
                 </div>
             </div>
         </div>
-        <div class="card mt-3 border-0 shadow-sm bg-light">
+        {{-- <div class="card mt-3 border-0 shadow-sm bg-light">
             <div class="card-body text-center">
                 <h5 class="fw-bold text-success mb-0">
                     Нийт чадал: {{ number_format($totalPmax, 2) }} МВт
@@ -60,7 +89,8 @@
                     </div>
                 </div>
             @endforeach
-        </div>
+        </div> --}}
+
 
 
     </div>
