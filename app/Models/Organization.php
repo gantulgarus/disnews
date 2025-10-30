@@ -12,8 +12,16 @@ class Organization extends Model
     {
         return $this->hasMany(User::class);
     }
+
     public function powerPlants()
     {
         return $this->hasMany(PowerPlant::class);
+    }
+
+    public function receivedMessages()
+    {
+        return $this->belongsToMany(TelephoneMessage::class, 'telephone_message_receiver')
+            ->withPivot('status')
+            ->withTimestamps();
     }
 }

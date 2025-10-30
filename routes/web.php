@@ -14,6 +14,7 @@ use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PermissionLevelController;
+use App\Http\Controllers\TelephoneMessageController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\DailyBalanceJournalController;
@@ -28,10 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // // Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('power-plant-daily-reports/status', [PowerPlantDailyReportController::class, 'status'])->name('power-plant-daily-reports.status');
     Route::resource('power-plant-daily-reports', PowerPlantDailyReportController::class);
@@ -48,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('divisions', DivisionController::class);
     Route::resource('dis_coal', DisCoalController::class);
 
+    Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::resource('users', UserController::class);
     Route::resource('tnews', TnewsController::class);
 
@@ -83,6 +85,8 @@ Route::middleware('auth')->group(function () {
     Route::get('thermo-daily-regimes/report', [ThermoDailyRegimeController::class, 'report'])
         ->name('thermo-daily-regimes.report');
     Route::resource('thermo-daily-regimes', ThermoDailyRegimeController::class);
+
+    Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
 });
 
 require __DIR__ . '/auth.php';

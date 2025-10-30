@@ -17,25 +17,6 @@ class DashboardController extends Controller
     {
         $date = $request->input('date', now()->format('Y-m-d'));
 
-        // // Тухайн өдрийн станц бүрийн чадлын мэдээлэлтэй татах
-        // $powerPlants = PowerPlant::with(['powerInfos' => function ($q) use ($date) {
-        //     $q->whereDate('date', $date);
-        // }])->orderBy('Order')->get();
-        // // dd($powerPlants);
-
-        // // Нийт чадлын нийлбэрийг тооцоолох
-        // $totalP = 0;
-        // $totalPmax = 0;
-        // $totalPmin = 0;
-
-        // foreach ($powerPlants as $plant) {
-        //     $info = $plant->powerInfos->first();
-        //     if ($info) {
-        //         $totalP += $info->p ?? 0;
-        //         $totalPmax += $info->p_max ?? 0;
-        //         $totalPmin += $info->p_min ?? 0;
-        //     }
-        // }
         // Станцын төрлөөр групплэх
         $powerPlantTypes = PowerPlantType::with(['powerPlants.powerInfos' => function ($q) use ($date) {
             $q->whereDate('date', $date);

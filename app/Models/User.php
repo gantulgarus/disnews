@@ -47,6 +47,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(PermissionLevel::class, 'permission_level_id');
     }
+    public function permissionCode()
+    {
+        return $this->belongsTo(PermissionLevel::class, 'permission_code', 'code');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

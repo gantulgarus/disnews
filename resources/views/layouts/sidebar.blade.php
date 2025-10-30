@@ -4,9 +4,9 @@
             aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <h1 class="navbar-brand navbar-brand-autodark">
+        <h1 class="navbar-brand">
             <a href="/">
-                <img src="{{ asset('images/ndc.svg') }}" width="32" height="32" alt="Tabler"
+                <img src="{{ asset('images/ndc.svg') }}" width="48" height="48" alt="NDC Logo"
                     class="navbar-brand-image">
                 <span class="fs-5 fw-semibold">ДҮТ ТӨХХК</span>
             </a>
@@ -44,6 +44,7 @@
                         'tnews.index',
                         'reports.dailyReport',
                         'power-distribution-works.index',
+                        'telephone_messages.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
 
@@ -99,7 +100,8 @@
                                     href="{{ route('power-distribution-works.index') }}">
                                     Захиалгат ажил
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
+                                    href="{{ route('telephone_messages.index') }}">
                                     Телефон мэдээ
                                 </a>
                                 <a class="dropdown-item" href="#">

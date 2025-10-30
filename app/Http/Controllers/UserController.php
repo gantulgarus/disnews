@@ -15,19 +15,19 @@ class UserController extends Controller
 
     public function index()
     {
-         $users = User::all();
-         return view('users.index', compact('users'));
+        $users = User::all();
+        return view('users.index', compact('users'));
     }
 
-  
+
     public function create()
     {
-     
-         $organizations = Organization::all(); // Fetch all organization records
-         $permissions = PermissionLevel::all();
-         return view('users.create', compact('organizations','permissions'));
+
+        $organizations = Organization::all(); // Fetch all organization records
+        $permissions = PermissionLevel::all();
+        return view('users.create', compact('organizations', 'permissions'));
         // return view('users.create');
-        
+
     }
 
     /**
@@ -49,7 +49,6 @@ class UserController extends Controller
         User::create($validated);
 
         return redirect()->route('users.index')->with('success', 'Хэрэглэгч амжилттай бүртгэгдсэн.');
-
     }
 
     /**
@@ -64,9 +63,9 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-          $organizations = Organization::all();
-          $permissions = PermissionLevel::all(); // Fetch all permission levels
-          return view('users.edit', compact('user', 'organizations', 'permissions'));
+        $organizations = Organization::all();
+        $permissions = PermissionLevel::all(); // Fetch all permission levels
+        return view('users.edit', compact('user', 'organizations', 'permissions'));
     }
 
     /**
@@ -74,17 +73,19 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-       $validated = $request->validate([
-        'organization_id' => 'required|exists:organizations,id',
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-        'phone' => 'nullable|string|max:8',
-        'permission_code' => 'nullable|string|exists:permission_levels,code', 
-    ]);
+        $validated = $request->validate([
+            'organization_id' => 'required|exists:organizations,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:8',
+            'permission_code' => 'nullable|string|exists:permission_levels,code',
+        ]);
 
-    $user->update($validated);
+        dd($validated);
 
-    return redirect()->route('users.index')->with('success', 'Хэрэглэгч амжилттай шинэчлэгдлээ.');
+        $user->update($validated);
+
+        return redirect()->route('users.index')->with('success', 'Хэрэглэгч амжилттай шинэчлэгдлээ.');
     }
 
     /**
@@ -94,5 +95,12 @@ class UserController extends Controller
     {
         $user->delete();
         return redirect()->route('users.index')->with('success', 'Устсан');
+    }
+
+    // Хэрэглэгчийн профайл
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('users.profile', compact('user'));
     }
 }

@@ -30,11 +30,19 @@ class ReportController extends Controller
         $previousEnd   = Carbon::parse($date)->subDay()->endOfDay();
 
         $getData = function ($var, $calculation) use ($previousStart, $previousEnd) {
-            return ZConclusion::selectRaw('MAX(value) AS max_value, MIN(value) AS min_value')
-                ->whereBetween(DB::raw('FROM_UNIXTIME(timestamp_s)'), [$previousStart, $previousEnd])
-                ->where('var', $var)
-                ->where('calculation', $calculation)
-                ->first();
+            try {
+                return ZConclusion::selectRaw('MAX(value) AS max_value, MIN(value) AS min_value')
+                    ->whereBetween(DB::raw('FROM_UNIXTIME(timestamp_s)'), [$previousStart, $previousEnd])
+                    ->where('var', $var)
+                    ->where('calculation', $calculation)
+                    ->first();
+            } catch (\Exception $e) {
+                // Хэрвээ холболтын алдаа гарвал хоосон (null) утга буцаана
+                return (object) [
+                    'max_value' => null,
+                    'min_value' => null,
+                ];
+            }
         };
 
         $system_data = $getData('system_total_p', '50');
