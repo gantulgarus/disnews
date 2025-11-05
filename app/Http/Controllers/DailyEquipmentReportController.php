@@ -104,7 +104,7 @@ class DailyEquipmentReportController extends Controller
             'date' => $request->date,
         ]);
 
-        return redirect()->route('daily-equipment-report.index')
+        return redirect()->route('reports.dailyReport')
             ->with('success', 'Мэдээлэл амжилттай хадгалагдлаа');
     }
 

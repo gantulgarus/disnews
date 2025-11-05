@@ -76,7 +76,7 @@
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle mt-2">
+                    <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
                                 <th rowspan="2">#</th>
@@ -86,6 +86,7 @@
                                 <th rowspan="2">P (МВт)</th>
                                 <th rowspan="2">P max (МВт)</th>
                                 <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th rowspan="2"></th>
                             </tr>
                             <tr>
                                 <th>Ажилд</th>
@@ -128,6 +129,21 @@
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
                                     <td>{{ $info?->remark }}</td>
+                                    <td>
+                                        <a
+                                            href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    </td>
                                 </tr>
 
                             @empty
@@ -161,6 +177,7 @@
                                 <th rowspan="2">P (МВт)</th>
                                 <th rowspan="2">P max (МВт)</th>
                                 <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th rowspan="2"></th>
                             </tr>
                             <tr>
                                 <th>Ажилд</th>
@@ -203,6 +220,21 @@
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
                                     <td>{{ $info?->remark }}</td>
+                                    <td>
+                                        <a
+                                            href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    </td>
                                 </tr>
 
                             @empty
@@ -235,6 +267,7 @@
                                 <th rowspan="2">P (МВт)</th>
                                 <th rowspan="2">P max (МВт)</th>
                                 <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th rowspan="2"></th>
                             </tr>
                             <tr>
                                 <th>Ажилд</th>
@@ -265,6 +298,21 @@
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
                                     <td>{{ $info?->remark }}</td>
+                                    <td>
+                                        <a
+                                            href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    </td>
                                 </tr>
 
                             @empty

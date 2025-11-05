@@ -1,5 +1,5 @@
 <header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
-    <div class="container-xl d-flex justify-content-between align-items-center">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
 
         <!-- Зүүн тал: Системийн нэр -->
         <a class="navbar-brand" href="#">

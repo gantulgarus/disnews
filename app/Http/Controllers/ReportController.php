@@ -21,6 +21,7 @@ class ReportController extends Controller
     {
         return view('reports.index');
     }
+    // Диспечерийн хоногийн мэдээ
     public function dailyReport(Request $request)
     {
         $date = $request->input('date', now()->toDateString());
@@ -69,7 +70,7 @@ class ReportController extends Controller
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
-                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
@@ -84,7 +85,7 @@ class ReportController extends Controller
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
-                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
@@ -99,7 +100,7 @@ class ReportController extends Controller
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
-                $plant->total_pmax = $plant->powerInfos->sum('pmax');
+                $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
@@ -131,6 +132,52 @@ class ReportController extends Controller
 
 
         return view('reports.daily_report', compact('date', 'system_data', 'import_data', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax', 'disCoals', 'sunWindPlants', 'sun_wind_total_p', 'sun_wind_total_pmax', 'battery_powers', 'battery_total_p', 'battery_total_pmax'));
+    }
+
+    // Орон нутгийн хоногийн мэдээ
+    public function localDailyReport(Request $request)
+    {
+        $date = $request->input('date', now()->toDateString());
+
+        $powerPlants = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->where('region', 'ББЭХС')->orderBy('Order')->get()
+            ->map(function ($plant) {
+                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
+                $plant->total_p = $plant->powerInfos->sum('p');
+                $plant->total_pmax = $plant->powerInfos->sum('p_max');
+                return $plant;
+            });
+
+        // ✅ Хэрвээ нийт дүн хэрэгтэй бол
+        $total_p = $powerPlants->sum('total_p');
+        $total_pmax = $powerPlants->sum('total_pmax');
+
+        $powerAltaiPlants = PowerPlant::with([
+            'equipmentStatuses' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            },
+            'powerInfos' => function ($q) use ($date) {
+                $q->whereDate('date', $date);
+            }
+        ])->where('region', 'АУЭХС')->orderBy('Order')->get()
+            ->map(function ($plant) {
+                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
+                $plant->total_p = $plant->powerInfos->sum('p');
+                $plant->total_pmax = $plant->powerInfos->sum('p_max');
+                return $plant;
+            });
+
+        // ✅ Хэрвээ нийт дүн хэрэгтэй бол
+        $altai_total_p = $powerAltaiPlants->sum('total_p');
+        $altai_total_pmax = $powerAltaiPlants->sum('total_pmax');
+
+        return view('reports.local_daily_report', compact('powerPlants', 'date', 'total_p', 'total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax'));
     }
 
     public function powerPlantReport(Request $request)

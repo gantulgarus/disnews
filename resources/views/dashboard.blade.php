@@ -1,12 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-xl">
-        {{-- dateForm шинэчилсэн: id өгсөн, method-г авахгүй (AJAX ашиглана) --}}
-        {{-- <form id="dateForm" class="mb-3">
-            <input id="dateInput" type="date" name="date" value="{{ now()->toDateString() }}">
-            <button type="submit" class="btn btn-primary btn-sm">Харах</button>
-        </form> --}}
+    <div class="container-fliud p-4">
         <form id="dateForm" method="GET" class="mb-4 row g-2 align-items-end">
             <div class="col-auto">
                 {{-- <label for="date" class="form-label">Огноо:</label> --}}
@@ -65,31 +60,6 @@
                 </div>
             </div>
         </div>
-        {{-- <div class="card mt-3 border-0 shadow-sm bg-light">
-            <div class="card-body text-center">
-                <h5 class="fw-bold text-success mb-0">
-                    Нийт чадал: {{ number_format($totalPmax, 2) }} МВт
-                </h5>
-            </div>
-        </div>
-        <div class="row mt-4">
-            @foreach ($powerPlants as $plant)
-                @php
-                    $info = $plant->powerInfos->first();
-                @endphp
-                <div class="col-md-2 mb-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body text-center">
-                            <h5 class="card-title fw-bold">{{ $plant->name }}</h5>
-                            <p class="mt-2 mb-0 text-muted">Max чадал:</p>
-                            <h3 class="text-primary fw-bold">
-                                {{ number_format($info->p_max ?? 0, 2) }} МВт
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div> --}}
 
 
 
@@ -138,8 +108,87 @@
                             tension: 0.3,
                             spanGaps: true,
                         }]
-                    }
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        const datasetLabel = context.dataset.label || '';
+                                        const value = context.raw ?? 0;
+                                        return `${datasetLabel}: ${value.toFixed(2)} МВт`;
+                                    },
+                                    afterBody: function(contexts) {
+                                        if (contexts.length < 2) return;
+                                        const regime = contexts.find(c => c.dataset.label === 'Горим')
+                                            ?.raw ?? null;
+                                        const zconclusion = contexts.find(c => c.dataset.label ===
+                                            'Гүйцэтгэл')?.raw ?? null;
+                                        if (regime != null && zconclusion != null) {
+                                            const diff = zconclusion - regime;
+                                            const sign = diff >= 0 ? '+' : '';
+                                            return `Зөрүү: ${sign}${diff.toFixed(2)} МВт`;
+                                        }
+                                        return '';
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'МВт'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Цаг'
+                                }
+                            }
+                        },
+                        animation: false
+                    },
+                    plugins: [{
+                        // 🔹 Custom босоо шугам зурдаг plugin
+                        id: 'hoverLine',
+                        afterDatasetsDraw(chart, args, opts) {
+                            const {
+                                ctx,
+                                tooltip,
+                                chartArea: {
+                                    top,
+                                    bottom
+                                }
+                            } = chart;
+                            if (tooltip?._active?.length) {
+                                const activePoint = tooltip._active[0].element;
+                                const x = activePoint.x;
+
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.moveTo(x, top);
+                                ctx.lineTo(x, bottom);
+                                ctx.lineWidth = 1;
+                                ctx.strokeStyle = '#ff0000'; // шугамны өнгө улаан
+                                ctx.setLineDash([4, 4]); // тасархай шугам
+                                ctx.stroke();
+                                ctx.restore();
+                            }
+                        }
+                    }]
                 });
+
 
                 if (data.peakLoad && data.peakLoad.value) {
                     document.getElementById('peak').innerHTML =

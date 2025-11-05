@@ -43,6 +43,7 @@
                         'order-journals.index',
                         'tnews.index',
                         'reports.dailyReport',
+                        'reports.localDailyReport',
                         'power-distribution-works.index',
                         'telephone_messages.index',
                     ];
@@ -80,9 +81,9 @@
                                     href="{{ route('reports.dailyReport') }}">
                                     Хоногийн мэдээ
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('daily-equipment-report.index') ? 'active' : '' }}"
-                                    href="{{ route('daily-equipment-report.index') }}">
-                                    Тоноглолын төлөв
+                                <a class="dropdown-item {{ request()->routeIs('reports.localDailyReport') ? 'active' : '' }}"
+                                    href="{{ route('reports.localDailyReport') }}">
+                                    Орон нутаг мэдээ
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
                                     href="{{ route('daily-balance-journals.index') }}">

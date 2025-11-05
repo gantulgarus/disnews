@@ -74,6 +74,9 @@ return [
             'prefix' => '',
             'strict' => true,
             'engine' => null,
+            'options' => [
+                PDO::ATTR_TIMEOUT => env('DB_SECOND_CONNECTION_TIMEOUT', 3),
+            ],
         ],
 
         'mariadb' => [
