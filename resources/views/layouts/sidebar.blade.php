@@ -50,6 +50,7 @@
                         'reports.localDailyReport',
                         'power-distribution-works.index',
                         'telephone_messages.index',
+                        'sms.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
 
@@ -109,7 +110,8 @@
                                     href="{{ route('telephone_messages.index') }}">
                                     Телефон мэдээ
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
+                                    href="{{ route('sms.index') }}">
                                     СМС илгээх
                                 </a>
                                 <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"

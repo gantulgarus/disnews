@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ReportController;
@@ -91,6 +92,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
 
     Route::resource('western_region_capacities', WesternRegionCapacityController::class);
+
+    Route::get('/sms', [SmsController::class, 'index'])->name('sms.index');
+    Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
+    Route::get('/sms/messages', [SmsController::class, 'messages'])->name('sms.messages');
 });
 
 require __DIR__ . '/auth.php';
