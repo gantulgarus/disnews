@@ -4,13 +4,17 @@
             aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <h1 class="navbar-brand">
-            <a href="/">
-                <img src="{{ asset('images/ndc.svg') }}" width="48" height="48" alt="NDC Logo"
-                    class="navbar-brand-image">
-                <span class="fs-5 fw-semibold">ДҮТ ТӨХХК</span>
+        <h1 class="navbar-brand w-100 text-center mb-0">
+            <a href="/"
+                class="d-inline-flex align-items-center justify-content-center w-100 gap-2 text-decoration-none">
+                <img src="{{ asset('images/ndc.min.svg') }}" alt="NDC Logo" class="navbar-brand-image"
+                    style="height: 60px; width: auto; object-fit: contain;">
+                <span class="fw-bold text-white fs-4">ДҮТ ТӨХХК</span>
             </a>
         </h1>
+
+
+
 
         <div class="collapse navbar-collapse" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">

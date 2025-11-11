@@ -24,8 +24,10 @@
             </div>
         </form>
 
+        <h3 class="my-2">Баруун бүсийн эрчим хүчний систем</h3>
+
         {{-- Total System --}}
-        {{-- <div class="card">
+        <div class="card">
             <div class="card-body">
                 <div class="table-responsive" style="overflow-x:auto;">
                     <table class="table table-bordered table-striped table-hover text-center">
@@ -33,46 +35,59 @@
                             <tr>
                                 <th></th>
                                 <th>Pmax/min (МВт)</th>
-                                <th class="text-wrap">Э.боловсруулалт (мян кВт.цаг)</th>
-                                <th class="text-wrap">Э.түгээлт (мян кВт.цаг)</th>
-                                <th class="text-wrap">Э.импорт (мян кВт.цаг)</th>
-                                <th class="text-wrap">Э.экспорт (мян кВт.цаг)</th>
+                                <th class="text-wrap">Хэрэглээ (мян кВт.цаг)</th>
+                                <th class="text-wrap">Түгээлт (мян кВт.цаг)</th>
                                 <th class="text-wrap">Pимп.max (МВт)</th>
-                                <th class="text-wrap">Э.хязгаарлалт (кВт.цаг)</th>
+                                <th class="text-wrap">Pимп.min (МВт)</th>
+                                <th class="text-wrap">Импортоор авсан ЦЭХ (мян кВт.цаг)</th>
+                                <th class="text-wrap">Импортоор түгээсэн ЦЭХ (мян кВт.цаг)</th>
+                                <th class="text-wrap"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($journals as $journal)
+                            @foreach ($westernRegionCapacities as $data)
                                 <tr>
                                     <td>Хоногт</td>
+                                    <td>{{ $data->p_max }} / {{ $data->p_min }}</td>
                                     <td></td>
-                                    <td>{{ number_format($journal->total_processed, 2) }}</td>
-                                    <td>{{ number_format($journal->total_distribution, 2) }}</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td>—</td>
+                                    <td></td>
+                                    <td>{{ $data->p_imp_max }}</td>
+                                    <td>{{ $data->p_imp_min }}</td>
+                                    <td>{{ $data->import_received }}</td>
+                                    <td>{{ $data->import_distributed }}</td>
+                                    <td>
+                                        <a href="{{ route('western_region_capacities.create') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    </td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td>Сарын эхнээс</td>
-                                <td class="fw-bold fs-3">
-                                    {{ number_format($system_data->max_value) }}/{{ number_format($system_data->min_value) }}
-                                </td>
-                                <td>—</td>
-                                <td></td>
-                                <td></td>
-                                <td>—</td>
-                                <td class="fw-bold fs-3">{{ $import_data->max_value }}</td>
-                                <td>—</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
-
-        <h3 class="my-2">Баруун бүсийн эрчим хүчний систем</h3>
         {{-- ДЦС --}}
         <div class="card mt-4">
             <div class="card-body">
@@ -84,9 +99,11 @@
                                 <th rowspan="2">Станцууд</th>
                                 <th colspan="3" class="text-center">Гидрогенератор</th>
                                 <th colspan="3" class="text-center">Багц</th>
-                                <th rowspan="2">P (МВт)</th>
                                 <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th rowspan="2">P min (МВт)</th>
+                                <th rowspan="2" class="text-wrap">Үйлдвэрлэсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th rowspan="2" class="text-wrap">Түгээсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th rowspan="2" class="text-wrap">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                                 <th rowspan="2"></th>
                             </tr>
                             <tr>
@@ -127,8 +144,10 @@
                                     <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
                                     </td>
 
-                                    <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->p_min }}</td>
+                                    <td>{{ $info?->produced_energy }}</td>
+                                    <td>{{ $info?->distributed_energy }}</td>
                                     <td>{{ $info?->remark }}</td>
                                     <td>
                                         <a
@@ -156,6 +175,8 @@
                                 <td colspan="8">Нийт дүн</td>
                                 <td>{{ number_format($total_p, 2) }}</td>
                                 <td>{{ number_format($total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 

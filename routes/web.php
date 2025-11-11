@@ -22,6 +22,7 @@ use App\Http\Controllers\ElectricDailyRegimeController;
 use App\Http\Controllers\DailyEquipmentReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
+use App\Http\Controllers\WesternRegionCapacityController;
 
 
 
@@ -88,6 +89,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('thermo-daily-regimes', ThermoDailyRegimeController::class);
 
     Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
+
+    Route::resource('western_region_capacities', WesternRegionCapacityController::class);
 });
 
 require __DIR__ . '/auth.php';

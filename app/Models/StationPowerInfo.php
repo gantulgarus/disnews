@@ -15,6 +15,8 @@ class StationPowerInfo extends Model
         'p',
         'p_max',
         'p_min',
+        'produced_energy',      // Үйлдвэрлэсэн ЦЭХ
+        'distributed_energy',   // Түгээсэн ЦЭХ
         'remark',
     ];
 

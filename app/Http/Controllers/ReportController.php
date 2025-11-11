@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Tnews;
+use App\Models\DisCoal;
 use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
 use App\Models\StationThermoData;
 use Illuminate\Support\Facades\DB;
 use App\Models\DailyBalanceJournal;
-use App\Models\DisCoal;
 use App\Models\PowerDistributionWork;
 use App\Models\PowerPlantDailyReport;
+use App\Models\WesternRegionCapacity;
 
 class ReportController extends Controller
 {
@@ -177,7 +178,9 @@ class ReportController extends Controller
         $altai_total_p = $powerAltaiPlants->sum('total_p');
         $altai_total_pmax = $powerAltaiPlants->sum('total_pmax');
 
-        return view('reports.local_daily_report', compact('powerPlants', 'date', 'total_p', 'total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax'));
+        $westernRegionCapacities = WesternRegionCapacity::whereDate('date', $date)->get();
+
+        return view('reports.local_daily_report', compact('powerPlants', 'date', 'total_p', 'total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax', 'westernRegionCapacities'));
     }
 
     public function powerPlantReport(Request $request)
