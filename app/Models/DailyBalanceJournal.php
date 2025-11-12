@@ -11,22 +11,36 @@ class DailyBalanceJournal extends Model
 
     protected $fillable = [
         'power_plant_id',
-        'entry_date_time',
-        'time_range',
+        'date',
         'processed_amount',
         'distribution_amount',
         'internal_demand',
         'percent',
-        'positive_deviation',
-        'negative_deviation_spot',
-        'negative_deviation_import',
-        'positive_resolution',
-        'negative_resolution',
+
+        'positive_deviation_00_08',
+        'negative_deviation_spot_00_08',
+        'negative_deviation_import_00_08',
+        'positive_resolution_00_08',
+        'negative_resolution_00_08',
+
+        'positive_deviation_08_16',
+        'negative_deviation_spot_08_16',
+        'negative_deviation_import_08_16',
+        'positive_resolution_08_16',
+        'negative_resolution_08_16',
+
+        'positive_deviation_16_24',
+        'negative_deviation_spot_16_24',
+        'negative_deviation_import_16_24',
+        'positive_resolution_16_24',
+        'negative_resolution_16_24',
+
         'deviation_reason',
         'by_consumption_growth',
         'by_other_station_issue',
         'dispatcher_name',
     ];
+
 
     public function powerPlant()
     {
