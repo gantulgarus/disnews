@@ -191,8 +191,8 @@
                         <tbody>
                             @forelse ($sunWindPlants as $plant)
                                 @php
-                                    $inverters = $plant->equipments->where('equipment_type_id', 3);
-                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $batches = $plant->equipments->where('equipment_type_id', 3);
+                                    $inverters = $plant->equipments->where('equipment_type_id', 4);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
                                     $info = $plant->powerInfos->first();
                                 @endphp
@@ -278,7 +278,7 @@
                         <tbody>
                             @forelse ($battery_powers as $plant)
                                 @php
-                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $batches = $plant->equipments->where('equipment_type_id', 3);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
                                     $info = $plant->powerInfos->first();
                                 @endphp
