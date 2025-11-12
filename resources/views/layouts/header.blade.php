@@ -3,7 +3,7 @@
 
         <!-- Зүүн тал: Системийн нэр -->
         <a class="navbar-brand" href="#">
-            <span class="fw-bold">{{ config('app.name') }}</span>
+            <span class="fw-bold fs-3">{{ config('app.name') }}</span>
         </a>
 
         <!-- Баруун тал: notification + user menu -->
@@ -72,8 +72,8 @@
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <a href="#" class="dropdown-item">Status</a>
-                    <a href="{{ route('users.profile') }}" class="dropdown-item">Profile</a>
+                    <a href="#" class="dropdown-item">Статус</a>
+                    <a href="{{ route('users.profile') }}" class="dropdown-item">Профайл</a>
                     <div class="dropdown-divider"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

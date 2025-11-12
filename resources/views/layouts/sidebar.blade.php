@@ -53,14 +53,11 @@
                         'sms.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
-
-                    $reportRoutes = ['reports.index'];
-                    $isReportsActive = request()->routeIs(...$reportRoutes);
                 @endphp
 
 
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown {{ $isOperationActive ? 'active' : '' }}">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span
@@ -139,7 +136,7 @@
                 @endphp
 
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown {{ $isRegimeActive ? 'active' : '' }}">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -191,8 +188,12 @@
                     </div>
                 </li>
 
+                @php
+                    $reportRoutes = ['reports.index'];
+                    $isReportsActive = request()->routeIs(...$reportRoutes);
+                @endphp
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown {{ $isReportsActive ? 'active' : '' }}">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -226,8 +227,19 @@
                     </div>
                 </li>
 
+                @php
+                    $settingRoutes = [
+                        'power-plants.index',
+                        'equipments.index',
+                        'organizations.index',
+                        'divisions.index',
+                        'permission_levels.index',
+                        'users.index',
+                    ];
+                    $isSettingsActive = request()->routeIs(...$settingRoutes);
+                @endphp
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown {{ $isSettingsActive ? 'active' : '' }}">
                     <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                         data-bs-auto-close="false" role="button" aria-expanded="false">
                         <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -245,7 +257,7 @@
                         <span class="nav-link-title">Тохиргоо</span>
                     </a>
 
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu {{ $isSettingsActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
                                 <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
