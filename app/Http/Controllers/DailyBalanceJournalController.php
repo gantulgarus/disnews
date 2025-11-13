@@ -12,10 +12,16 @@ class DailyBalanceJournalController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $journals = DailyBalanceJournal::with('powerPlant')->latest()->paginate(10);
-        return view('daily_balance_journals.index', compact('journals'));
+        $date = $request->input('date') ?? date('Y-m-d');
+
+        $journals = DailyBalanceJournal::with('powerPlant')
+            ->when($date, fn($query) => $query->whereDate('date', $date))
+            ->latest()
+            ->paginate(10);
+
+        return view('daily_balance_journals.index', compact('journals', 'date'));
     }
 
     /**
@@ -29,22 +35,40 @@ class DailyBalanceJournalController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'power_plant_id' => 'required|exists:power_plants,id',
-            'entry_date_time' => 'required|date',
-            'time_range' => 'required|string|max:255',
+            'date' => 'required|date',
             'processed_amount' => 'nullable|numeric',
             'distribution_amount' => 'nullable|numeric',
             'internal_demand' => 'nullable|numeric',
             'percent' => 'nullable|numeric',
-            'positive_deviation' => 'nullable|numeric',
-            'negative_deviation_spot' => 'nullable|numeric',
-            'negative_deviation_import' => 'nullable|numeric',
-            'positive_resolution' => 'nullable|numeric',
-            'negative_resolution' => 'nullable|numeric',
+
+            // 3 цагийн интервалын талбарууд
+            'positive_deviation_00_08' => 'nullable|numeric',
+            'positive_deviation_08_16' => 'nullable|numeric',
+            'positive_deviation_16_24' => 'nullable|numeric',
+
+            'negative_deviation_spot_00_08' => 'nullable|numeric',
+            'negative_deviation_spot_08_16' => 'nullable|numeric',
+            'negative_deviation_spot_16_24' => 'nullable|numeric',
+
+            'negative_deviation_import_00_08' => 'nullable|numeric',
+            'negative_deviation_import_08_16' => 'nullable|numeric',
+            'negative_deviation_import_16_24' => 'nullable|numeric',
+
+            'positive_resolution_00_08' => 'nullable|numeric',
+            'positive_resolution_08_16' => 'nullable|numeric',
+            'positive_resolution_16_24' => 'nullable|numeric',
+
+            'negative_resolution_00_08' => 'nullable|numeric',
+            'negative_resolution_08_16' => 'nullable|numeric',
+            'negative_resolution_16_24' => 'nullable|numeric',
+
             'deviation_reason' => 'nullable|string',
             'by_consumption_growth' => 'nullable|numeric',
             'by_other_station_issue' => 'nullable|numeric',
@@ -53,7 +77,7 @@ class DailyBalanceJournalController extends Controller
 
         DailyBalanceJournal::create($validated);
 
-        return redirect()->route('daily-balance-journals.index')->with('success', 'Журнал амжилттай үүслээ.');
+        return redirect()->route('daily-balance-journals.index')->with('success', 'Мэдээ амжилттай үүслээ.');
     }
 
     /**
@@ -75,22 +99,41 @@ class DailyBalanceJournalController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\DailyBalanceJournal  $dailyBalanceJournal
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, DailyBalanceJournal $dailyBalanceJournal)
     {
         $validated = $request->validate([
             'power_plant_id' => 'required|exists:power_plants,id',
-            'entry_date_time' => 'required|date',
-            'time_range' => 'required|string|max:255',
+            'date' => 'required|date',
             'processed_amount' => 'nullable|numeric',
             'distribution_amount' => 'nullable|numeric',
             'internal_demand' => 'nullable|numeric',
             'percent' => 'nullable|numeric',
-            'positive_deviation' => 'nullable|numeric',
-            'negative_deviation_spot' => 'nullable|numeric',
-            'negative_deviation_import' => 'nullable|numeric',
-            'positive_resolution' => 'nullable|numeric',
-            'negative_resolution' => 'nullable|numeric',
+
+            // 3 цагийн интервалын талбарууд
+            'positive_deviation_00_08' => 'nullable|numeric',
+            'positive_deviation_08_16' => 'nullable|numeric',
+            'positive_deviation_16_24' => 'nullable|numeric',
+
+            'negative_deviation_spot_00_08' => 'nullable|numeric',
+            'negative_deviation_spot_08_16' => 'nullable|numeric',
+            'negative_deviation_spot_16_24' => 'nullable|numeric',
+
+            'negative_deviation_import_00_08' => 'nullable|numeric',
+            'negative_deviation_import_08_16' => 'nullable|numeric',
+            'negative_deviation_import_16_24' => 'nullable|numeric',
+
+            'positive_resolution_00_08' => 'nullable|numeric',
+            'positive_resolution_08_16' => 'nullable|numeric',
+            'positive_resolution_16_24' => 'nullable|numeric',
+
+            'negative_resolution_00_08' => 'nullable|numeric',
+            'negative_resolution_08_16' => 'nullable|numeric',
+            'negative_resolution_16_24' => 'nullable|numeric',
+
             'deviation_reason' => 'nullable|string',
             'by_consumption_growth' => 'nullable|numeric',
             'by_other_station_issue' => 'nullable|numeric',
@@ -99,16 +142,19 @@ class DailyBalanceJournalController extends Controller
 
         $dailyBalanceJournal->update($validated);
 
-        return redirect()->route('daily-balance-journals.index')->with('success', 'Журнал амжилттай шинэчлэгдлээ.');
+        return redirect()->route('daily-balance-journals.index')->with('success', 'Мэдээ амжилттай шинэчлэгдлээ.');
     }
 
     /**
      * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\DailyBalanceJournal  $dailyBalanceJournal
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(DailyBalanceJournal $dailyBalanceJournal)
     {
         $dailyBalanceJournal->delete();
-        return redirect()->route('daily-balance-journals.index')->with('success', 'Журнал устгагдлаа.');
+        return redirect()->route('daily-balance-journals.index')->with('success', 'Мэдээ устгагдлаа.');
     }
 
     public function dailyMatrixReport(Request $request)
@@ -123,13 +169,13 @@ class DailyBalanceJournalController extends Controller
         $journals = DailyBalanceJournal::with('powerPlant')
             ->selectRaw('
             power_plant_id,
-            DATE(entry_date_time) as date,
+            date,
             SUM(processed_amount) as processed,
             SUM(distribution_amount) as distributed,
             SUM(internal_demand) as internal_demand,
-            SUM(percent) as percent
+            AVG(percent) as percent
         ')
-            ->whereBetween('entry_date_time', [$startOfMonth, $endOfMonth])
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
             ->groupBy('power_plant_id', 'date')
             ->orderBy('date')
             ->get();

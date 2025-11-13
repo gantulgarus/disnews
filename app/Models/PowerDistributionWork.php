@@ -18,6 +18,11 @@ class PowerDistributionWork extends Model
         'restricted_energy',  // Хязгаарласан эрчим хүч
         'date',               // Огноо
         'user_id',            // Холбогдсон хэрэглэгч
+        'send_telegram',
+    ];
+
+    protected $casts = [
+        'send_telegram' => 'boolean',
     ];
 
     public function user()
