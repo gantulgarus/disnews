@@ -51,12 +51,12 @@ class ReportController extends Controller
         $import_data = $getData('import_total_p', '50');
 
         $journals = DailyBalanceJournal::select(
-            DB::raw('DATE(entry_date_time) as report_date'),
+            DB::raw('DATE(date) as report_date'),
             DB::raw('COALESCE(SUM(processed_amount), 0) as total_processed'),
             DB::raw('COALESCE(SUM(distribution_amount), 0) as total_distribution')
         )
-            ->whereDate('entry_date_time', $date)
-            ->groupBy(DB::raw('DATE(entry_date_time)'))
+            ->whereDate('date', $date)
+            ->groupBy(DB::raw('DATE(date)'))
             ->orderBy('report_date', 'desc')
             ->get();
 
