@@ -8,6 +8,7 @@ use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
@@ -97,5 +98,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
     Route::get('/sms/messages', [SmsController::class, 'messages'])->name('sms.messages');
 });
+
+Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
+Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('weather.api');
 
 require __DIR__ . '/auth.php';

@@ -6,8 +6,34 @@
             <span class="fw-bold fs-3">{{ config('app.name') }}</span>
         </a>
 
-        <!-- Баруун тал: notification + user menu -->
+        <!-- Баруун тал: weather + notification + user menu -->
         <div class="navbar-nav flex-row align-items-center">
+
+            <!-- Цаг агаар -->
+            @if (isset($headerWeather) && $headerWeather)
+                <div class="nav-item me-3">
+                    <a href="{{ route('weather.index') }}"
+                        class="nav-link weather-link px-2 d-flex align-items-center text-decoration-none"
+                        title="Дэлгэрэнгүй үзэх" style="transition: all 0.3s ease; border-radius: 8px;">
+                        <span class="me-2">
+                            <img src="https://openweathermap.org/img/wn/{{ $headerWeather['icon'] }}.png" alt="weather"
+                                width="32" height="32" style="vertical-align: middle;">
+                        </span>
+                        <span class="fw-bold fs-4 weather-temp" style="color: #206bc4;">
+                            {{ $headerWeather['temperature'] }}°C
+                        </span>
+                        <small class="text-muted ms-1 d-none d-xl-inline">
+                            {{ $headerWeather['city'] }}
+                        </small>
+                    </a>
+                </div>
+                <style>
+                    .weather-link:hover {
+                        background-color: rgba(32, 107, 196, 0.1);
+                        transform: translateY(-2px);
+                    }
+                </style>
+            @endif
 
             <!-- Notification -->
             <div class="nav-item dropdown me-3">
