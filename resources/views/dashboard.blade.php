@@ -1,10 +1,85 @@
 @extends('layouts.admin')
 
 @section('content')
+    <style>
+        /* SCADA dark background */
+        .scada-panel {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            color: #e0e0e0;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        /* LED digital number */
+        .scada-number {
+            font-family: 'LED', monospace;
+            font-size: 38px;
+            color: #00ff33;
+            text-shadow: 0 0 8px #00ff33;
+            letter-spacing: 2px;
+        }
+
+        @font-face {
+            font-family: 'LED';
+            src: url('https://fonts.cdnfonts.com/s/20482/DS-DIGI.TTF') format('truetype');
+        }
+
+        /* Subtitle */
+        .scada-title {
+            font-size: 14px;
+            color: rgb(186, 186, 205);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Station block */
+        .scada-station {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .scada-station-name {
+            font-size: 16px;
+            color: #5cc0ff;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .scada-station-number {
+            font-size: 28px;
+            color: #00ff33;
+            text-shadow: 0 0 10px #00ff33;
+        }
+
+        /* Live Update LED */
+        .live-led {
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #00ff00;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.3;
+            }
+        }
+    </style>
+
     <div class="container-fliud p-4">
         <form id="dateForm" method="GET" class="mb-4 row g-2 align-items-end">
             <div class="col-auto">
-                {{-- <label for="date" class="form-label">Огноо:</label> --}}
                 <input type="date" name="date" id="dateInput" value="{{ $date }}" class="form-control">
             </div>
             <div class="col-auto">
@@ -12,29 +87,51 @@
             </div>
         </form>
 
-        <div class="card mt-3 border-0 shadow-sm bg-light">
-            <div class="card-body text-center">
-                <h5 class="fw-bold text-success mb-0">
-                    Нийт чадал: {{ number_format($totalPmax, 2) }} МВт
-                </h5>
+        <!-- Нийт чадал SCADA panel -->
+        <div class="scada-panel mb-4">
+            <div class="scada-title">НИЙТ ЧАДАЛ</div>
+            <div class="scada-number" id="totalPowerDisplay">
+                {{ number_format($totalP, 2) }} МВт
+            </div>
+            <div class="mt-2">
+                <span class="live-led"></span>
+                <span class="ms-2">Огноо:
+                    <span id="lastUpdate">{{ date('Y-m-d H:i', $latestTimestamp) }}
+                    </span>
+                </span>
             </div>
         </div>
 
-        <div class="row mt-4">
+        @php
+            $icons = [
+                'Дулааны цахилгаан станц' => 'power-plant.svg',
+                'Сэргээгдэх эрчим хүч' => 'wind-power.svg',
+                'Батарэй хуримтлуур' => 'battery-bolt.svg',
+                'Импорт' => 'power-tower.svg',
+            ];
+        @endphp
+
+        <div class="row">
             @foreach ($typeSums as $type)
                 <div class="col-md-3 mb-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-body text-center">
-                            <h5 class="card-title fw-bold">{{ $type['type_name'] }}</h5>
-                            <p class="mt-2 mb-0 text-muted">Max чадал:</p>
-                            <h3 class="text-primary fw-bold">
-                                {{ number_format($type['sumPmax'], 2) }} МВт
-                            </h3>
-                            {{-- <p class="mt-2 mb-0 text-muted">P чадал:</p>
-                            <h4 class="text-success fw-bold">
+                    <div class="scada-station">
+
+                        <!-- ICON + POWER INLINE -->
+                        <div class="scada-title">{{ $type['type_name'] }}</div>
+                        <div class="d-flex align-items-center justify-content-center gap-3">
+
+                            <!-- Icon left side -->
+                            <img src="{{ asset('images/' . ($icons[$type['type_name']] ?? 'power-plant.svg')) }}"
+                                alt="{{ $type['type_name'] }}"
+                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+
+                            <!-- Power number right side -->
+                            <div class="scada-station-number" style="line-height: 1;">
                                 {{ number_format($type['sumP'], 2) }} МВт
-                            </h4> --}}
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
             @endforeach
@@ -46,28 +143,22 @@
                     <div class="card-body">
                         <h3 class="card-title">24 цагийн системийн нийт чадлын график</h3>
 
-
-
-                        {{-- Сервер талын @if ($peakLoad['value']) ... block-ыг устга. JS дээр #peak-ээр харуулна --}}
                         <div id="chart-area">
                             <div id="loading">Уншиж байна...</div>
                             <canvas id="lineChart" style="display:none;" width="100%" height="40"></canvas>
                             <div id="error" class="alert alert-danger d-none"></div>
-                            <div id="peak" class="alert alert-primary d-non mt-4"></div>
+                            <div id="peak" class="alert alert-primary d-none mt-4"></div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
-
-
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let chart;
+        let refreshInterval;
 
         async function loadChart(date) {
             document.getElementById('loading').style.display = 'block';
@@ -160,7 +251,6 @@
                         animation: false
                     },
                     plugins: [{
-                        // 🔹 Custom босоо шугам зурдаг plugin
                         id: 'hoverLine',
                         afterDatasetsDraw(chart, args, opts) {
                             const {
@@ -180,8 +270,8 @@
                                 ctx.moveTo(x, top);
                                 ctx.lineTo(x, bottom);
                                 ctx.lineWidth = 1;
-                                ctx.strokeStyle = '#ff0000'; // шугамны өнгө улаан
-                                ctx.setLineDash([4, 4]); // тасархай шугам
+                                ctx.strokeStyle = '#ff0000';
+                                ctx.setLineDash([4, 4]);
                                 ctx.stroke();
                                 ctx.restore();
                             }
@@ -189,12 +279,11 @@
                     }]
                 });
 
-
                 if (data.peakLoad && data.peakLoad.value) {
                     document.getElementById('peak').innerHTML =
                         `<h4>Хамгийн их ачаалал ${data.date}</h4>
                  <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
-                 <strong>Утга:</strong> ${data.peakLoad.formatted_value}</p>`;
+                 <strong>Утга:</strong> ${data.peakLoad.formatted_value} МВт</p>`;
                     document.getElementById('peak').classList.remove('d-none');
                 }
 
@@ -205,13 +294,13 @@
             }
         }
 
-        // анхдагч ачаалал (dateInput байгаа эсэхийг шална)
+        // Initial load
         const dateInput = document.getElementById('dateInput');
         if (dateInput) {
             loadChart(dateInput.value);
         }
 
-        // огноо өөрчлөхөд дахин дуудах
+        // Form submit handler
         document.getElementById('dateForm').addEventListener('submit', function(e) {
             e.preventDefault();
             loadChart(document.getElementById('dateInput').value);

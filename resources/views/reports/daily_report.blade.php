@@ -42,27 +42,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($journals as $journal)
-                                <tr>
-                                    <td>Хоногт</td>
-                                    <td></td>
-                                    <td>{{ number_format($journal->total_processed, 2) }}</td>
-                                    <td>{{ number_format($journal->total_distribution, 2) }}</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                </tr>
-                            @endforeach
                             <tr>
-                                <td>Сарын эхнээс</td>
-                                <td class="fw-bold fs-3">
+                                <td>Хоногт</td>
+                                <td rowspan="2">
                                     {{ number_format($system_data->max_value) }}/{{ number_format($system_data->min_value) }}
                                 </td>
+                                <td>{{ number_format($journals->first()->total_processed ?? 0, 2) }}</td>
+                                <td>{{ number_format($journals->first()->total_distribution ?? 0, 2) }}</td>
                                 <td>—</td>
-                                <td></td>
-                                <td></td>
                                 <td>—</td>
-                                <td class="fw-bold fs-3">{{ $import_data->max_value }}</td>
+                                <td rowspan="2">{{ $import_data->max_value }}</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Сарын эхнээс</td>
+                                <td>{{ number_format($monthToDate->total_processed ?? 0, 2) }}</td>
+                                <td>{{ number_format($monthToDate->total_distribution ?? 0, 2) }}</td>
+                                <td>—</td>
+                                <td>—</td>
                                 <td>—</td>
                             </tr>
                         </tbody>
@@ -70,6 +67,7 @@
                 </div>
             </div>
         </div>
+
 
 
         {{-- ДЦС --}}

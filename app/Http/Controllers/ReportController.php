@@ -33,7 +33,7 @@ class ReportController extends Controller
 
         $getData = function ($var, $calculation) use ($previousStart, $previousEnd) {
             try {
-                return ZConclusion::selectRaw('MAX(value) AS max_value, MIN(value) AS min_value')
+                return ZConclusion::selectRaw('MAX(CAST(value AS DECIMAL(10,2))) AS max_value, MIN(CAST(value AS DECIMAL(10,2))) AS min_value')
                     ->whereBetween(DB::raw('FROM_UNIXTIME(timestamp_s)'), [$previousStart, $previousEnd])
                     ->where('var', $var)
                     ->where('calculation', $calculation)
@@ -50,6 +50,7 @@ class ReportController extends Controller
         $system_data = $getData('system_total_p', '50');
         $import_data = $getData('import_total_p', '50');
 
+
         $journals = DailyBalanceJournal::select(
             DB::raw('DATE(date) as report_date'),
             DB::raw('COALESCE(SUM(processed_amount), 0) as total_processed'),
@@ -59,6 +60,16 @@ class ReportController extends Controller
             ->groupBy(DB::raw('DATE(date)'))
             ->orderBy('report_date', 'desc')
             ->get();
+
+        $monthStart = Carbon::parse($date)->startOfMonth();
+
+        $monthToDate = DailyBalanceJournal::select(
+            DB::raw('COALESCE(SUM(processed_amount), 0) as total_processed'),
+            DB::raw('COALESCE(SUM(distribution_amount), 0) as total_distribution')
+        )
+            ->whereBetween('date', [$monthStart, $date])
+            ->first();
+
 
         $powerPlants = PowerPlant::with([
             'equipmentStatuses' => function ($q) use ($date) {
@@ -132,7 +143,7 @@ class ReportController extends Controller
             ->get();
 
 
-        return view('reports.daily_report', compact('date', 'system_data', 'import_data', 'journals', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax', 'disCoals', 'sunWindPlants', 'sun_wind_total_p', 'sun_wind_total_pmax', 'battery_powers', 'battery_total_p', 'battery_total_pmax'));
+        return view('reports.daily_report', compact('date', 'system_data', 'import_data', 'journals', 'monthToDate', 'powerPlants', 'tasralts', 'power_distribution_works', 'station_thermo_data', 'total_p', 'total_pmax', 'disCoals', 'sunWindPlants', 'sun_wind_total_p', 'sun_wind_total_pmax', 'battery_powers', 'battery_total_p', 'battery_total_pmax'));
     }
 
     // Орон нутгийн хоногийн мэдээ
