@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -48,8 +49,35 @@ class OrderJournal extends Model
         'created_user_id',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($journal) {
+            // Анх status = STATUS_NEW
+            $journal->status = self::STATUS_NEW;
+
+            // created_user_id, organization_id-г хэрэглэгчээс авах (если Auth байна гэж үзвэл)
+            if (auth()->check()) {
+                $journal->created_user_id = auth()->id();
+
+                // Админ биш бол зөвхөн өөрийн байгууллага
+                if (auth()->user()->permissionLevel?->code !== 'ADM') {
+                    $journal->organization_id = auth()->user()->organization_id;
+                }
+            }
+
+            // Автомат order_number
+            $lastOrder = DB::table('order_journals')->lockForUpdate()->latest('id')->first();
+            $journal->order_number = $lastOrder ? $lastOrder->order_number + 1 : 1;
+        });
+    }
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function approvals()
+    {
+        return $this->hasMany(OrderJournalApproval::class);
     }
 }

@@ -37,7 +37,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
-            'permission_code' => 'nullable|string|exists:permission_levels,code',
+            'permission_level_id' => 'nullable|string|exists:permission_levels,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:8',
@@ -78,10 +78,10 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:8',
-            'permission_code' => 'nullable|string|exists:permission_levels,code',
+            'permission_level_id' => 'nullable|string|exists:permission_levels,id',
         ]);
 
-        dd($validated);
+        // dd($validated);
 
         $user->update($validated);
 

@@ -57,6 +57,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('tnews', TnewsController::class);
 
     Route::resource('order-journals', OrderJournalController::class);
+    Route::post('order-journals/{orderJournal}/forward', [OrderJournalController::class, 'forward'])->name('order-journals.forward');
+    Route::post('order-journal-approvals/{approval}/approve', [OrderJournalController::class, 'approve'])->name('order-journal-approvals.approve');
+
     Route::resource('organizations', OrganizationController::class);
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

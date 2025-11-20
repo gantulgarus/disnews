@@ -35,7 +35,7 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->phone }}</td>
-                        <td>{{ $user->permissionCode?->name ?? '-' }}</td>
+                        <td>{{ $user->permissionLevel?->code ?? '-' }}</td>
 
                         <td>
                             <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">Засах</a>
