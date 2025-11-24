@@ -7,7 +7,6 @@ use App\Models\Regime;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\ZConclusionFiltered;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -31,15 +30,20 @@ class DashboardController extends Controller
                 // 'DORNOD_PP_TOTAL_P'
             ]
         ],
-        'renewable' => [
-            'name' => 'Сэргээгдэх эрчим хүч',
+        'wind' => [
+            'name' => 'Салхин цахилгаан станц',
             'stations' => [
                 'SALKHIT_WPP_TOTAL_P',
+                'TSETSII_WPP_TOTAL_P',
+                'SHAND_WPP_TOTAL_P',
+            ]
+        ],
+        'solar' => [
+            'name' => 'Нарны цахилгаан станц',
+            'stations' => [
                 'DARKHAN_SPP_TOTAL_P',
                 'MONNAR_SPP_TOTAL_P',
-                'TSETSII_WPP_TOTAL_P',
                 'GEGEEN_SPP_TOTAL_P',
-                'SHAND_WPP_TOTAL_P',
                 'SUMBER_SPP_TOTAL_P',
                 'BUHUG_SPP_TOTAL_P',
                 'GOVI_SPP_TOTAL_P',
@@ -75,13 +79,13 @@ class DashboardController extends Controller
             })->toArray();
 
             // Get latest values for all stations
-            $latestData = ZConclusionFiltered::select('VAR', 'VALUE', 'TIMESTAMP_S')
+            $latestData = ZConclusion::select('VAR', 'VALUE', 'TIMESTAMP_S')
                 ->whereIn('VAR', $allStations)
                 ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
                 ->where('CALCULATION', 50)
                 ->whereIn('TIMESTAMP_S', function ($query) use ($currentDate, $allStations) {
                     $query->select(DB::raw('MAX(TIMESTAMP_S)'))
-                        ->from('z_conclusion_filtered')
+                        ->from('Z_Conclusion')
                         ->whereIn('VAR', $allStations)
                         ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
                         ->where('CALCULATION', 50)
@@ -152,7 +156,7 @@ class DashboardController extends Controller
             }
 
             // Get ZConclusion data
-            $zconclusionData = ZConclusionFiltered::select(
+            $zconclusionData = ZConclusion::select(
                 DB::raw('HOUR(FROM_UNIXTIME(timestamp_s)) as hour_num'),
                 DB::raw('FROM_UNIXTIME(timestamp_s, "%H:00") as hour'),
                 DB::raw('AVG(CAST(VALUE AS DECIMAL(10,2))) as value')

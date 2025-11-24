@@ -43,6 +43,10 @@
             border-radius: 6px;
             text-align: center;
             box-shadow: inset 0 0 10px #000;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .scada-station-name {
@@ -70,6 +74,13 @@
             animation: blink 1s infinite;
         }
 
+        .station-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
         @keyframes blink {
             50% {
                 opacity: 0.3;
@@ -77,7 +88,7 @@
         }
     </style>
 
-    <div class="container-fliud p-4">
+    <div class="container-fluid p-4">
         <form id="dateForm" method="GET" class="mb-4 row g-2 align-items-end">
             <div class="col-auto">
                 <input type="date" name="date" id="dateInput" value="{{ $date }}" class="form-control">
@@ -96,8 +107,7 @@
             <div class="mt-2">
                 <span class="live-led"></span>
                 <span class="ms-2">Огноо:
-                    <span id="lastUpdate">{{ date('Y-m-d H:i', $latestTimestamp) }}
-                    </span>
+                    <span id="lastUpdate">{{ date('Y-m-d H:i', $latestTimestamp) }}</span>
                 </span>
             </div>
         </div>
@@ -105,33 +115,29 @@
         @php
             $icons = [
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
-                'Сэргээгдэх эрчим хүч' => 'wind-power.svg',
+                'Салхин цахилгаан станц' => 'wind-power.svg',
+                'Нарны цахилгаан станц' => 'solar-power.svg',
                 'Батарэй хуримтлуур' => 'battery-bolt.svg',
                 'Импорт' => 'power-tower.svg',
             ];
         @endphp
 
-        <div class="row">
+        <!-- Станцуудын grid - foreach-ийн ГАДНА -->
+        <div class="station-grid">
             @foreach ($typeSums as $type)
-                <div class="col-md-3 mb-4">
-                    <div class="scada-station">
+                <div class="scada-station">
+                    <!-- ICON + POWER INLINE -->
+                    <div class="scada-title">{{ $type['type_name'] }}</div>
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                        <!-- Icon left side -->
+                        <img src="{{ asset('images/' . ($icons[$type['type_name']] ?? 'power-plant.svg')) }}"
+                            alt="{{ $type['type_name'] }}"
+                            style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
 
-                        <!-- ICON + POWER INLINE -->
-                        <div class="scada-title">{{ $type['type_name'] }}</div>
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-
-                            <!-- Icon left side -->
-                            <img src="{{ asset('images/' . ($icons[$type['type_name']] ?? 'power-plant.svg')) }}"
-                                alt="{{ $type['type_name'] }}"
-                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
-
-                            <!-- Power number right side -->
-                            <div class="scada-station-number" style="line-height: 1;">
-                                {{ number_format($type['sumP'], 2) }} МВт
-                            </div>
-
+                        <!-- Power number right side -->
+                        <div class="scada-station-number" style="line-height: 1;">
+                            {{ number_format($type['sumP'], 2) }} МВт
                         </div>
-
                     </div>
                 </div>
             @endforeach
