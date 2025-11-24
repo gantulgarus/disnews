@@ -71,30 +71,100 @@
 
 
         {{-- ДЦС --}}
+        @php
+            function statusIcon($status)
+            {
+                $color = match ($status) {
+                    'Ажилд' => 'green',
+                    'Бэлтгэлд' => 'yellow',
+                    'Засварт' => 'red',
+                    default => 'gray',
+                };
+
+                return '<img src="' .
+                    asset('images/power-plant.svg') .
+                    '"
+                    style="width:18px; height:18px; filter: drop-shadow(0 0 2px ' .
+                    $color .
+                    ');"
+                    alt="' .
+                    $status .
+                    '">';
+            }
+
+        @endphp
+
+        @php
+            function equipmentIcon($type)
+            {
+                return match ($type) {
+                    'НЦС' => asset('images/solar-power.svg'),
+                    'СЦС' => asset('images/wind-power.svg'),
+                    'Баттерэй' => asset('images/battery-bolt.svg'),
+                    default => asset('images/power-plant.svg'),
+                };
+            }
+        @endphp
+
+        @php
+            function statusIconsWithLabel($equipments, $statuses, $iconType = null)
+            {
+                $html = '<div style="display:flex; gap:4px; flex-wrap:wrap;">';
+
+                foreach ($equipments as $e) {
+                    $status = $statuses[$e->id]->status ?? null;
+                    if (!$status) {
+                        continue;
+                    }
+
+                    // Өөр icon ашиглах эсэх
+                    $iconPath = $iconType ? equipmentIcon($iconType) : asset('images/power-plant.svg');
+
+                    $color = match ($status) {
+                        'Ажилд' => 'green',
+                        'Бэлтгэлд' => 'yellow',
+                        'Засварт' => 'red',
+                        default => 'gray',
+                    };
+
+                    $html .=
+                        '
+            <div style="display:flex; flex-direction:column; align-items:center; font-size: 11px;">
+                <img src="' .
+                        $iconPath .
+                        '"
+                     style="width:18px; height:18px; filter: drop-shadow(0 0 2px ' .
+                        $color .
+                        ');">
+                <span style="margin-top:2px; color:#555;">' .
+                        $e->name .
+                        '</span>
+            </div>
+        ';
+                }
+
+                $html .= '</div>';
+                return $html;
+            }
+        @endphp
+
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Зуух</th>
-                                <th colspan="3" class="text-center">Турбогенератор</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Зуух</th>
+                                <th class="text-center">Турбогенератор</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th>Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
+
                         <tbody>
                             @forelse ($powerPlants as $plant)
                                 @php
@@ -109,24 +179,19 @@
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Зуух --}}
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
+                                    <td>
+                                        {!! statusIconsWithLabel($boilers, $statuses) !!}
                                     </td>
 
                                     {{-- Турбогенератор --}}
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
+                                    <td>
+                                        {!! statusIconsWithLabel($turbos, $statuses) !!}
                                     </td>
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
                                     <td>{{ $info?->remark }}</td>
+
                                     <td>
                                         <a
                                             href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
@@ -149,10 +214,13 @@
                                     <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                 </tr>
                             @endforelse
+
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
+                                <td colspan="4">Нийт дүн</td>
                                 <td>{{ number_format($total_p, 2) }}</td>
                                 <td>{{ number_format($total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 
@@ -161,6 +229,9 @@
             </div>
         </div>
 
+
+
+
         {{-- СЭХ --}}
         <div class="card mt-4">
             <div class="card-body">
@@ -168,22 +239,14 @@
                     <table class="table table-bordered table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th colspan="3" class="text-center">Инвертер</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Багц</th>
+                                <th class="text-center">Инвертер</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th>Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -200,20 +263,81 @@
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Багц --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
                                     {{-- Инвертер --}}
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
+                                    <td>{!! statusIconsWithLabel($inverters, $statuses, $plant->type) !!}</td>
+
+
+                                    <td>{{ $info?->p }}</td>
+                                    <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->remark }}</td>
+                                    <td>
+                                        <a
+                                            href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
                                     </td>
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                </tr>
+
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Мэдээлэл байхгүй</td>
+                                </tr>
+                            @endforelse
+                            <tr class="fw-bold">
+                                <td colspan="4">Нийт дүн</td>
+                                <td>{{ number_format($sun_wind_total_p, 2) }}</td>
+                                <td>{{ number_format($sun_wind_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Battery --}}
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mt-2">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Багц</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th>Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($battery_powers as $plant)
+                                @php
+                                    $batches = $plant->equipments->where('equipment_type_id', 3);
+                                    $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
+                                    $info = $plant->powerInfos->first();
+                                @endphp
+
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $plant->name }}</td>
+
+                                    {{-- Багц --}}
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
@@ -241,87 +365,11 @@
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
-                                <td>{{ number_format($sun_wind_total_p, 2) }}</td>
-                                <td>{{ number_format($sun_wind_total_pmax, 2) }}</td>
-                            </tr>
-                        </tbody>
-
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        {{-- Battery --}}
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle mt-2">
-                        <thead class="table-light">
-                            <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($battery_powers as $plant)
-                                @php
-                                    $batches = $plant->equipments->where('equipment_type_id', 3);
-                                    $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
-                                    $info = $plant->powerInfos->first();
-                                @endphp
-
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $plant->name }}</td>
-
-                                    {{-- Багц --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
-
-                                    <td>{{ $info?->p }}</td>
-                                    <td>{{ $info?->p_max }}</td>
-                                    <td>{{ $info?->remark }}</td>
-                                    <td>
-                                        <a
-                                            href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
-                                                <path
-                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
-                                                <path d="M16 5l3 3" />
-                                            </svg>
-                                        </a>
-                                    </td>
-                                </tr>
-
-                            @empty
-                                <tr>
-                                    <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
-                                </tr>
-                            @endforelse
-                            <tr class="fw-bold">
-                                <td colspan="5">Нийт дүн</td>
+                                <td colspan="3">Нийт дүн</td>
                                 <td>{{ number_format($battery_total_p, 2) }}</td>
                                 <td>{{ number_format($battery_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 

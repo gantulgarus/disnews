@@ -93,7 +93,7 @@ class ReportController extends Controller
             'powerInfos' => function ($q) use ($date) {
                 $q->whereDate('date', $date);
             }
-        ])->where('power_plant_type_id', 2)->where('region', 'ТБЭХС')->orderBy('Order')->get()
+        ])->whereIn('power_plant_type_id', [2, 4])->where('region', 'ТБЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
