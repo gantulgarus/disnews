@@ -51,7 +51,7 @@ class DashboardController extends Controller
             ]
         ],
         'battery' => [
-            'name' => 'Батарэй хуримтлуур',
+            'name' => 'Батарей хуримтлуур',
             'stations' => [
                 'BAGANUUR_BESS_TOTAL_P_T',
                 'SONGINO_BESS_TOTAL_P'
@@ -101,7 +101,6 @@ class DashboardController extends Controller
 
             // Calculate sums by group
             $typeSums = [];
-            $totalP = 0;
 
             foreach ($this->stationGroups as $key => $group) {
                 $sumP = 0;
@@ -116,9 +115,16 @@ class DashboardController extends Controller
                     'type_name' => $group['name'],
                     'sumP' => $sumP,
                 ];
-
-                $totalP += $sumP;
             }
+
+            // Get latest system_total_p value
+            $systemTotal = ZConclusion::where('VAR', 'system_total_p')
+                ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
+                ->where('CALCULATION', 50)
+                ->orderByDesc('TIMESTAMP_S')
+                ->first();
+
+            $totalP = $systemTotal ? (float)$systemTotal->VALUE : 0;
 
 
             return view('dashboard', compact('date', 'typeSums', 'totalP', 'latestTimestamp'));
