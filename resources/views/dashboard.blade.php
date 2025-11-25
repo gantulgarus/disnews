@@ -100,7 +100,7 @@
 
         <!-- Нийт чадал SCADA panel -->
         <div class="scada-panel mb-4">
-            <div class="scada-title">НИЙТ ЧАДАЛ</div>
+            <div class="scada-title">НИЙТ ХЭРЭГЛЭЭ</div>
             <div class="scada-number" id="totalPowerDisplay">
                 {{ number_format($totalP, 2) }} МВт
             </div>
@@ -117,7 +117,7 @@
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
                 'Салхин цахилгаан станц' => 'wind-power.svg',
                 'Нарны цахилгаан станц' => 'solar-power.svg',
-                'Батарэй хуримтлуур' => 'battery-bolt.svg',
+                'Батарей хуримтлуур' => 'battery-bolt.svg',
                 'Импорт' => 'power-tower.svg',
             ];
         @endphp
