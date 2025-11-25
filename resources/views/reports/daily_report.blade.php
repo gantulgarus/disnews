@@ -262,7 +262,7 @@
                                 <th class="text-center">Турбогенератор</th>
                                 <th>P (МВт)</th>
                                 <th>P max (МВт)</th>
-                                <th style="width: 600px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -292,7 +292,7 @@
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
-                                    <td class="remark-col">{{ $info?->remark }}</td>
+                                    <td>{{ $info?->remark }}</td>
 
                                     <td>
                                         <a
@@ -368,7 +368,7 @@
                                 <th class="text-center">Инвертер</th>
                                 <th>P (МВт)</th>
                                 <th>P max (МВт)</th>
-                                <th style="width: 600px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -467,7 +467,7 @@
                                 <th class="text-center">Багц</th>
                                 <th>P (МВт)</th>
                                 <th>P max (МВт)</th>
-                                <th style="width: 600px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
                                 <th></th>
                             </tr>
                         </thead>
