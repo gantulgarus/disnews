@@ -30,7 +30,14 @@ class User extends Authenticatable
         'organization_id',
         'div_code',
         'permission_level_id',
+        'usercode',
     ];
+
+    public function username()
+    {
+        return 'usercode';   // ← энд usercode байх ёстой
+    }
+
 
     public function organization()
     {

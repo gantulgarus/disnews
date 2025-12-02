@@ -31,6 +31,7 @@ use App\Http\Controllers\WesternRegionCapacityController;
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
+    Route::get('/dashboard/realtime', [DashboardController::class, 'realtimeData'])->name('dashboard.realtime');
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // // Route::post('/users', [UserController::class, 'store'])->name('users.store');

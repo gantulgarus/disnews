@@ -120,32 +120,62 @@ class TnewsController extends Controller
         return redirect()->route('tnews.index')->with('success', 'Амжилттай устгагдлаа');
     }
 
+    private function escapeMarkdownV2($text)
+    {
+        $text = (string) $text;
+
+        $replace_pairs = [
+            '_' => '\_',
+            '*' => '\*',
+            '[' => '\[',
+            ']' => '\]',
+            '(' => '\(',
+            ')' => '\)',
+            '~' => '\~',
+            '`' => '\`',
+            '>' => '\>',
+            '#' => '\#',
+            '+' => '\+',
+            '-' => '\-',  // ⚠️ Гол засвар
+            '=' => '\=',
+            '|' => '\|',
+            '{' => '\{',
+            '}' => '\}',
+            '.' => '\.',
+            '!' => '\!',
+            // ":" тэмдэгтээ ч шаардлагатай бол escape хийх боломжтой
+            ':' => '\:',
+        ];
+
+        return strtr($text, $replace_pairs);
+    }
+
     private function sendTelegramMessage($tnews)
     {
         $token = env('TELEGRAM_BOT_TOKEN');
         $chat_id = env('TELEGRAM_CHAT_ID');
 
-        // MarkdownV2-д зориулж тусгай тэмдэгтүүдийг escape хийх функц
-        $escape = fn($text) => str_replace(
-            ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'],
-            ['\_', '\*', '\[', '\]', '\(', '\)', '\~', '\`', '\>', '\#', '\+', '\-', '\=', '\|', '\{', '\}', '\.', '\!'],
-            $text
-        );
-
         $message = "⚡️ *Тасралтын мэдээ:*\n\n"
-            . "*🏢 ТЗЭ:* " . $escape($tnews->TZE) . "\n"
-            . "*🛠 Тасралт:* " . $escape($tnews->tasralt) . "\n"
-            . "*🛠 Тайлбар:* " . $escape($tnews->ArgaHemjee) . "\n"
-            . "*📅 Огноо:* " . $escape($tnews->date) . "\n";
+            . "*🏢 ТЗЭ:* " . $this->escapeMarkdownV2($tnews->TZE) . "\n"
+            . "*🛠 Тасралт:* " . $this->escapeMarkdownV2($tnews->tasralt) . "\n"
+            . "*🛠 Тайлбар:* " . $this->escapeMarkdownV2($tnews->ArgaHemjee ?? '') . "\n"
+            . "*📅 Огноо:* " . $this->escapeMarkdownV2($tnews->date) . "\n";
 
         try {
-            Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => $chat_id,
-                'text' => $message,
-                'parse_mode' => 'MarkdownV2',
-            ]);
+            $response = Http::withOptions(['allow_redirects' => true])->post(
+                "https://api.telegram.org/bot{$token}/sendMessage",
+                [
+                    'chat_id' => $chat_id,
+                    'text' => $message,
+                    'parse_mode' => 'MarkdownV2',
+                ]
+            );
+
+            if ($response->failed()) {
+                Log::error('Telegram message failed: ' . $response->body());
+            }
         } catch (\Exception $e) {
-            Log::error('Telegram message failed: ' . $e->getMessage());
+            Log::error('Telegram message exception: ' . $e->getMessage());
         }
     }
 }
