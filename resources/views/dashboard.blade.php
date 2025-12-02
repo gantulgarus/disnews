@@ -86,6 +86,80 @@
                 opacity: 0.3;
             }
         }
+
+        /* Inline loader */
+        .inline-loader {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #00ff33;
+        }
+
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #333;
+            border-top: 3px solid #00ff33;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Skeleton loader for stations */
+        .skeleton {
+            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .skeleton-text {
+            height: 20px;
+            margin-bottom: 10px;
+        }
+
+        .skeleton-number {
+            height: 40px;
+        }
+
+        /* Chart loading */
+        .chart-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .chart-loading .spinner-large {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
     </style>
 
     <div class="container-fluid p-4">
@@ -102,18 +176,19 @@
         <div class="scada-panel mb-4">
             <div class="scada-title">НИЙТ ХЭРЭГЛЭЭ</div>
             <div class="scada-number" id="totalPowerDisplay">
-                {{ number_format($totalP, 2) }} МВт
+                <div class="inline-loader">
+                    <div class="spinner-small"></div>
+                    <span>Уншиж байна...</span>
+                </div>
             </div>
             <div class="mt-2">
                 <span class="live-led"></span>
-                <span class="ms-2">Огноо:
-                    <span id="lastUpdate">{{ date('Y-m-d H:i', $latestTimestamp) }}</span>
-                </span>
+                <span class="ms-2">Огноо: <span id="lastUpdate">--</span></span>
             </div>
         </div>
 
         @php
-            $icons = [
+            $stationTypes = [
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
                 'Салхин цахилгаан станц' => 'wind-power.svg',
                 'Нарны цахилгаан станц' => 'solar-power.svg',
@@ -122,21 +197,16 @@
             ];
         @endphp
 
-        <!-- Станцуудын grid - foreach-ийн ГАДНА -->
-        <div class="station-grid">
-            @foreach ($typeSums as $type)
+        <!-- Станцуудын grid -->
+        <div class="station-grid" id="stationGrid">
+            @foreach ($stationTypes as $name => $icon)
                 <div class="scada-station">
-                    <!-- ICON + POWER INLINE -->
-                    <div class="scada-title">{{ $type['type_name'] }}</div>
+                    <div class="scada-title">{{ $name }}</div>
                     <div class="d-flex align-items-center justify-content-center gap-3">
-                        <!-- Icon left side -->
-                        <img src="{{ asset('images/' . ($icons[$type['type_name']] ?? 'power-plant.svg')) }}"
-                            alt="{{ $type['type_name'] }}"
+                        <img src="{{ asset('images/' . $icon) }}" alt="{{ $name }}"
                             style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
-
-                        <!-- Power number right side -->
                         <div class="scada-station-number" style="line-height: 1;">
-                            {{ number_format($type['sumP'], 2) }} МВт
+                            <div class="skeleton skeleton-number d-inline-block" style="width: 140px; height: 28px;"></div>
                         </div>
                     </div>
                 </div>
@@ -150,7 +220,10 @@
                         <h3 class="card-title">24 цагийн системийн нийт чадлын график</h3>
 
                         <div id="chart-area">
-                            <div id="loading">Уншиж байна...</div>
+                            <div id="loading" class="chart-loading">
+                                <div class="spinner-large"></div>
+                                <div>Уншиж байна...</div>
+                            </div>
                             <canvas id="lineChart" style="display:none;" width="100%" height="40"></canvas>
                             <div id="error" class="alert alert-danger d-none"></div>
                             <div id="peak" class="alert alert-primary d-none mt-4"></div>
@@ -166,8 +239,76 @@
         let chart;
         let refreshInterval;
 
+        const icons = {
+            'Дулааны цахилгаан станц': 'power-plant.svg',
+            'Салхин цахилгаан станц': 'wind-power.svg',
+            'Нарны цахилгаан станц': 'solar-power.svg',
+            'Батарей хуримтлуур': 'battery-bolt.svg',
+            'Импорт': 'power-tower.svg'
+        };
+
+        // Load realtime data (station powers)
+        async function loadRealtimeData() {
+            try {
+                const res = await fetch("{{ route('dashboard.realtime') }}");
+                const data = await res.json();
+
+                if (!data.success) {
+                    console.error('Failed to load realtime data');
+                    // Show error state
+                    document.getElementById('totalPowerDisplay').innerHTML =
+                        '<span style="color: #ff6b6b; font-size: 20px;">Алдаа гарлаа</span>';
+                    return;
+                }
+
+                // Update total power
+                document.getElementById('totalPowerDisplay').innerHTML =
+                    `${parseFloat(data.totalP).toFixed(2)} МВт`;
+
+                // Update timestamp
+                if (data.latestTimestamp) {
+                    const date = new Date(data.latestTimestamp * 1000);
+                    document.getElementById('lastUpdate').innerText =
+                        date.toLocaleString('en-CA', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        }).replace(',', '');
+                }
+
+                // Update station grid
+                const stationGrid = document.getElementById('stationGrid');
+                stationGrid.innerHTML = '';
+
+                data.typeSums.forEach(type => {
+                    const stationDiv = document.createElement('div');
+                    stationDiv.className = 'scada-station';
+                    stationDiv.innerHTML = `
+                        <div class="scada-title">${type.type_name}</div>
+                        <div class="d-flex align-items-center justify-content-center gap-3">
+                            <img src="/images/${icons[type.type_name]}" alt="${type.type_name}"
+                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+                            <div class="scada-station-number" style="line-height: 1;">
+                                ${parseFloat(type.sumP).toFixed(2)} МВт
+                            </div>
+                        </div>
+                    `;
+                    stationGrid.appendChild(stationDiv);
+                });
+
+            } catch (e) {
+                console.error('Error loading realtime data:', e);
+                document.getElementById('totalPowerDisplay').innerHTML =
+                    '<span style="color: #ff6b6b; font-size: 20px;">Холболтын алдаа</span>';
+            }
+        }
+
+        // Load chart data
         async function loadChart(date) {
-            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').style.display = 'flex';
             document.getElementById('lineChart').style.display = 'none';
             document.getElementById('error').classList.add('d-none');
             document.getElementById('peak').classList.add('d-none');
@@ -301,10 +442,17 @@
         }
 
         // Initial load
-        const dateInput = document.getElementById('dateInput');
-        if (dateInput) {
-            loadChart(dateInput.value);
-        }
+        window.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('dateInput');
+
+            // Load realtime data first (faster)
+            loadRealtimeData();
+
+            // Then load chart
+            if (dateInput) {
+                loadChart(dateInput.value);
+            }
+        });
 
         // Form submit handler
         document.getElementById('dateForm').addEventListener('submit', function(e) {

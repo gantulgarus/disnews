@@ -25,9 +25,6 @@ class DashboardController extends Controller
                 'DALANZADGAD_PP_TOTAL_P',
                 'UHAAHUDAG_PP_TOTAL_P',
                 'BUURULJUUT_PP_TOTAL_P',
-
-                // 'TOSON_PP_TOTAL_P',
-                // 'DORNOD_PP_TOTAL_P'
             ]
         ],
         'wind' => [
@@ -69,8 +66,14 @@ class DashboardController extends Controller
     {
         $date = $request->input('date', now()->format('Y-m-d'));
 
+        // Хуудсыг шууд харуулах, мэдээллийг JavaScript-ээр ачаална
+        return view('dashboard', compact('date'));
+    }
+
+    // Шинэ метод: Real-time мэдээлэл авах
+    public function realtimeData(Request $request)
+    {
         try {
-            // Get real-time data from ZConclusion
             $currentDate = now()->toDateString();
 
             // Get all station names
@@ -94,7 +97,7 @@ class DashboardController extends Controller
                 ->get()
                 ->keyBy('VAR');
 
-            // ➤ MOST RECENT TIMESTAMP (this is what you need)
+            // Most recent timestamp
             $latestTimestamp = $latestData->isNotEmpty()
                 ? $latestData->max('TIMESTAMP_S')
                 : null;
@@ -126,16 +129,19 @@ class DashboardController extends Controller
 
             $totalP = $systemTotal ? (float)$systemTotal->VALUE : 0;
 
-
-            return view('dashboard', compact('date', 'typeSums', 'totalP', 'latestTimestamp'));
+            return response()->json([
+                'success' => true,
+                'typeSums' => $typeSums,
+                'totalP' => $totalP,
+                'latestTimestamp' => $latestTimestamp,
+            ]);
         } catch (\Exception $e) {
-            Log::error('Dashboard index error: ' . $e->getMessage());
+            Log::error('Dashboard realtime data error: ' . $e->getMessage());
 
-            // Fallback to empty data
-            $typeSums = [];
-            $totalP = 0;
-
-            return view('dashboard', compact('date', 'typeSums', 'totalP'));
+            return response()->json([
+                'success' => false,
+                'error' => 'Холболтын алдаа гарлаа'
+            ], 500);
         }
     }
 

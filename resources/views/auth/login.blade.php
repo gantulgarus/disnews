@@ -117,10 +117,12 @@
                     <form action="{{ route('login') }}" method="POST" autocomplete="off" novalidate>
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">{{ __('Имэйл хаяг') }}</label>
-                            <input type="email" name="email" value="{{ old('email') }}" class="form-control"
-                                autocomplete="off">
-                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                            <label class="form-label">{{ __('Хэрэглэгчийн код') }}</label>
+                            {{-- <input type="email" name="email" value="{{ old('email') }}" class="form-control"
+                                autocomplete="off"> --}}
+                            <input type="text" name="usercode" class="form-control" value="{{ old('usercode') }}">
+
+                            <x-input-error :messages="$errors->get('usercode')" class="mt-2" />
                         </div>
 
                         <div class="mb-2">

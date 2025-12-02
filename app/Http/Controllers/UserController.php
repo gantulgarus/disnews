@@ -40,6 +40,7 @@ class UserController extends Controller
             'permission_level_id' => 'nullable|string|exists:permission_levels,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'usercode' => 'required|string|min:6|max:255|unique:users,usercode', // min length 6
             'phone' => 'nullable|string|max:8',
             'password' => 'required|min:8'
         ]);
@@ -77,6 +78,7 @@ class UserController extends Controller
             'organization_id' => 'required|exists:organizations,id',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'usercode' => 'required|string|min:6|max:255|unique:users,usercode,' . $user->id, // min length 6
             'phone' => 'nullable|string|max:8',
             'permission_level_id' => 'nullable|string|exists:permission_levels,id',
         ]);
