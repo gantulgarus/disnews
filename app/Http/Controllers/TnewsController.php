@@ -12,11 +12,35 @@ use Illuminate\Support\Facades\Http;
 class TnewsController extends Controller
 
 {
-    public function index()
+    public function index(Request $request)
     {
-        $Tnews = Tnews::all();
+        $query = Tnews::query();
+
+        // Огноо фильтр
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+
+        // ТЗЭ фильтр
+        if ($request->filled('TZE')) {
+            $query->where('TZE', 'LIKE', '%' . $request->TZE . '%');
+        }
+
+        // Тасралт фильтр
+        if ($request->filled('tasralt')) {
+            $query->where('tasralt', 'LIKE', '%' . $request->tasralt . '%');
+        }
+
+        // Telegram илгээгдсэн / илгээгдээгүй
+        if ($request->filled('send_telegram')) {
+            $query->where('send_telegram', $request->send_telegram);
+        }
+
+        $Tnews = $query->orderBy('date', 'desc')->paginate(25)->withQueryString();
+
         return view('tnews.index', compact('Tnews'));
     }
+
 
     public function create()
 

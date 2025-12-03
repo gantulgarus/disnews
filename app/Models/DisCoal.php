@@ -34,5 +34,11 @@ class DisCoal extends Model
         'FUEL_RECEIVER_EMPL',
         'ORG_CODE',
         'ORG_NAME',
+        'organization_id',
     ];
+
+    public function organization()
+    {
+        return $this->belongsTo(\App\Models\Organization::class);
+    }
 }

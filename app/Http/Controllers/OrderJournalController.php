@@ -18,8 +18,19 @@ class OrderJournalController extends Controller
     {
         $user = Auth::user();
 
-        $journals = OrderJournal::latest()->paginate(10);
+        // Query эхлүүлэх
+        $query = OrderJournal::query()->latest();
 
+        // Хэрэглэгч админ эсэхийг шалгах
+        if ($user->organization_id != 5) {
+            // Админ биш бол зөвхөн өөрийн байгууллагын захиалгууд
+            $query->where('organization_id', $user->organization_id);
+        }
+
+        // Pagination + withQueryString, хайлт зэрэг хадгалах боломжтой
+        $journals = $query->paginate(25)->withQueryString();
+
+        // Өөрийн байгууллагын хэрэглэгчид авах
         $users = User::where('organization_id', $user->organization_id)->get();
 
         return view('order_journals.index', compact('journals', 'users'));
@@ -88,30 +99,93 @@ class OrderJournalController extends Controller
     }
 
     // Санал өгөх
-    public function approve(Request $request, OrderJournalApproval $approval)
+    // public function approve(Request $request, OrderJournalApproval $approval)
+    // {
+    //     $request->validate([
+    //         'approved' => 'required|boolean',
+    //         'comment' => 'nullable|string|max:1000',
+    //     ]);
+
+    //     $approval->update([
+    //         'approved' => $request->approved,
+    //         'comment' => $request->comment,
+    //     ]);
+
+    //     $orderJournal = $approval->orderJournal;
+
+    //     if ($orderJournal->approvals()->where('approved', false)->count() > 0) {
+    //         $orderJournal->status = OrderJournal::STATUS_CANCELLED;
+    //     } elseif ($orderJournal->approvals()->whereNull('approved')->count() === 0) {
+    //         $orderJournal->status = OrderJournal::STATUS_APPROVED;
+    //     }
+
+    //     $orderJournal->save();
+
+    //     return redirect()->back()->with('success', 'Таны санал амжилттай хадгалагдлаа.');
+    // }
+
+    public function approve(Request $request, OrderJournal $orderJournal)
     {
+        $user = auth()->user();
+
         $request->validate([
-            'approved' => 'required|boolean',
+            'approved' => 'nullable|boolean',
             'comment' => 'nullable|string|max:1000',
+            'action' => 'nullable|string|in:approve,reject',
         ]);
 
-        $approval->update([
-            'approved' => $request->approved,
-            'comment' => $request->comment,
-        ]);
+        // Default approval үүсгэх буюу update
+        $approval = $orderJournal->approvals()->updateOrCreate(
+            [
+                'order_journal_id' => $orderJournal->id,
+                'user_id' => $user->id,
+            ],
+            [
+                'approved' => null,
+                'comment' => $request->comment,
+            ]
+        );
 
-        $orderJournal = $approval->orderJournal;
+        // Диспетчер
+        if ($user->permissionLevel?->code === 'DISP' && $orderJournal->order_type === 'Аваарын') {
+            $approval->update([
+                'approved' => true,
+                'comment' => $request->comment,
+            ]);
 
-        if ($orderJournal->approvals()->where('approved', false)->count() > 0) {
-            $orderJournal->status = OrderJournal::STATUS_CANCELLED;
-        } elseif ($orderJournal->approvals()->whereNull('approved')->count() === 0) {
             $orderJournal->status = OrderJournal::STATUS_APPROVED;
+            $orderJournal->save();
         }
 
-        $orderJournal->save();
+        // Диспетчерийн албаны дарга
+        elseif ($user->permissionLevel?->code === 'DISP_LEAD') {
+            $approved = $request->input('action') === 'approve';
+            $approval->update([
+                'approved' => $approved,
+                'comment' => $request->comment,
+            ]);
 
-        return redirect()->back()->with('success', 'Таны санал амжилттай хадгалагдлаа.');
+            $orderJournal->status = $approved
+                ? OrderJournal::STATUS_ACCEPTED
+                : OrderJournal::STATUS_CANCELLED;
+            $orderJournal->save();
+        }
+
+        // Ерөнхий диспетчер
+        elseif ($user->permissionLevel?->code === 'GEN_DISP') {
+            $approval->update([
+                'approved' => true,
+                'comment' => $request->comment,
+            ]);
+
+            $orderJournal->status = OrderJournal::STATUS_APPROVED;
+            $orderJournal->save();
+        }
+
+        return redirect()->back()->with('success', 'Захиалга батлагдлаа.');
     }
+
+
 
 
     /**

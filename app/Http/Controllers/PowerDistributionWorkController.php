@@ -10,11 +10,27 @@ use App\Models\PowerDistributionWork;
 
 class PowerDistributionWorkController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $works = PowerDistributionWork::latest()->paginate(10);
+        $query = PowerDistributionWork::query();
+
+        if ($request->tze) {
+            $query->where('tze', 'like', "%{$request->tze}%");
+        }
+
+        if ($request->repair_work) {
+            $query->where('repair_work', 'like', "%{$request->repair_work}%");
+        }
+
+        if ($request->date) {
+            $query->whereDate('date', $request->date);
+        }
+
+        $works = $query->latest()->paginate(10)->withQueryString();
+
         return view('power_distribution_works.index', compact('works'));
     }
+
 
     public function create()
     {

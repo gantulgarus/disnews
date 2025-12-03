@@ -61,7 +61,7 @@
                                         </svg></a>
 
                                     <!-- Forward товч -->
-                                    @if ($journal->status != 2)
+                                    @if ($journal->status != 2 && Auth::user()->organization_id == 5)
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                             data-bs-target="#forwardModal{{ $journal->id }}" title="Санал авахаар илгээх">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -74,6 +74,55 @@
                                                     d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
                                             </svg>
                                         </button>
+                                    @endif
+
+                                    @php
+                                        $user = auth()->user();
+                                        $permission = $user->permissionLevel?->code;
+                                    @endphp
+
+                                    <!-- Диспетчер зөвхөн аваарын захиалгыг шууд батлах боломжтой -->
+                                    @if (
+                                        $permission === 'DISP' &&
+                                            $journal->order_type === 'Аваарын' &&
+                                            $journal->status !== \App\Models\OrderJournal::STATUS_ACCEPTED)
+                                        <form action="{{ route('order-journals.approve', $journal->id) }}" method="POST"
+                                            style="display:inline-block;">
+                                            @csrf
+                                            <input type="hidden" name="approved" value="1">
+                                            <button type="submit" class="btn btn-sm btn-success"
+                                                title="Аваарын захиалгыг батлах">
+                                                <i class="ti ti-check"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <!-- Диспетчерийн албаны дарга -->
+                                    @if ($permission === 'DISP_LEAD' && $journal->status === \App\Models\OrderJournal::STATUS_FORWARDED)
+                                        <form action="{{ route('order-journals.approve', $journal->id) }}" method="POST"
+                                            style="display:inline-block;">
+                                            @csrf
+                                            <button type="submit" name="action" value="approve"
+                                                class="btn btn-sm btn-success" title="Зөвшөөрөх">
+                                                <i class="ti ti-check"></i>
+                                            </button>
+                                            <button type="submit" name="action" value="reject"
+                                                class="btn btn-sm btn-danger" title="Цуцлах">
+                                                <i class="ti ti-x"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <!-- Ерөнхий диспетчер -->
+                                    @if ($permission === 'GEN_DISP' && $journal->status !== \App\Models\OrderJournal::STATUS_APPROVED)
+                                        <form action="{{ route('order-journals.approve', $journal->id) }}" method="POST"
+                                            style="display:inline-block;">
+                                            @csrf
+                                            <input type="hidden" name="approved" value="1">
+                                            <button type="submit" class="btn btn-sm btn-success" title="Ерөнхий батлах">
+                                                <i class="ti ti-check"></i>
+                                            </button>
+                                        </form>
                                     @endif
 
                                     @if ($journal->status == 0)
@@ -112,10 +161,12 @@
                                 </td>
                             </tr>
                             <!-- Forward Modal -->
-                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1"
+                                aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('order-journals.forward', $journal->id) }}" method="POST">
+                                        <form action="{{ route('order-journals.forward', $journal->id) }}"
+                                            method="POST">
                                             @csrf
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Захиалгыг илгээх / санал авах</h5>

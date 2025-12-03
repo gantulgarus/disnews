@@ -18,7 +18,7 @@
                     <div class="row g-3">
 
                         <!-- ТЗЭ -->
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="form-floating">
                                 <input type="text" name="tze" class="form-control" id="tze" placeholder="ТЗЭ"
                                     required>
@@ -27,10 +27,10 @@
                         </div>
 
                         <!-- Засварын ажлын утга -->
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="form-floating">
-                                <input type="text" name="repair_work" class="form-control" id="repair_work"
-                                    placeholder="Засварын ажлын утга" required>
+                                <textarea name="repair_work" class="form-control" id="repair_work" placeholder="Засварын ажлын утга"
+                                    style="height:100px" required></textarea>
                                 <label for="repair_work">Засварын ажлын утга</label>
                             </div>
                         </div>

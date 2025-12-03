@@ -14,24 +14,53 @@ class DailyBalanceJournalController extends Controller
      */
     public function index(Request $request)
     {
-        $date = $request->input('date') ?? date('Y-m-d');
+        // index() эхэнд
+        // dd($request->all());
 
-        $journals = DailyBalanceJournal::with('powerPlant')
-            ->when($date, fn($query) => $query->whereDate('date', $date))
-            ->latest()
-            ->paginate(10);
+        $month = $request->input('month') ?? date('Y-m');
+        [$year, $mon] = explode('-', $month);
 
-        return view('daily_balance_journals.index', compact('journals', 'date'));
+        $userOrgId = auth()->user()->organization_id;
+
+        $query = DailyBalanceJournal::with('powerPlant')
+            ->whereHas('powerPlant', function ($q) use ($userOrgId) {
+                $q->where('organization_id', $userOrgId);
+            })
+            ->whereYear('date', $year)
+            ->whereMonth('date', $mon);
+
+        // 👉 Хэрэв станц сонгосон бол зөвхөн тэр станцын мэдээллийг үзүүлэх
+        if ($request->filled('plant_id')) {
+            $query->where('power_plant_id', intval($request->plant_id));
+        }
+
+
+
+
+        $journals = $query->orderBy('date', 'asc')->get();
+
+        return view('daily_balance_journals.index', [
+            'journals' => $journals,
+            'month' => $month,
+            'selectedPlant' => $request->plant_id
+        ]);
     }
+
+
+
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        $powerPlants = PowerPlant::all();
+        $userOrgId = auth()->user()->organization_id;
+
+        $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+
         return view('daily_balance_journals.create', compact('powerPlants'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -93,7 +122,10 @@ class DailyBalanceJournalController extends Controller
      */
     public function edit(DailyBalanceJournal $dailyBalanceJournal)
     {
-        $powerPlants = PowerPlant::all();
+        $userOrgId = auth()->user()->organization_id;
+
+        $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+
         return view('daily_balance_journals.edit', compact('dailyBalanceJournal', 'powerPlants'));
     }
 
@@ -188,13 +220,18 @@ class DailyBalanceJournalController extends Controller
             $plant = $row->powerPlant->name ?? 'Unknown';
             $day = Carbon::parse($row->date)->day;
 
+            // Станцын нэр хадгалах
             $plants[$plant] = true;
+
+            // 🌟 plant_id-г заавал хадгална
+            $pivot[$plant]['plant_id'] = $row->power_plant_id;
 
             $pivot[$plant]['processed'][$day] = $row->processed;
             $pivot[$plant]['distributed'][$day] = $row->distributed;
             $pivot[$plant]['internal_demand'][$day] = $row->internal_demand;
             $pivot[$plant]['percent'][$day] = $row->percent;
         }
+
 
         // Бүх станцад тухайн сарын бүх өдөрт default 0 өгөгдөл үүсгэх
         foreach ($plants as $plant => $_) {
@@ -205,11 +242,15 @@ class DailyBalanceJournalController extends Controller
                     }
                 }
             }
-            // Өдрийг сортлох
-            foreach ($pivot[$plant] as &$values) {
-                ksort($values);
+
+            // Өдөр бүрийг сортлох, plant_id-г оролцуулахгүй
+            foreach ($pivot[$plant] as $key => &$values) {
+                if (is_array($values)) {
+                    ksort($values);
+                }
             }
         }
+
 
         ksort($plants);
 
@@ -218,6 +259,27 @@ class DailyBalanceJournalController extends Controller
             'plants' => array_keys($plants),
             'days' => range(1, $daysInMonth),
             'selectedMonth' => $selectedMonth,
+        ]);
+    }
+
+    public function showPlant(Request $request, $plantId)
+    {
+        // Сар сонгох, default = өнөөдрийн сар
+        $month = $request->input('month', now()->format('Y-m'));
+        [$year, $mon] = explode('-', $month);
+
+        // Сонгосон станцын мэдээллийг аваад сар, өдөрөөр эрэмбэлэх
+        $journals = DailyBalanceJournal::with('powerPlant')
+            ->where('power_plant_id', $plantId)
+            ->whereYear('date', $year)
+            ->whereMonth('date', $mon)
+            ->orderBy('date', 'asc')
+            ->get();
+
+        return view('daily_balance_journals.plant_show', [
+            'journals' => $journals,
+            'month' => $month,
+            'selectedPlant' => $plantId
         ]);
     }
 }

@@ -2,10 +2,10 @@
 
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 	 viewBox="0 0 512 512"  xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#000000;}
+	.st0{fill:currentColor;}
 </style>
 <g>
 	<path class="st0" d="M77.604,241.753l10.047-41.623c-21.697-9.842-38.879-39.91-38.879-65.383c0-40.4,32.761-73.162,73.162-73.162
@@ -22,7 +22,7 @@
 		L247.644,161.691z M239.272,251.61h99.46l6.271,67.439H233.001L239.272,251.61z M142.204,161.691h82.865l-6.271,67.439h-92.876
 		L142.204,161.691z M216.705,251.61l-6.279,67.439H104.218L120.5,251.61H216.705z"/>
 	<polygon class="st0" points="83.634,394.479 494.511,394.479 512,359.508 66.144,359.508 	"/>
-	<polygon class="st0" points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187 
+	<polygon class="st0" points="311.702,408.668 266.449,408.668 264.02,448.271 218.358,470.897 218.358,499.187 359.794,499.187
 		359.794,470.897 314.131,448.271 	"/>
 </g>
 </svg>

@@ -1,12 +1,9 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-xl">
+    <div class="container-fluid">
         <div class="page-header d-print-none mb-3">
             <div class="row align-items-center">
-                <div class="col">
-                    <h2 class="page-title">⚡ Тасралтын мэдээ</h2>
-                </div>
                 <div class="col-auto ms-auto">
                     <a href="{{ route('tnews.create') }}" class="btn btn-primary d-flex align-items-center">
                         <i class="ti ti-plus me-1"></i> Мэдээ оруулах
@@ -25,10 +22,58 @@
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Тасралтын мэдээний жагсаалт</h3>
+                <h3 class="card-title">Тасралтын мэдээ</h3>
             </div>
 
-            <div class="table-responsive">
+
+
+            <div class="card-body">
+                <form method="GET" action="{{ route('tnews.index') }}" class="card mb-3 p-3">
+                    <div class="row g-2">
+
+                        <div class="col-md-2">
+                            <label class="form-label">Огноо</label>
+                            <input type="date" name="date" value="{{ request('date') }}" class="form-control">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">ТЗЭ</label>
+                            <input type="text" name="TZE" value="{{ request('TZE') }}" class="form-control"
+                                placeholder="ТЗЭ хайх">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">Тасралт</label>
+                            <input type="text" name="tasralt" value="{{ request('tasralt') }}" class="form-control"
+                                placeholder="Тасралт хайх">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">Telegram</label>
+                            <select name="send_telegram" class="form-select">
+                                <option value="">-- Бүгд --</option>
+                                <option value="1" {{ request('send_telegram') === '1' ? 'selected' : '' }}>Илгээгдсэн
+                                </option>
+                                <option value="0" {{ request('send_telegram') === '0' ? 'selected' : '' }}>Илгээгдээгүй
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+
+                            <button class="btn btn-primary w-100" type="submit">
+                                <i class="ti ti-search me-1"></i> Шүүх
+                            </button>
+
+                            {{-- 🎯 Шинэ RESET товч --}}
+                            <a href="{{ route('tnews.index') }}" class="btn btn-secondary">
+                                <i class="ti ti-x me-1"></i> Цэвэрлэх
+                            </a>
+
+                        </div>
+
+                    </div>
+                </form>
                 <table class="table table-vcenter card-table table-striped">
                     <thead class="text-muted">
                         <tr>
@@ -46,7 +91,7 @@
                     <tbody>
                         @forelse ($Tnews as $index => $news)
                             <tr>
-                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $Tnews->firstItem() + $index }}</td>
                                 <td>{{ \Carbon\Carbon::parse($news->date)->format('Y.m.d') }}</td>
                                 <td>{{ $news->time }}</td>
                                 <td>{{ $news->TZE }}</td>
@@ -90,6 +135,10 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div class="d-flex justify-content-start mt-4">
+                    {{ $Tnews->links() }}
+                </div>
+
             </div>
         </div>
     </div>

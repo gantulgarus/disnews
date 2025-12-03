@@ -18,6 +18,8 @@ class StationPowerInfo extends Model
         'produced_energy',      // Үйлдвэрлэсэн ЦЭХ
         'distributed_energy',   // Түгээсэн ЦЭХ
         'remark',
+        'water_level',          // Усны төвшин /м/
+        'fuel_amount',          // Түлшний нөөц /л/
     ];
 
     public function powerPlant()

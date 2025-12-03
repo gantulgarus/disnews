@@ -49,7 +49,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('permission_levels', PermissionLevelController::class);
 
     Route::get('daily-balance-journals/report', [DailyBalanceJournalController::class, 'dailyMatrixReport'])->name('daily-balance-journals.report');
+    Route::get('daily-balance-journals/plant/{plant}', [DailyBalanceJournalController::class, 'showPlant'])
+        ->name('daily-balance-journals.showPlant');
     Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
+
     Route::resource('divisions', DivisionController::class);
     Route::resource('dis_coal', DisCoalController::class);
 
@@ -59,7 +62,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('order-journals', OrderJournalController::class);
     Route::post('order-journals/{orderJournal}/forward', [OrderJournalController::class, 'forward'])->name('order-journals.forward');
-    Route::post('order-journal-approvals/{approval}/approve', [OrderJournalController::class, 'approve'])->name('order-journal-approvals.approve');
+    // Route::post('order-journal-approvals/{approval}/approve', [OrderJournalController::class, 'approve'])->name('order-journal-approvals.approve');
+    Route::post('order-journals/{orderJournal}/approve', [OrderJournalController::class, 'approve'])
+        ->name('order-journals.approve');
+
 
     Route::resource('organizations', OrganizationController::class);
 

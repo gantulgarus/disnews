@@ -1,12 +1,9 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container-xl">
+    <div class="container-fluid">
         <div class="page-header d-print-none mb-3">
             <div class="row align-items-center">
-                <div class="col">
-                    <h2 class="page-title">⚡ Захиалгат ажлууд</h2>
-                </div>
                 <div class="col-auto ms-auto">
                     <a href="{{ route('power-distribution-works.create') }}"
                         class="btn btn-primary d-flex align-items-center">
@@ -25,9 +22,39 @@
         @endif
 
         <div class="card">
+            <div class="card-header">
+                <h2 class="page-title">⚡ Захиалгат ажлууд</h2>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ route('power-distribution-works.index') }}" class="row g-3">
 
-            <div class="table-responsive">
-                <table class="table table-vcenter card-table table-striped">
+                    <div class="col-md-3">
+                        <label class="form-label">ТЗЭ</label>
+                        <input type="text" name="tze" value="{{ request('tze') }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Засварын ажил</label>
+                        <input type="text" name="repair_work" value="{{ request('repair_work') }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Огноо</label>
+                        <input type="date" name="date" value="{{ request('date') }}" class="form-control">
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary me-2">
+                            <i class="ti ti-search me-1"></i> Хайх
+                        </button>
+
+                        <a href="{{ route('power-distribution-works.index') }}" class="btn btn-secondary">
+                            Цэвэрлэх
+                        </a>
+                    </div>
+
+                </form>
+                <table class="table table-vcenter card-table table-striped mt-4">
                     <thead class="text-muted">
                         <tr>
                             <th class="w-1">№</th>
@@ -64,8 +91,8 @@
                                             <i class="ti ti-edit me-1"></i>
                                         </a>
 
-                                        <form action="{{ route('power-distribution-works.destroy', $work) }}" method="POST"
-                                            onsubmit="return confirm('Устгах уу?')" style="display:inline;">
+                                        <form action="{{ route('power-distribution-works.destroy', $work) }}"
+                                            method="POST" onsubmit="return confirm('Устгах уу?')" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-danger d-inline-flex align-items-center">
@@ -77,16 +104,18 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">Одоогоор бүртгэл байхгүй байна.</td>
+                                <td colspan="8" class="text-center text-muted py-4">Одоогоор бүртгэл байхгүй байна.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <div class="card-footer d-flex justify-content-center">
+            <div class="card-footer d-flex justify-content-start">
                 {{ $works->links() }}
             </div>
         </div>
+    </div>
     </div>
 @endsection

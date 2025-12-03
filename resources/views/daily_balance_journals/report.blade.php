@@ -17,9 +17,6 @@
             </div>
         </form>
 
-
-
-
         <table class="table table-bordered table-sm text-center" style="font-size: 12px; white-space: nowrap">
             <thead>
                 <tr>
@@ -36,7 +33,12 @@
                     @foreach (['processed' => 'Боловсруулалт', 'distributed' => 'Түгээлт', 'internal_demand' => 'Д/Хэрэглээ', 'percent' => '%'] as $key => $label)
                         <tr>
                             @if ($loop->first)
-                                <td rowspan="4">{{ $plant }}</td>
+                                <td rowspan="4">
+                                    <a
+                                        href="{{ route('daily-balance-journals.showPlant', ['plant' => $types['plant_id'], 'month' => $selectedMonth]) }}">
+                                        <strong>{{ $plant }}</strong>
+                                    </a>
+                                </td>
                             @endif
                             <td>{{ $label }}</td>
                             @foreach ($days as $day)

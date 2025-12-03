@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class PermissionLevelController extends Controller
 {
-   
+
     public function index()
     {
         $levels = PermissionLevel::all();
@@ -21,16 +21,15 @@ class PermissionLevelController extends Controller
 
     public function store(Request $request)
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:5',
+            'code' => 'nullable|string|max:10',
         ]);
 
         PermissionLevel::create($validated);
 
         return redirect()->route('permission_levels.index')
-                         ->with('success', 'Амжилттай хадгаллаа.');
-                         
+            ->with('success', 'Амжилттай хадгаллаа.');
     }
 
     public function show(string $id)
@@ -49,13 +48,13 @@ class PermissionLevelController extends Controller
         $permissionLevel = PermissionLevel::findOrFail($id); // ID-аар объект авах
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:5',
+            'code' => 'nullable|string|max:10',
         ]);
 
         $permissionLevel->update($validated);
 
         return redirect()->route('permission_levels.index')
-                         ->with('success', 'Амжилттай шинэчлэгдлээ.');
+            ->with('success', 'Амжилттай шинэчлэгдлээ.');
     }
 
     /**
@@ -63,9 +62,9 @@ class PermissionLevelController extends Controller
      */
     public function destroy(string $id)
     {
-        $permissionLevel = PermissionLevel::findOrFail($id); // ID-аар объект авах 
+        $permissionLevel = PermissionLevel::findOrFail($id); // ID-аар объект авах
         $permissionLevel->delete();
         return redirect()->route('permission_levels.index')
-                         ->with('success', 'Амжилттай устгалаа.');
+            ->with('success', 'Амжилттай устгалаа.');
     }
 }

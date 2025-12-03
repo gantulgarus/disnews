@@ -6,75 +6,6 @@
             background-color: #4299e1;
             color: #fff;
         }
-
-        .equipment-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .equipment-icon-wrapper {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .equipment-icon-wrapper:hover {
-            transform: scale(1.05);
-        }
-
-        .equipment-icon-img {
-            width: 18px;
-            height: 18px;
-            object-fit: contain;
-            position: relative;
-            z-index: 1;
-            /* Цагаан + тод + гэрэлтүүлэх */
-            filter: brightness(0) invert(1) brightness(1.3) contrast(2) drop-shadow(0 1px 2px rgba(255, 255, 255, 0.8)) !important;
-            /* Илүү тод харагдуулах */
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
-
-        /* Ажилд - Улаан */
-        .equipment-icon-wrapper.status-active {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Бэлтгэлд - Ногоон */
-        .equipment-icon-wrapper.status-standby {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Засварт - Саарал */
-        .equipment-icon-wrapper.status-repair {
-            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-            box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Default - Саарал */
-        .equipment-icon-wrapper.status-default {
-            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-            box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .equipment-name {
-            font-size: 10px;
-            color: #1f2937;
-            font-weight: 500;
-            text-align: center;
-            max-width: 60px;
-            word-wrap: break-word;
-            line-height: 1.2;
-        }
     </style>
 @endsection
 
@@ -139,28 +70,6 @@
 
 
         {{-- ДЦС --}}
-        @php
-            function statusIcon($status)
-            {
-                $color = match ($status) {
-                    'Ажилд' => 'red',
-                    'Бэлтгэлд' => 'green',
-                    'Засварт' => 'gray',
-                    default => 'gray',
-                };
-
-                return '<img src="' .
-                    asset('images/power-plant.svg') .
-                    '"
-                    style="width:18px; height:18px; filter: drop-shadow(0 0 2px ' .
-                    $color .
-                    ');"
-                    alt="' .
-                    $status .
-                    '">';
-            }
-
-        @endphp
 
         @php
             function equipmentIcon($type)
@@ -174,16 +83,14 @@
                     default => asset('images/power-plant.svg'),
                 };
             }
-        @endphp
 
-        @php
             function statusIconsWithLabel($equipments, $statuses, $iconType = null)
             {
                 if ($equipments->isEmpty()) {
                     return '<span class="text-muted">—</span>';
                 }
 
-                $html = '<div style="display:flex; gap:8px; flex-wrap:wrap;">';
+                $html = '<div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: flex-start;">';
 
                 foreach ($equipments as $e) {
                     $status = $statuses[$e->id]->status ?? null;
@@ -193,39 +100,123 @@
 
                     $iconPath = $iconType ? equipmentIcon($iconType) : asset('images/power-plant.svg');
 
-                    $colorClass = match ($status) {
-                        'Ажилд' => 'status-active',
-                        'Бэлтгэлд' => 'status-standby',
-                        'Засварт' => 'status-repair',
-                        default => 'status-default',
+                    // Төлвөөс хамааруулж өнгө сонгох
+                    [$color, $bgColor] = match ($status) {
+                        'Ажилд' => ['#dc2626', 'rgba(220, 38, 38, 0.15)'],
+                        'Бэлтгэлд' => ['#16a34a', 'rgba(22, 163, 74, 0.15)'],
+                        'Засварт' => ['#6b7280', 'rgba(107, 114, 128, 0.15)'],
+                        default => ['#9ca3af', 'rgba(156, 163, 175, 0.15)'],
                     };
 
                     $html .=
-                        '
-        <div class="equipment-item">
-            <div class="equipment-icon-wrapper ' .
-                        $colorClass .
-                        '">
-                <img src="' .
-                        $iconPath .
-                        '"
-                     class="equipment-icon-img"
-                     style="filter: brightness(0) invert(1) !important;"
-                     alt="' .
+                        '<div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 3px;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                "
+                onmouseover="this.style.transform=\'translateY(-2px)\';"
+                onmouseout="this.style.transform=\'translateY(0)\';"
+                title="' .
+                        $e->name .
+                        ' - ' .
                         $status .
                         '">
-            </div>
-            <span class="equipment-name">' .
+
+                    <div style="
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 6px;
+                        background: ' .
+                        $bgColor .
+                        ';
+                        transition: all 0.3s ease;
+                    "
+
+                    onmouseout="this.style.background=\'' .
+                        $bgColor .
+                        '\';">
+                        <img src="' .
+                        $iconPath .
+                        '"
+                             style="width: 16px; height: 16px; transition: all 0.3s ease;"
+                             alt="' .
+                        $status .
+                        '"
+                             onmouseover="this.style.transform=\'scale(1.1)\';"
+                             onmouseout="this.style.transform=\'scale(1)\';">
+
+                        <!-- Төлвийн индикатор -->
+                        <div style="
+                            position: absolute;
+                            top: -2px;
+                            right: -2px;
+                            width: 8px;
+                            height: 8px;
+                            background: ' .
+                        $color .
+                        ';
+                            border: 1.5px solid white;
+                            border-radius: 50%;
+                            animation: pulse-' .
+                        md5($status) .
+                        ' 2s ease-in-out infinite;
+                        "></div>
+                    </div>
+
+                    <div style="
+                        font-size: 9px;
+                        color: #374151;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 45px;
+                    ">' .
                         $e->name .
-                        '</span>
-        </div>';
+                        '</div>
+                </div>';
                 }
 
                 $html .= '</div>';
+
+                // Animation нэмэх
+                $html .=
+                    '
+        <style>
+            @keyframes pulse-' .
+                    md5('Ажилд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Бэлтгэлд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Засварт') .
+                    ' {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        </style>';
+
                 return $html;
             }
         @endphp
 
+
+
+        {{-- ДЦС --}}
         <div class="card mt-4">
             <div class="card-body">
                 <!-- Гоё legend -->
@@ -234,24 +225,46 @@
                         <strong class="text-muted">Тоноглолын төлөв:</strong>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-active"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Ажилд (Улаан)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-standby"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд (Ногоон)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-repair"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Засварт (Саарал)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
                         </div>
                     </div>
                 </div>
+
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
@@ -273,7 +286,7 @@
                                     $boilers = $plant->equipments->where('equipment_type_id', 1);
                                     $turbos = $plant->equipments->where('equipment_type_id', 2);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
-                                    $info = $plant->powerInfos->first();
+                                    $info = $plant->powerInfos->first(); // хамгийн сүүлийн PowerInfo
                                 @endphp
 
                                 <tr>
@@ -340,21 +353,42 @@
                         <strong class="text-muted">Тоноглолын төлөв:</strong>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-active"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Ажилд (Улаан)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-standby"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд (Ногоон)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-repair"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Засварт (Саарал)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
                         </div>
                     </div>
                 </div>
@@ -399,8 +433,8 @@
                                         <a
                                             href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
                                                 class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                 <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -440,21 +474,42 @@
                         <strong class="text-muted">Тоноглолын төлөв:</strong>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-active"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Ажилд (Улаан)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-standby"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд (Ногоон)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div class="equipment-icon-wrapper status-repair"
-                                style="width: 16px; height: 16px; min-width: 16px;"></div>
-                            <span class="text-dark" style="font-size: 13px;">Засварт (Саарал)</span>
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
                         </div>
                     </div>
                 </div>
@@ -695,6 +750,7 @@
                             <tr>
                                 <th rowspan="2">№</th>
                                 <th>Огноо</th>
+                                <th>Цаг</th>
                                 <th>ТЗЭ</th>
                                 <th>Тасралт</th>
                                 <th>Тайлбар</th>
@@ -706,6 +762,7 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $tasralt->date }}</td>
+                                    <td>{{ $tasralt->time }}</td>
                                     <td>{{ $tasralt->TZE }}</td>
                                     <td>{{ $tasralt->tasralt }}</td>
                                     <td>{{ $tasralt->ArgaHemjee }}</td>

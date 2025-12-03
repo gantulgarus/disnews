@@ -41,7 +41,7 @@ class DailyEquipmentReportController extends Controller
 
         // Хамгийн сүүлийн power info татах
         $lastPowerInfo = StationPowerInfo::where('power_plant_id', $powerPlantId)
-            ->orderByDesc('date')
+            ->orderByDesc('id')
             ->first();
 
         // Хамгийн сүүлийн тоноглолын төлөвүүд татах
@@ -85,6 +85,8 @@ class DailyEquipmentReportController extends Controller
             'produced_energy' => 'nullable|numeric',
             'distributed_energy' => 'nullable|numeric',
             'main_equipment_remark' => 'nullable|string',
+            'water_level' => 'nullable|numeric',
+            'fuel_amount' => 'nullable|numeric',
         ]);
 
         foreach ($request->equipments as $eq) {
@@ -104,6 +106,8 @@ class DailyEquipmentReportController extends Controller
             'p_min' => $request->p_min,
             'produced_energy' => $request->produced_energy,
             'distributed_energy' => $request->distributed_energy,
+            'water_level' => $request->water_level,
+            'fuel_amount' => $request->fuel_amount,
             'remark' => $request->main_equipment_remark,
             'date' => $request->date,
         ]);

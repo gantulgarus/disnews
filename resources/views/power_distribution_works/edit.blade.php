@@ -18,16 +18,15 @@
                     @method('PUT')
                     <div class="row g-3">
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label class="form-label required">ТЗЭ</label>
                             <input type="text" name="tze" class="form-control"
                                 value="{{ old('tze', $powerDistributionWork->tze) }}" required>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <label class="form-label required">Засварын ажлын утга</label>
-                            <input type="text" name="repair_work" class="form-control"
-                                value="{{ old('repair_work', $powerDistributionWork->repair_work) }}" required>
+                            <textarea name="repair_work" class="form-control" style="height:100px" required>{{ old('repair_work', $powerDistributionWork->repair_work) }}</textarea>
                         </div>
 
                         <div class="col-12">

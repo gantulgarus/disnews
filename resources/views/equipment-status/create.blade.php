@@ -124,6 +124,18 @@
                                     <input type="number" step="0.001" name="distributed_energy" class="form-control"
                                         value="{{ old('distributed_energy', $lastPowerInfo->distributed_energy ?? '') }}">
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Түлшний нөөц (л)</label>
+                                    <input type="number" step="0.01" name="fuel_amount" class="form-control"
+                                        value="{{ old('fuel_amount', $lastPowerInfo->fuel_amount ?? '') }}">
+                                </div>
+                            @endif
+                            @if ($powerPlant->powerPlantType->name == 'УЦС')
+                                <div class="col-md-6">
+                                    <label class="form-label">Усны төвшин (м)</label>
+                                    <input type="number" step="0.01" name="water_level" class="form-control"
+                                        value="{{ old('water_level', $lastPowerInfo->water_level ?? '') }}">
+                                </div>
                             @endif
                         </div>
 
