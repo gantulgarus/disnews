@@ -33,7 +33,6 @@
                             <div class="col-md-6">
                                 <label class="form-label-sm">Станц</label>
                                 <select name="power_plant_id" class="form-select form-select-sm" required>
-                                    <option value="">Сонгох</option>
                                     @foreach ($powerPlants as $plant)
                                         <option value="{{ $plant->id }}"
                                             {{ $dailyBalanceJournal->power_plant_id == $plant->id ? 'selected' : '' }}>

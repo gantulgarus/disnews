@@ -14,6 +14,9 @@
         </h1>
 
 
+        @php
+            $orgId = auth()->user()->organization_id;
+        @endphp
 
 
         <div class="collapse navbar-collapse" id="sidebar-menu">
@@ -44,6 +47,7 @@
                     $operationRoutes = [
                         'daily-equipment-report.index',
                         'daily-balance-journals.index',
+                        'daily-balance-journals.report',
                         'order-journals.index',
                         'tnews.index',
                         'reports.dailyReport',
@@ -79,38 +83,48 @@
                     <div class="dropdown-menu {{ $isOperationActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
-                                <a class="dropdown-item {{ request()->routeIs('reports.dailyReport') ? 'active' : '' }}"
-                                    href="{{ route('reports.dailyReport') }}">
-                                    Хоногийн мэдээ
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('reports.localDailyReport') ? 'active' : '' }}"
-                                    href="{{ route('reports.localDailyReport') }}">
-                                    Орон нутаг мэдээ
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
-                                    href="{{ route('daily-balance-journals.index') }}">
-                                    Тооцооны журнал
-                                </a>
+                                @if ($orgId == 5)
+                                    <a class="dropdown-item {{ request()->routeIs('reports.dailyReport') ? 'active' : '' }}"
+                                        href="{{ route('reports.dailyReport') }}">
+                                        Хоногийн мэдээ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('reports.localDailyReport') ? 'active' : '' }}"
+                                        href="{{ route('reports.localDailyReport') }}">
+                                        Орон нутаг мэдээ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
+                                        href="{{ route('tnews.index') }}">
+                                        Тасралтын мэдээ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
+                                        href="{{ route('power-distribution-works.index') }}">
+                                        Захиалгат ажил
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
+                                        href="{{ route('sms.index') }}">
+                                        СМС илгээх
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.report') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-journals.report') }}">
+                                        Тооцооны журнал
+                                    </a>
+                                @endif
                                 <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
                                     href="{{ route('order-journals.index') }}">
                                     Захиалгын журнал
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
-                                    href="{{ route('tnews.index') }}">
-                                    Тасралтын мэдээ
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
-                                    href="{{ route('power-distribution-works.index') }}">
-                                    Захиалгат ажил
-                                </a>
+                                @if ($orgId != 5)
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-journals.index') }}">
+                                        Тооцооны журнал
+                                    </a>
+                                @endif
+
                                 <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
                                     href="{{ route('telephone_messages.index') }}">
                                     Телефон мэдээ
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
-                                    href="{{ route('sms.index') }}">
-                                    СМС илгээх
-                                </a>
+
                                 <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
                                     href="{{ route('dis_coal.index') }}">
                                     Түлшний мэдээ
@@ -157,32 +171,37 @@
                     <div class="dropdown-menu {{ $isRegimeActive ? 'show' : '' }}">
                         <div class="dropdown-menu-columns">
                             <div class="dropdown-menu-column">
+                                @if ($orgId == 5)
+                                    <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
+                                        href="{{ route('electric_daily_regimes.report') }}">
+                                        Цахилгааны мэдээ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
+                                        href="{{ route('station_thermo.news') }}">
+                                        Дулааны мэдээ
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        Импорт, Экспорт
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
+                                        href="{{ route('reports.powerPlantReport') }}">
+                                        СЭХ-ний горим, гүйцэтгэл
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        ДЦС-ын горим, гүйцэтгэл
+                                    </a>
+                                @endif
                                 <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
                                     href="{{ route('electric_daily_regimes.index') }}">
                                     Цахилгааны горим
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
-                                    href="{{ route('electric_daily_regimes.report') }}">
-                                    Цахилгааны мэдээ
-                                </a>
+
                                 <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
                                     href="{{ route('thermo-daily-regimes.index') }}">
                                     Дулааны горим
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
-                                    href="{{ route('station_thermo.news') }}">
-                                    Дулааны мэдээ
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    Импорт, Экспорт
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
-                                    href="{{ route('reports.powerPlantReport') }}">
-                                    СЭХ-ний горим, гүйцэтгэл
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    ДЦС-ын горим, гүйцэтгэл
-                                </a>
+
+
                             </div>
                         </div>
                     </div>
@@ -193,39 +212,41 @@
                     $isReportsActive = request()->routeIs(...$reportRoutes);
                 @endphp
 
-                <li class="nav-item dropdown {{ $isReportsActive ? 'active' : '' }}">
-                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
-                        data-bs-auto-close="false" role="button" aria-expanded="false">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-file-analytics">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                <path d="M9 17l0 -5" />
-                                <path d="M12 17l0 -1" />
-                                <path d="M15 17l0 -3" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Тайлан</span>
-                    </a>
+                @if ($orgId == 5)
+                    <li class="nav-item dropdown {{ $isReportsActive ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="false" role="button" aria-expanded="false">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-file-analytics">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                    <path d="M9 17l0 -5" />
+                                    <path d="M12 17l0 -1" />
+                                    <path d="M15 17l0 -3" />
+                                </svg>
+                            </span>
+                            <span class="nav-link-title">Тайлан</span>
+                        </a>
 
-                    <div class="dropdown-menu {{ $isReportsActive ? 'show' : '' }}">
-                        <div class="dropdown-menu-columns">
-                            <div class="dropdown-menu-column">
-                                <a class="dropdown-item {{ request()->routeIs('reports.index') ? 'active' : '' }}"
-                                    href="{{ route('reports.index') }}">
-                                    Тайлан 1
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    Тайлан 2
-                                </a>
+                        <div class="dropdown-menu {{ $isReportsActive ? 'show' : '' }}">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item {{ request()->routeIs('reports.index') ? 'active' : '' }}"
+                                        href="{{ route('reports.index') }}">
+                                        Тайлан 1
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        Тайлан 2
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                @endif
 
                 @php
                     $settingRoutes = [
@@ -239,59 +260,61 @@
                     $isSettingsActive = request()->routeIs(...$settingRoutes);
                 @endphp
 
-                <li class="nav-item dropdown {{ $isSettingsActive ? 'active' : '' }}">
-                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
-                        data-bs-auto-close="false" role="button" aria-expanded="false">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-settings-bolt">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path
-                                    d="M13.256 20.473c-.855 .907 -2.583 .643 -2.931 -.79a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.07 .26 1.488 1.29 1.254 2.15" />
-                                <path d="M19 16l-2 3h4l-2 3" />
-                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Тохиргоо</span>
-                    </a>
+                @if ($orgId == 5)
+                    <li class="nav-item dropdown {{ $isSettingsActive ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="false" role="button" aria-expanded="false">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-settings-bolt">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M13.256 20.473c-.855 .907 -2.583 .643 -2.931 -.79a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.07 .26 1.488 1.29 1.254 2.15" />
+                                    <path d="M19 16l-2 3h4l-2 3" />
+                                    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                </svg>
+                            </span>
+                            <span class="nav-link-title">Тохиргоо</span>
+                        </a>
 
-                    <div class="dropdown-menu {{ $isSettingsActive ? 'show' : '' }}">
-                        <div class="dropdown-menu-columns">
-                            <div class="dropdown-menu-column">
-                                <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
-                                    href="{{ route('power-plants.index') }}">
-                                    Эх үүсвэр
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('equipments.index') ? 'active' : '' }}"
-                                    href="{{ route('equipments.index') }}">
-                                    Тоноглол
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
-                                    href="{{ route('organizations.index') }}">
-                                    Байгууллага
-                                </a>
+                        <div class="dropdown-menu {{ $isSettingsActive ? 'show' : '' }}">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
+                                        href="{{ route('power-plants.index') }}">
+                                        Эх үүсвэр
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('equipments.index') ? 'active' : '' }}"
+                                        href="{{ route('equipments.index') }}">
+                                        Тоноглол
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
+                                        href="{{ route('organizations.index') }}">
+                                        Байгууллага
+                                    </a>
 
-                                <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
-                                    href="{{ route('divisions.index') }}">
-                                    Албан тушаал
-                                </a>
+                                    <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
+                                        href="{{ route('divisions.index') }}">
+                                        Албан тушаал
+                                    </a>
 
-                                <a class="dropdown-item {{ request()->routeIs('permission_levels.index') ? 'active' : '' }}"
-                                    href="{{ route('permission_levels.index') }}">
-                                    Эрхийн түвшин
-                                </a>
+                                    <a class="dropdown-item {{ request()->routeIs('permission_levels.index') ? 'active' : '' }}"
+                                        href="{{ route('permission_levels.index') }}">
+                                        Эрхийн түвшин
+                                    </a>
 
-                                <a class="dropdown-item {{ request()->routeIs('users.index') ? 'active' : '' }}"
-                                    href="{{ route('users.index') }}">
-                                    Хэрэглэгч
-                                </a>
+                                    <a class="dropdown-item {{ request()->routeIs('users.index') ? 'active' : '' }}"
+                                        href="{{ route('users.index') }}">
+                                        Хэрэглэгч
+                                    </a>
 
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                @endif
 
             </ul>
         </div>

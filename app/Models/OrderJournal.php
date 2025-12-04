@@ -71,6 +71,11 @@ class OrderJournal extends Model
         });
     }
 
+    public function createdUser()
+    {
+        return $this->belongsTo(User::class, 'created_user_id');
+    }
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);
@@ -79,5 +84,10 @@ class OrderJournal extends Model
     public function approvals()
     {
         return $this->hasMany(OrderJournalApproval::class);
+    }
+
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderJournalStatusHistory::class);
     }
 }

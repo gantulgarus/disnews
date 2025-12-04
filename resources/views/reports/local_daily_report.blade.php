@@ -88,6 +88,150 @@
             </div>
         </div>
 
+        @php
+            function equipmentIcon($type)
+            {
+                return match ($type) {
+                    'Зуух' => asset('images/k.svg'),
+                    'Турбогенератор' => asset('images/tg.svg'),
+                    'НЦС' => asset('images/solar-power.svg'),
+                    'СЦС' => asset('images/wind-power.svg'),
+                    'УЦС' => asset('images/hydro-power.svg'),
+                    'Баттерэй' => asset('images/battery-bolt.svg'),
+                    default => asset('images/power-plant.svg'),
+                };
+            }
+
+            function statusIconsWithLabel($equipments, $statuses, $iconType = null)
+            {
+                if ($equipments->isEmpty()) {
+                    return '<span class="text-muted">—</span>';
+                }
+
+                $html = '<div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: flex-start;">';
+
+                foreach ($equipments as $e) {
+                    $status = $statuses[$e->id]->status ?? null;
+                    if (!$status) {
+                        continue;
+                    }
+
+                    $iconPath = $iconType ? equipmentIcon($iconType) : asset('images/power-plant.svg');
+
+                    // Төлвөөс хамааруулж өнгө сонгох
+                    [$color, $bgColor] = match ($status) {
+                        'Ажилд' => ['#dc2626', 'rgba(220, 38, 38, 0.15)'],
+                        'Бэлтгэлд' => ['#16a34a', 'rgba(22, 163, 74, 0.15)'],
+                        'Засварт' => ['#6b7280', 'rgba(107, 114, 128, 0.15)'],
+                        default => ['#9ca3af', 'rgba(156, 163, 175, 0.15)'],
+                    };
+
+                    $html .=
+                        '<div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 3px;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                "
+                onmouseover="this.style.transform=\'translateY(-2px)\';"
+                onmouseout="this.style.transform=\'translateY(0)\';"
+                title="' .
+                        $e->name .
+                        ' - ' .
+                        $status .
+                        '">
+
+                    <div style="
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 6px;
+                        background: ' .
+                        $bgColor .
+                        ';
+                        transition: all 0.3s ease;
+                    "
+
+                    onmouseout="this.style.background=\'' .
+                        $bgColor .
+                        '\';">
+                        <img src="' .
+                        $iconPath .
+                        '"
+                             style="width: 16px; height: 16px; transition: all 0.3s ease;"
+                             alt="' .
+                        $status .
+                        '"
+                             onmouseover="this.style.transform=\'scale(1.1)\';"
+                             onmouseout="this.style.transform=\'scale(1)\';">
+
+                        <!-- Төлвийн индикатор -->
+                        <div style="
+                            position: absolute;
+                            top: -2px;
+                            right: -2px;
+                            width: 8px;
+                            height: 8px;
+                            background: ' .
+                        $color .
+                        ';
+                            border: 1.5px solid white;
+                            border-radius: 50%;
+                            animation: pulse-' .
+                        md5($status) .
+                        ' 2s ease-in-out infinite;
+                        "></div>
+                    </div>
+
+                    <div style="
+                        font-size: 9px;
+                        color: #374151;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 45px;
+                    ">' .
+                        $e->name .
+                        '</div>
+                </div>';
+                }
+
+                $html .= '</div>';
+
+                // Animation нэмэх
+                $html .=
+                    '
+        <style>
+            @keyframes pulse-' .
+                    md5('Ажилд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Бэлтгэлд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Засварт') .
+                    ' {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        </style>';
+
+                return $html;
+            }
+        @endphp
+
         {{-- ДЦС --}}
         <div class="card mt-4">
             <div class="card-body">
@@ -95,24 +239,17 @@
                     <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Гидрогенератор</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">P min (МВт)</th>
-                                <th rowspan="2" class="text-wrap">Үйлдвэрлэсэн ЦЭХ (мян.кВт.цаг)</th>
-                                <th rowspan="2" class="text-wrap">Түгээсэн ЦЭХ (мян.кВт.цаг)</th>
-                                <th rowspan="2" class="text-wrap">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Гидрогенератор</th>
+                                <th class="text-center">Багц</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th class="text-wrap">Усны түвшин (м)</th>
+                                <th class="text-wrap">Үйлдвэрлэсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th class="text-wrap">Түгээсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th class="text-wrap">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,24 +265,15 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $plant->name }}</td>
 
-                                    {{-- Зуух --}}
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    {{-- Гидрогенератор --}}
+                                    <td>{!! statusIconsWithLabel($hidro, $statuses, $plant->powerPlantType?->name) !!}</td>
 
-                                    {{-- Турбогенератор --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    {{-- Багц --}}
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
+                                    <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
-                                    <td>{{ $info?->p_min }}</td>
+                                    <td>{{ $info?->water_level }}</td>
                                     <td>{{ $info?->produced_energy }}</td>
                                     <td>{{ $info?->distributed_energy }}</td>
                                     <td>{{ $info?->remark }}</td>
@@ -172,9 +300,11 @@
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
-                                <td>{{ number_format($total_p, 2) }}</td>
-                                <td>{{ number_format($total_pmax, 2) }}</td>
+                                <td colspan="4">Нийт дүн</td>
+                                <td>{{ number_format($bbehs_total_p, 2) }}</td>
+                                <td>{{ number_format($bbehs_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                             </tr>
@@ -193,22 +323,18 @@
                     <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Гидрогенератор</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Гидрогенератор</th>
+                                <th class="text-center">Багц</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th class="text-wrap">Усны түвшин (м)</th>
+                                <th class="text-wrap">Түлшний нөөц (л)</th>
+                                <th class="text-wrap">Үйлдвэрлэсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th class="text-wrap">Түгээсэн ЦЭХ (мян.кВт.цаг)</th>
+                                <th>Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -224,24 +350,18 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $plant->name }}</td>
 
-                                    {{-- Зуух --}}
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $hidro->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    {{-- Гидрогенератор --}}
+                                    <td>{!! statusIconsWithLabel($hidro, $statuses, $plant->powerPlantType?->name) !!}</td>
 
-                                    {{-- Турбогенератор --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    {{-- Багц --}}
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
+                                    <td>{{ $info?->water_level }}</td>
+                                    <td>{{ $info?->fuel_reserve }}</td>
+                                    <td>{{ $info?->produced_energy }}</td>
+                                    <td>{{ $info?->distributed_energy }}</td>
                                     <td>{{ $info?->remark }}</td>
                                     <td>
                                         <a
@@ -266,9 +386,11 @@
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
+                                <td colspan="4">Нийт дүн</td>
                                 <td>{{ number_format($altai_total_p, 2) }}</td>
                                 <td>{{ number_format($altai_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 

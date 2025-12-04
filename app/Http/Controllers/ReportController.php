@@ -72,27 +72,55 @@ class ReportController extends Controller
 
 
         $powerPlants = PowerPlant::with([
+            // Тоноглол бүрийн хамгийн сүүлийн статус
             'equipmentStatuses' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
+                $q->whereDate('date', $date)
+                    ->whereIn('id', function ($sub) use ($date) {
+                        $sub->selectRaw('MAX(id)')
+                            ->from('equipment_statuses')
+                            ->whereDate('date', $date)
+                            ->groupBy('equipment_id');
+                    });
             },
+
+            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
-            }
-        ])->where('power_plant_type_id', 1)->where('region', 'ТБЭХС')->orderBy('Order')->get()
+                $q->whereDate('date', $date)
+                    ->orderByDesc('id')
+                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+            },
+        ])
+            ->where('power_plant_type_id', 1)
+            ->where('region', 'ТБЭХС')
+            ->orderBy('Order')
+            ->get()
             ->map(function ($plant) {
-                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
                 $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
+
+        // dd($powerPlants);
+
         $sunWindPlants = PowerPlant::with([
+            // Тоноглол бүрийн хамгийн сүүлийн статус
             'equipmentStatuses' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
+                $q->whereDate('date', $date)
+                    ->whereIn('id', function ($sub) use ($date) {
+                        $sub->selectRaw('MAX(id)')
+                            ->from('equipment_statuses')
+                            ->whereDate('date', $date)
+                            ->groupBy('equipment_id');
+                    });
             },
+
+            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
-            }
+                $q->whereDate('date', $date)
+                    ->orderByDesc('id')
+                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+            },
         ])->whereIn('power_plant_type_id', [2, 4])->where('region', 'ТБЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
@@ -102,12 +130,23 @@ class ReportController extends Controller
             });
 
         $battery_powers = PowerPlant::with([
+            // Тоноглол бүрийн хамгийн сүүлийн статус
             'equipmentStatuses' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
+                $q->whereDate('date', $date)
+                    ->whereIn('id', function ($sub) use ($date) {
+                        $sub->selectRaw('MAX(id)')
+                            ->from('equipment_statuses')
+                            ->whereDate('date', $date)
+                            ->groupBy('equipment_id');
+                    });
             },
+
+            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
-            }
+                $q->whereDate('date', $date)
+                    ->orderByDesc('id')
+                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+            },
         ])->where('power_plant_type_id', 3)->where('region', 'ТБЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
@@ -153,11 +192,22 @@ class ReportController extends Controller
 
         $powerPlants = PowerPlant::with([
             'equipmentStatuses' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
+                $q->whereDate('date', $date)
+                    ->whereIn('id', function ($sub) use ($date) {
+                        $sub->selectRaw('MAX(id)')
+                            ->from('equipment_statuses')
+                            ->whereDate('date', $date)
+                            ->groupBy('equipment_id');
+                    });
             },
+
+            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
-            }
+                $q->whereDate('date', $date)
+                    ->orderByDesc('id')
+                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+            },
+
         ])->where('region', 'ББЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
@@ -167,16 +217,26 @@ class ReportController extends Controller
             });
 
         // ✅ Хэрвээ нийт дүн хэрэгтэй бол
-        $total_p = $powerPlants->sum('total_p');
-        $total_pmax = $powerPlants->sum('total_pmax');
+        $bbehs_total_p = $powerPlants->sum('total_p');
+        $bbehs_total_pmax = $powerPlants->sum('total_pmax');
 
         $powerAltaiPlants = PowerPlant::with([
             'equipmentStatuses' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
+                $q->whereDate('date', $date)
+                    ->whereIn('id', function ($sub) use ($date) {
+                        $sub->selectRaw('MAX(id)')
+                            ->from('equipment_statuses')
+                            ->whereDate('date', $date)
+                            ->groupBy('equipment_id');
+                    });
             },
+
+            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
-                $q->whereDate('date', $date);
-            }
+                $q->whereDate('date', $date)
+                    ->orderByDesc('id')
+                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+            },
         ])->where('region', 'АУЭХС')->orderBy('Order')->get()
             ->map(function ($plant) {
                 // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
@@ -191,7 +251,7 @@ class ReportController extends Controller
 
         $westernRegionCapacities = WesternRegionCapacity::whereDate('date', $date)->get();
 
-        return view('reports.local_daily_report', compact('powerPlants', 'date', 'total_p', 'total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax', 'westernRegionCapacities'));
+        return view('reports.local_daily_report', compact('powerPlants', 'date', 'bbehs_total_p', 'bbehs_total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax', 'westernRegionCapacities'));
     }
 
     public function powerPlantReport(Request $request)
