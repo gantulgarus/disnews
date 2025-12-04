@@ -18,14 +18,16 @@ use App\Http\Controllers\TelephoneMessageController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\DailyBalanceJournalController;
+use App\Http\Controllers\DailyPowerEquipmentController;
 use App\Http\Controllers\ElectricDailyRegimeController;
 use App\Http\Controllers\DailyEquipmentReportController;
+use App\Http\Controllers\DailyPowerHourReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 
 
 
-Route::middleware('auth')->group(function () {
+    Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 
@@ -48,6 +50,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
     Route::resource('divisions', DivisionController::class);
     Route::resource('dis_coal', DisCoalController::class);
+    Route::resource('daily_power_equipments', DailyPowerEquipmentController::class);
+
+    Route::get('/reports/daily-power-equipment', [DailyPowerEquipmentController::class, 'index'])
+    ->name('reports.dailyPowerEquipment'); 
+   
+    Route::get('/reports/daily-power-equipment', [ReportController::class, 'dailyPowerEquipment'])->name('reports.dailyPowerEquipment');
 
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::resource('users', UserController::class);
@@ -88,6 +96,27 @@ Route::middleware('auth')->group(function () {
     Route::resource('thermo-daily-regimes', ThermoDailyRegimeController::class);
 
     Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
+
+     
+   
+   Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
+    ->name('daily_power_hour_reports.report');
+
+    Route::resource('daily_power_hour_reports', DailyPowerHourReportController::class)
+    ->except(['edit', 'update', 'show']);
+
+
+    Route::get('daily-power-hour-reports/{time}/edit', [DailyPowerHourReportController::class, 'editByTime'])
+    ->name('daily_power_hour_reports.edit')
+    ->where('time', '[0-9:]+'); // цаг форматанд : зөвшөөрнө
+
+    Route::put('daily-power-hour-reports/{time}', 
+    [DailyPowerHourReportController::class, 'updateByTime'])
+    ->name('daily_power_hour_reports.updateByTime');
+
+
+
+
 });
 
 require __DIR__ . '/auth.php';
