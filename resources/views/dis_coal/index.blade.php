@@ -86,7 +86,7 @@
                                 <tr>
 
                                     <td class="text-center" style="font-size: 12px; white-space: nowrap;">
-                                        {{ $disCoal->organization->name }}</td>
+                                        {{ $disCoal->organization?->name }}</td>
                                     <td class="text-center">{{ $disCoal->CAME_TRAIN }}</td>
                                     <td class="text-center table-secondary">{{ $disCoal->UNLOADING_TRAIN }}</td>
                                     <td class="text-center">{{ $disCoal->ULDSEIN_TRAIN }}</td>
