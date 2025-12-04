@@ -4,55 +4,145 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Regime;
-use App\Models\PowerPlant;
 use App\Models\ZConclusion;
 use Illuminate\Http\Request;
-use App\Models\PowerPlantType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
+    // Станцуудын бүлгүүд
+    private $stationGroups = [
+        'thermal' => [
+            'name' => 'Дулааны цахилгаан станц',
+            'stations' => [
+                'PP4_TOTAL_P',
+                'PP3_TOTAL_P',
+                'PP2_TOTAL_P',
+                'DARKHAN_PP_TOTAL_P',
+                'ERDENET_PP_TOTAL_P',
+                'GOK_PP_TOTAL_P',
+                'DALANZADGAD_PP_TOTAL_P',
+                'UHAAHUDAG_PP_TOTAL_P',
+                'BUURULJUUT_PP_TOTAL_P',
+            ]
+        ],
+        'wind' => [
+            'name' => 'Салхин цахилгаан станц',
+            'stations' => [
+                'SALKHIT_WPP_TOTAL_P',
+                'TSETSII_WPP_TOTAL_P',
+                'SHAND_WPP_TOTAL_P',
+            ]
+        ],
+        'solar' => [
+            'name' => 'Нарны цахилгаан станц',
+            'stations' => [
+                'DARKHAN_SPP_TOTAL_P',
+                'MONNAR_SPP_TOTAL_P',
+                'GEGEEN_SPP_TOTAL_P',
+                'SUMBER_SPP_TOTAL_P',
+                'BUHUG_SPP_TOTAL_P',
+                'GOVI_SPP_TOTAL_P',
+                'ERDENE_SPP_TOTAL_P'
+            ]
+        ],
+        'battery' => [
+            'name' => 'Батарей хуримтлуур',
+            'stations' => [
+                'BAGANUUR_BESS_TOTAL_P_T',
+                'SONGINO_BESS_TOTAL_P'
+            ]
+        ],
+        'import' => [
+            'name' => 'Импорт',
+            'stations' => [
+                'IMPORT_EXPORT_TOTAL_P'
+            ]
+        ]
+    ];
+
     public function index(Request $request)
     {
         $date = $request->input('date', now()->format('Y-m-d'));
 
-        // Станцын төрлөөр групплэх
-        $powerPlantTypes = PowerPlantType::with(['powerPlants.powerInfos' => function ($q) use ($date) {
-            $q->whereDate('date', $date);
-        }])->get();
+        // Хуудсыг шууд харуулах, мэдээллийг JavaScript-ээр ачаална
+        return view('dashboard', compact('date'));
+    }
 
-        // Төрлөөр нь чадлын нийлбэрийг тооцох
-        $typeSums = [];
+    // Шинэ метод: Real-time мэдээлэл авах
+    public function realtimeData(Request $request)
+    {
+        try {
+            $currentDate = now()->toDateString();
 
-        foreach ($powerPlantTypes as $type) {
-            $sumP = 0;
-            $sumPmax = 0;
-            $sumPmin = 0;
+            // Get all station names
+            $allStations = collect($this->stationGroups)->flatMap(function ($group) {
+                return $group['stations'];
+            })->toArray();
 
-            foreach ($type->powerPlants as $plant) {
-                $info = $plant->powerInfos->first();
-                if ($info) {
-                    $sumP += $info->p ?? 0;
-                    $sumPmax += $info->p_max ?? 0;
-                    $sumPmin += $info->p_min ?? 0;
+            // Get latest values for all stations
+            $latestData = ZConclusion::select('VAR', 'VALUE', 'TIMESTAMP_S')
+                ->whereIn('VAR', $allStations)
+                ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
+                ->where('CALCULATION', 50)
+                ->whereIn('TIMESTAMP_S', function ($query) use ($currentDate, $allStations) {
+                    $query->select(DB::raw('MAX(TIMESTAMP_S)'))
+                        ->from('Z_Conclusion')
+                        ->whereIn('VAR', $allStations)
+                        ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
+                        ->where('CALCULATION', 50)
+                        ->groupBy('VAR');
+                })
+                ->get()
+                ->keyBy('VAR');
+
+            // Most recent timestamp
+            $latestTimestamp = $latestData->isNotEmpty()
+                ? $latestData->max('TIMESTAMP_S')
+                : null;
+
+            // Calculate sums by group
+            $typeSums = [];
+
+            foreach ($this->stationGroups as $key => $group) {
+                $sumP = 0;
+
+                foreach ($group['stations'] as $station) {
+                    if (isset($latestData[$station])) {
+                        $sumP += (float)$latestData[$station]->VALUE;
+                    }
                 }
+
+                $typeSums[] = [
+                    'type_name' => $group['name'],
+                    'sumP' => $sumP,
+                ];
             }
 
-            $typeSums[] = [
-                'type_name' => $type->name,
-                'sumP' => $sumP,
-                'sumPmax' => $sumPmax,
-                'sumPmin' => $sumPmin,
-            ];
+            // Get latest system_total_p value
+            $systemTotal = ZConclusion::where('VAR', 'system_total_p')
+                ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
+                ->where('CALCULATION', 50)
+                ->orderByDesc('TIMESTAMP_S')
+                ->first();
+
+            $totalP = $systemTotal ? (float)$systemTotal->VALUE : 0;
+
+            return response()->json([
+                'success' => true,
+                'typeSums' => $typeSums,
+                'totalP' => $totalP,
+                'latestTimestamp' => $latestTimestamp,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Dashboard realtime data error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Холболтын алдаа гарлаа'
+            ], 500);
         }
-
-        // Нийт дүнг тооцох
-        $totalP = collect($typeSums)->sum('sumP');
-        $totalPmax = collect($typeSums)->sum('sumPmax');
-        $totalPmin = collect($typeSums)->sum('sumPmin');
-
-        return view('dashboard', compact('date', 'typeSums', 'totalP', 'totalPmax', 'totalPmin')); // зөвхөн layout ачаална
     }
 
     public function data(Request $request)
@@ -77,8 +167,7 @@ class DashboardController extends Controller
                 }
             }
 
-
-            // Get ZConclusion data with fixed GROUP BY clause
+            // Get ZConclusion data
             $zconclusionData = ZConclusion::select(
                 DB::raw('HOUR(FROM_UNIXTIME(timestamp_s)) as hour_num'),
                 DB::raw('FROM_UNIXTIME(timestamp_s, "%H:00") as hour'),
@@ -110,14 +199,13 @@ class DashboardController extends Controller
                 return $zconclusionMap->get($hour);
             });
 
-            // Find peak load (maximum value) and its time
+            // Find peak load
             $peakLoad = [
                 'time' => null,
                 'value' => null,
                 'source' => null
             ];
 
-            // Find peak in ZConclusion data
             if ($zconclusionValues->filter()->isNotEmpty()) {
                 $zconclusionPeakValue = $zconclusionValues->max();
                 $zconclusionPeakTime = $allHours[$zconclusionValues->search($zconclusionPeakValue)];
@@ -131,7 +219,6 @@ class DashboardController extends Controller
                 }
             }
 
-            // Format peak value if exists
             if ($peakLoad['value'] !== null) {
                 $peakLoad['formatted_value'] = number_format($peakLoad['value'], 2);
             }
@@ -145,7 +232,7 @@ class DashboardController extends Controller
                 'peakLoad' => $peakLoad,
             ]);
         } catch (\Exception $e) {
-            Log::error('Second DB connection error: ' . $e->getMessage());
+            Log::error('Dashboard data error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,

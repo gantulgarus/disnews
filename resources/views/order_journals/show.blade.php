@@ -1,0 +1,387 @@
+@extends('layouts.admin')
+
+@section('content')
+    <div class="container-fluid py-4">
+        {{-- Гарчиг --}}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Захиалгын дэлгэрэнгүй</h2>
+            <a href="{{ route('order-journals.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Буцах
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {{-- Зүүн багана: Захиалгын мэдээлэл --}}
+            <div class="col-lg-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Захиалгын мэдээлэл</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {{-- Захиалгын дугаар --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">Дугаар</label>
+                                <p class="fw-bold mb-0">{{ $orderJournal->order_number }}</p>
+                            </div>
+
+                            {{-- Төлөв --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">Төлөв</label>
+                                <div>
+                                    @php
+                                        $statusClass = match ($orderJournal->status) {
+                                            0 => 'bg-secondary',
+                                            1 => 'bg-info',
+                                            2 => 'bg-warning',
+                                            3 => 'bg-success',
+                                            4 => 'bg-danger',
+                                            default => 'bg-primary',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $statusClass }} fs-6 text-white">
+                                        {{ \App\Models\OrderJournal::$STATUS_NAMES[$orderJournal->status] ?? 'Тодорхойгүй' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Байгууллага --}}
+                            <div class="col-12">
+                                <label class="text-muted small mb-1">Байгууллага</label>
+                                <p class="mb-0">{{ $orderJournal->organization->name }}</p>
+                            </div>
+
+                            {{-- Захиалгын төрөл --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">Захиалгын төрөл</label>
+                                <p class="mb-0">{{ $orderJournal->order_type }}</p>
+                            </div>
+
+                            {{-- Засварын агуулга --}}
+                            <div class="col-12">
+                                <label class="text-muted small mb-1">Засварын ажлын агуулга</label>
+                                <p class="mb-0">{{ $orderJournal->content }}</p>
+                            </div>
+
+                            {{-- Хугацаа --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1"><i class="bi bi-calendar-check me-1"></i>Эхлэх
+                                    хугацаа</label>
+                                <p class="mb-0">{{ $orderJournal->planned_start_date }}</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1"><i class="bi bi-calendar-x me-1"></i>Дуусах
+                                    хугацаа</label>
+                                <p class="mb-0">{{ $orderJournal->planned_end_date }}</p>
+                            </div>
+
+                            {{-- Баталсан хүн --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">Баталсан</label>
+                                <p class="mb-0">{{ $orderJournal->approver_name }}</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">Албан тушаал</label>
+                                <p class="mb-0">{{ $orderJournal->approver_position }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Захиалгын түүх --}}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Захиалгын түүх</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            {{-- Захиалга үүссэн --}}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">Захиалга үүссэн</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-person me-1"></i>{{ $orderJournal->createdUser->name }}
+                                            </small>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i
+                                                class="bi bi-calendar3 me-1"></i>{{ $orderJournal->created_at->format('Y-m-d H:i') }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-secondary text-white">Шинэ</span>
+                                </div>
+                            </div>
+
+                            {{-- Төлөв солигдсон түүх --}}
+                            @php
+                                $statusHistory = $orderJournal->statusHistories()->orderBy('created_at', 'asc')->get();
+                            @endphp
+
+                            @foreach ($statusHistory as $history)
+                                <div class="timeline-item">
+                                    @php
+                                        $markerClass = match ($history->new_status) {
+                                            1 => 'bg-info',
+                                            2 => 'bg-warning',
+                                            3 => 'bg-success',
+                                            4 => 'bg-danger',
+                                            default => 'bg-secondary',
+                                        };
+                                    @endphp
+                                    <div class="timeline-marker {{ $markerClass }}"></div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1">Төлөв солигдсон</h6>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-person me-1"></i>{{ $history->user->name }}
+                                                </small>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i
+                                                    class="bi bi-calendar3 me-1"></i>{{ $history->created_at->format('Y-m-d H:i') }}
+                                            </small>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="text-white badge bg-secondary">
+                                                {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->old_status] ?? '-' }}
+                                            </span>
+                                            <i class="bi bi-arrow-right mx-2"></i>
+                                            <span class="text-white badge {{ $markerClass }}">
+                                                {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->new_status] ?? '-' }}
+                                            </span>
+                                        </div>
+                                        @if ($history->comment)
+                                            <div class="mt-2 p-2 bg-light rounded border">
+                                                <small class="text-muted d-block mb-1">
+                                                    <i class="bi bi-chat-left-text me-1"></i>Тайлбар:
+                                                </small>
+                                                <p class="mb-0 small">{{ $history->comment }}</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+
+                            {{-- Одоогийн төлөв --}}
+                            <div class="timeline-item">
+                                @php
+                                    $currentMarkerClass = match ($orderJournal->status) {
+                                        0 => 'bg-secondary',
+                                        1 => 'bg-info',
+                                        2 => 'bg-warning',
+                                        3 => 'bg-success',
+                                        4 => 'bg-danger',
+                                        default => 'bg-primary',
+                                    };
+                                @endphp
+                                <div class="timeline-marker {{ $currentMarkerClass }} pulse"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Одоогийн төлөв</h6>
+                                    <span class="badge {{ $currentMarkerClass }} fs-6 text-white">
+                                        {{ \App\Models\OrderJournal::$STATUS_NAMES[$orderJournal->status] ?? 'Тодорхойгүй' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Баруун багана: Санал өгөх --}}
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Санал</h5>
+                    </div>
+                    <div class="card-body">
+                        @forelse($orderJournal->approvals as $approval)
+                            <div
+                                class="border rounded p-3 mb-3 {{ is_null($approval->approved) ? 'bg-light' : ($approval->approved ? 'border-success bg-success-subtle' : 'border-danger bg-danger-subtle') }}">
+                                {{-- Хэрэглэгчийн нэр болон төлөв --}}
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-person-circle me-1"></i>{{ $approval->user->name }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            @if (!is_null($approval->approved))
+                                                @if ($approval->approved)
+                                                    <span class="badge bg-success text-white">
+                                                        <i class="bi bi-check-lg me-1"></i>Зөвшөөрсөн
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-danger text-white">
+                                                        <i class="bi bi-x-lg me-1"></i>Татгалзсан
+                                                    </span>
+                                                @endif
+                                                <small class="d-block mt-1 text-muted">
+                                                    <i
+                                                        class="bi bi-calendar3 me-1"></i>{{ $approval->updated_at->format('Y-m-d H:i') }}
+                                                </small>
+                                            @else
+                                                <span class="badge bg-secondary text-white">
+                                                    <i class="bi bi-clock me-1"></i>Санал өгөөгүй
+                                                </span>
+                                            @endif
+                                        </small>
+                                    </div>
+                                </div>
+
+                                {{-- Санал өгөх форм - зөвхөн санал өгөөгүй, өөрийн approval бол --}}
+                                @if (is_null($approval->approved) && auth()->id() === $approval->user_id)
+                                    <form action="{{ route('order-journals.approveOpinion', $approval->id) }}"
+                                        method="POST" class="mt-3">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Санал</label>
+                                            <div class="btn-group w-100" role="group">
+                                                <input type="radio" class="btn-check" name="approved"
+                                                    id="approve_{{ $approval->id }}" value="1" required>
+                                                <label class="btn btn-outline-success" for="approve_{{ $approval->id }}">
+                                                    <i class="bi bi-check-lg me-1"></i>Зөвшөөрөх
+                                                </label>
+
+                                                <input type="radio" class="btn-check" name="approved"
+                                                    id="reject_{{ $approval->id }}" value="0" required>
+                                                <label class="btn btn-outline-danger" for="reject_{{ $approval->id }}">
+                                                    <i class="bi bi-x-lg me-1"></i>Татгалзах
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Тайлбар (заавал биш)</label>
+                                            <textarea name="comment" class="form-control" rows="3" placeholder="Тайлбараа энд бичнэ үү..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-send me-2"></i>Санал илгээх
+                                        </button>
+                                    </form>
+                                @endif
+
+                                {{-- Тайлбар --}}
+                                @if ($approval->comment)
+                                    <div class="mt-3 p-2 bg-white rounded border">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="bi bi-chat-left-text me-1"></i>Тайлбар:
+                                        </small>
+                                        <p class="mb-0 small">{{ $approval->comment }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>Санал өгөх хэрэглэгчид байхгүй байна.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .card {
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .badge {
+            padding: 0.5rem 0.75rem;
+        }
+
+        label.text-muted {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Timeline стайл */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #0d6efd, #20c997);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -1.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px currentColor;
+        }
+
+        .timeline-marker.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+            }
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-content h6 {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .bg-success-subtle {
+            background-color: #d1e7dd !important;
+        }
+
+        .bg-danger-subtle {
+            background-color: #f8d7da !important;
+        }
+    </style>
+@endsection

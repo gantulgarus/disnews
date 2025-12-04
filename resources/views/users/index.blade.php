@@ -1,55 +1,79 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container mt-4">
+    <div class="container py-4">
 
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-
-            <h4 class="mb-3">Ажилтнуудын жагсаалт</h4>
-            <a href="{{ route('users.create') }}" class="btn btn-primary">+ Хэрэглэгч нэмэх</a>
-
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold">Ажилтнуудын жагсаалт</h3>
+            <a href="{{ route('users.create') }}" class="btn btn-primary">
+                <i class="ti ti-plus"></i> Хэрэглэгч нэмэх
+            </a>
         </div>
 
+        {{-- Амжилтын мэдэгдэл --}}
         @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong><i class="ti ti-check"></i></strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
 
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Байгууллага</th>
-                    <th>Нэр</th>
-                    <th>Имэйл</th>
-                    <th>Гар утас</th>
-                    <th>Хэрэглэгчийн эрх</th>
-                    <th>Үйлдэл</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($users as $user)
-                    <tr>
-                        <td>{{ $user->organization?->name }}</td>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ $user->phone }}</td>
-                        <td>{{ $user->permissionCode?->name ?? '-' }}</td>
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover table-vcenter card-table table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Байгууллага</th>
+                            <th>Нэр</th>
+                            <th>Хэрэглэгчийн код</th>
+                            <th>Имэйл</th>
+                            <th>Гар утас</th>
+                            <th>Хэрэглэгчийн эрх</th>
+                            <th class="text-center">Үйлдэл</th>
+                        </tr>
+                    </thead>
 
-                        <td>
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-warning">Засах</a>
+                    <tbody>
+                        @foreach ($users as $user)
+                            <tr>
+                                <td>{{ $user->organization?->name }}</td>
+                                <td class="fw-semibold">{{ $user->name }}</td>
+                                <td>{{ $user->usercode }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>{{ $user->phone }}</td>
+                                <td>
+                                    <span class="badge bg-blue-lt">
+                                        {{ $user->permissionLevel?->code ?? '-' }}
+                                    </span>
+                                </td>
 
-                            <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
-                                onsubmit="return confirm('Устгахдаа итгэлтэй байна уу?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Устгах</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+                                <td class="text-center">
+
+                                    {{-- Засах --}}
+                                    <a href="{{ route('users.edit', $user) }}" class="btn btn-warning btn-sm">
+                                        <i class="ti ti-edit"></i> Засах
+                                    </a>
+
+                                    {{-- Устгах --}}
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Устгахдаа итгэлтэй байна уу?');">
+
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="ti ti-trash"></i> Устгах
+                                        </button>
+                                    </form>
+
+                                </td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 @endsection

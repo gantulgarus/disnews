@@ -4,7 +4,6 @@
     <style>
         .table thead th {
             background-color: #4299e1;
-            /* Tabler primary blue */
             color: #fff;
         }
     </style>
@@ -42,27 +41,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($journals as $journal)
-                                <tr>
-                                    <td>Хоногт</td>
-                                    <td></td>
-                                    <td>{{ number_format($journal->total_processed, 2) }}</td>
-                                    <td>{{ number_format($journal->total_distribution, 2) }}</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                    <td>—</td>
-                                </tr>
-                            @endforeach
                             <tr>
-                                <td>Сарын эхнээс</td>
-                                <td class="fw-bold fs-3">
+                                <td>Хоногт</td>
+                                <td rowspan="2">
                                     {{ number_format($system_data->max_value) }}/{{ number_format($system_data->min_value) }}
                                 </td>
+                                <td>{{ number_format($journals->first()->total_processed ?? 0, 2) }}</td>
+                                <td>{{ number_format($journals->first()->total_distribution ?? 0, 2) }}</td>
                                 <td>—</td>
-                                <td></td>
-                                <td></td>
                                 <td>—</td>
-                                <td class="fw-bold fs-3">{{ $import_data->max_value }}</td>
+                                <td rowspan="2">{{ $import_data->max_value }}</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Сарын эхнээс</td>
+                                <td>{{ number_format($monthToDate->total_processed ?? 0, 2) }}</td>
+                                <td>{{ number_format($monthToDate->total_distribution ?? 0, 2) }}</td>
+                                <td>—</td>
+                                <td>—</td>
                                 <td>—</td>
                             </tr>
                         </tbody>
@@ -72,38 +68,225 @@
         </div>
 
 
+
+        {{-- ДЦС --}}
+
+        @php
+            function equipmentIcon($type)
+            {
+                return match ($type) {
+                    'Зуух' => asset('images/k.svg'),
+                    'Турбогенератор' => asset('images/tg.svg'),
+                    'НЦС' => asset('images/solar-power.svg'),
+                    'СЦС' => asset('images/wind-power.svg'),
+                    'Баттерэй' => asset('images/battery-bolt.svg'),
+                    default => asset('images/power-plant.svg'),
+                };
+            }
+
+            function statusIconsWithLabel($equipments, $statuses, $iconType = null)
+            {
+                if ($equipments->isEmpty()) {
+                    return '<span class="text-muted">—</span>';
+                }
+
+                $html = '<div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: flex-start;">';
+
+                foreach ($equipments as $e) {
+                    $status = $statuses[$e->id]->status ?? null;
+                    if (!$status) {
+                        continue;
+                    }
+
+                    $iconPath = $iconType ? equipmentIcon($iconType) : asset('images/power-plant.svg');
+
+                    // Төлвөөс хамааруулж өнгө сонгох
+                    [$color, $bgColor] = match ($status) {
+                        'Ажилд' => ['#dc2626', 'rgba(220, 38, 38, 0.15)'],
+                        'Бэлтгэлд' => ['#16a34a', 'rgba(22, 163, 74, 0.15)'],
+                        'Засварт' => ['#6b7280', 'rgba(107, 114, 128, 0.15)'],
+                        default => ['#9ca3af', 'rgba(156, 163, 175, 0.15)'],
+                    };
+
+                    $html .=
+                        '<div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 3px;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                "
+                onmouseover="this.style.transform=\'translateY(-2px)\';"
+                onmouseout="this.style.transform=\'translateY(0)\';"
+                title="' .
+                        $e->name .
+                        ' - ' .
+                        $status .
+                        '">
+
+                    <div style="
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 6px;
+                        background: ' .
+                        $bgColor .
+                        ';
+                        transition: all 0.3s ease;
+                    "
+
+                    onmouseout="this.style.background=\'' .
+                        $bgColor .
+                        '\';">
+                        <img src="' .
+                        $iconPath .
+                        '"
+                             style="width: 16px; height: 16px; transition: all 0.3s ease;"
+                             alt="' .
+                        $status .
+                        '"
+                             onmouseover="this.style.transform=\'scale(1.1)\';"
+                             onmouseout="this.style.transform=\'scale(1)\';">
+
+                        <!-- Төлвийн индикатор -->
+                        <div style="
+                            position: absolute;
+                            top: -2px;
+                            right: -2px;
+                            width: 8px;
+                            height: 8px;
+                            background: ' .
+                        $color .
+                        ';
+                            border: 1.5px solid white;
+                            border-radius: 50%;
+                            animation: pulse-' .
+                        md5($status) .
+                        ' 2s ease-in-out infinite;
+                        "></div>
+                    </div>
+
+                    <div style="
+                        font-size: 9px;
+                        color: #374151;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 45px;
+                    ">' .
+                        $e->name .
+                        '</div>
+                </div>';
+                }
+
+                $html .= '</div>';
+
+                // Animation нэмэх
+                $html .=
+                    '
+        <style>
+            @keyframes pulse-' .
+                    md5('Ажилд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Бэлтгэлд') .
+                    ' {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            @keyframes pulse-' .
+                    md5('Засварт') .
+                    ' {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        </style>';
+
+                return $html;
+            }
+        @endphp
+
+
+
         {{-- ДЦС --}}
         <div class="card mt-4">
             <div class="card-body">
+                <!-- Гоё legend -->
+                <div class="alert alert-light border mb-3 py-2">
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <strong class="text-muted">Тоноглолын төлөв:</strong>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped table-hover table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Зуух</th>
-                                <th colspan="3" class="text-center">Турбогенератор</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Зуух</th>
+                                <th class="text-center">Турбогенератор</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
+
                         <tbody>
                             @forelse ($powerPlants as $plant)
                                 @php
                                     $boilers = $plant->equipments->where('equipment_type_id', 1);
                                     $turbos = $plant->equipments->where('equipment_type_id', 2);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
-                                    $info = $plant->powerInfos->first();
+                                    $info = $plant->powerInfos->first(); // хамгийн сүүлийн PowerInfo
                                 @endphp
 
                                 <tr>
@@ -111,24 +294,19 @@
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Зуух --}}
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $boilers->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
+                                    <td>
+                                        {!! statusIconsWithLabel($boilers, $statuses, 'Зуух') !!}
                                     </td>
 
                                     {{-- Турбогенератор --}}
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $turbos->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
+                                    <td>
+                                        {!! statusIconsWithLabel($turbos, $statuses, 'Турбогенератор') !!}
                                     </td>
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
                                     <td>{{ $info?->remark }}</td>
+
                                     <td>
                                         <a
                                             href="{{ route('daily-equipment-report.create', ['powerPlant' => $plant->id]) }}">
@@ -151,10 +329,13 @@
                                     <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                 </tr>
                             @endforelse
+
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
+                                <td colspan="4">Нийт дүн</td>
                                 <td>{{ number_format($total_p, 2) }}</td>
                                 <td>{{ number_format($total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 
@@ -166,33 +347,70 @@
         {{-- СЭХ --}}
         <div class="card mt-4">
             <div class="card-body">
+                <!-- Гоё legend -->
+                <div class="alert alert-light border mb-3 py-2">
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <strong class="text-muted">Тоноглолын төлөв:</strong>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th colspan="3" class="text-center">Инвертер</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Багц</th>
+                                <th class="text-center">Инвертер</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($sunWindPlants as $plant)
                                 @php
-                                    $inverters = $plant->equipments->where('equipment_type_id', 3);
-                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $batches = $plant->equipments->where('equipment_type_id', 3);
+                                    $inverters = $plant->equipments->where('equipment_type_id', 4);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
                                     $info = $plant->powerInfos->first();
                                 @endphp
@@ -202,20 +420,11 @@
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Багц --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
                                     {{-- Инвертер --}}
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $inverters->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    <td>{!! statusIconsWithLabel($inverters, $statuses, $plant->type) !!}</td>
+
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
@@ -239,13 +448,15 @@
 
                             @empty
                                 <tr>
-                                    <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
+                                    <td colspan="8" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="8">Нийт дүн</td>
+                                <td colspan="4">Нийт дүн</td>
                                 <td>{{ number_format($sun_wind_total_p, 2) }}</td>
                                 <td>{{ number_format($sun_wind_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 
@@ -257,28 +468,68 @@
         {{-- Battery --}}
         <div class="card mt-4">
             <div class="card-body">
+                <!-- Гоё legend -->
+                <div class="alert alert-light border mb-3 py-2">
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <strong class="text-muted">Тоноглолын төлөв:</strong>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(220, 38, 38, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Ажилд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(22, 163, 74, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Бэлтгэлд</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div
+                                style="
+                width: 16px;
+                height: 16px;
+                min-width: 16px;
+                border-radius: 4px;
+                background: rgba(107, 114, 128, 0.15);
+            ">
+                            </div>
+                            <span class="text-dark" style="font-size: 13px;">Засварт</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle mt-2">
                         <thead class="table-light">
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Станцууд</th>
-                                <th colspan="3" class="text-center">Багц</th>
-                                <th rowspan="2">P (МВт)</th>
-                                <th rowspan="2">P max (МВт)</th>
-                                <th rowspan="2">Үндсэн тоноглолын засвар, гарсан доголдол</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>Ажилд</th>
-                                <th>Бэлтгэлд</th>
-                                <th>Засварт</th>
+                                <th>#</th>
+                                <th>Станцууд</th>
+                                <th class="text-center">Багц</th>
+                                <th>P (МВт)</th>
+                                <th>P max (МВт)</th>
+                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($battery_powers as $plant)
                                 @php
-                                    $batches = $plant->equipments->where('equipment_type_id', 4);
+                                    $batches = $plant->equipments->where('equipment_type_id', 3);
                                     $statuses = $plant->equipmentStatuses->keyBy('equipment_id');
                                     $info = $plant->powerInfos->first();
                                 @endphp
@@ -288,12 +539,7 @@
                                     <td>{{ $plant->name }}</td>
 
                                     {{-- Багц --}}
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Ажилд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Бэлтгэлд')->pluck('name')->join(', ') }}
-                                    </td>
-                                    <td>{{ $batches->filter(fn($e) => ($statuses[$e->id]->status ?? null) === 'Засварт')->pluck('name')->join(', ') }}
-                                    </td>
+                                    <td>{!! statusIconsWithLabel($batches, $statuses, $plant->powerPlantType?->name) !!}</td>
 
                                     <td>{{ $info?->p }}</td>
                                     <td>{{ $info?->p_max }}</td>
@@ -321,9 +567,11 @@
                                 </tr>
                             @endforelse
                             <tr class="fw-bold">
-                                <td colspan="5">Нийт дүн</td>
+                                <td colspan="3">Нийт дүн</td>
                                 <td>{{ number_format($battery_total_p, 2) }}</td>
                                 <td>{{ number_format($battery_total_pmax, 2) }}</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
 
@@ -502,6 +750,7 @@
                             <tr>
                                 <th rowspan="2">№</th>
                                 <th>Огноо</th>
+                                <th>Цаг</th>
                                 <th>ТЗЭ</th>
                                 <th>Тасралт</th>
                                 <th>Тайлбар</th>
@@ -513,6 +762,7 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $tasralt->date }}</td>
+                                    <td>{{ $tasralt->time }}</td>
                                     <td>{{ $tasralt->TZE }}</td>
                                     <td>{{ $tasralt->tasralt }}</td>
                                     <td>{{ $tasralt->ArgaHemjee }}</td>
@@ -557,4 +807,5 @@
                 </div>
             </div>
         </div>
-    @endsection
+    </div>
+@endsection

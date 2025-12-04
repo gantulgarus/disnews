@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\TelephoneMessage;
+use App\Services\WeatherService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.header', function ($view) {
+            // Телефон мэдээ
             $userOrgId = auth()->user()->organization_id;
 
             $newMessages = TelephoneMessage::whereHas('receivers', function ($q) use ($userOrgId) {
@@ -32,7 +34,11 @@ class AppServiceProvider extends ServiceProvider
 
             $newMessagesCount = $newMessages->count();
 
-            $view->with(compact('newMessages', 'newMessagesCount'));
+            // Цаг агаар
+            $weatherService = app(WeatherService::class);
+            $headerWeather = $weatherService->getCurrentWeather('Ulaanbaatar');
+
+            $view->with(compact('newMessages', 'newMessagesCount', 'headerWeather'));
         });
 
         Paginator::useBootstrap();

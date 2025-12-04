@@ -2,11 +2,13 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
@@ -24,12 +26,14 @@ use App\Http\Controllers\DailyEquipmentReportController;
 use App\Http\Controllers\DailyPowerHourReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
+use App\Http\Controllers\WesternRegionCapacityController;
 
 
 
     Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
+    Route::get('/dashboard/realtime', [DashboardController::class, 'realtimeData'])->name('dashboard.realtime');
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // // Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -47,7 +51,10 @@ use App\Http\Controllers\PowerPlantDailyReportController;
     Route::resource('permission_levels', PermissionLevelController::class);
 
     Route::get('daily-balance-journals/report', [DailyBalanceJournalController::class, 'dailyMatrixReport'])->name('daily-balance-journals.report');
+    Route::get('daily-balance-journals/plant/{plant}', [DailyBalanceJournalController::class, 'showPlant'])
+        ->name('daily-balance-journals.showPlant');
     Route::resource('daily-balance-journals', DailyBalanceJournalController::class);
+
     Route::resource('divisions', DivisionController::class);
     Route::resource('dis_coal', DisCoalController::class);
     Route::resource('daily_power_equipments', DailyPowerEquipmentController::class);
@@ -62,6 +69,14 @@ use App\Http\Controllers\PowerPlantDailyReportController;
     Route::resource('tnews', TnewsController::class);
 
     Route::resource('order-journals', OrderJournalController::class);
+    Route::post('order-journals/{orderJournal}/forward', [OrderJournalController::class, 'forward'])->name('order-journals.forward');
+    // Route::post('order-journal-approvals/{approval}/approve', [OrderJournalController::class, 'approve'])->name('order-journal-approvals.approve');
+    Route::post('order-journals/approve-opinion/{approval}', [OrderJournalController::class, 'approveOpinion'])
+        ->name('order-journals.approveOpinion');
+    Route::post('order-journals/{orderJournal}/approve', [OrderJournalController::class, 'approve'])
+        ->name('order-journals.approve');
+
+
     Route::resource('organizations', OrganizationController::class);
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -117,6 +132,14 @@ use App\Http\Controllers\PowerPlantDailyReportController;
 
 
 
+    Route::resource('western_region_capacities', WesternRegionCapacityController::class);
+
+    Route::get('/sms', [SmsController::class, 'index'])->name('sms.index');
+    Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
+    Route::get('/sms/messages', [SmsController::class, 'messages'])->name('sms.messages');
 });
+
+Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
+Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('weather.api');
 
 require __DIR__ . '/auth.php';

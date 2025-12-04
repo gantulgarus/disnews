@@ -29,9 +29,15 @@ class User extends Authenticatable
         'phone',
         'organization_id',
         'div_code',
-        'permission_code',
         'permission_level_id',
+        'usercode',
     ];
+
+    public function username()
+    {
+        return 'usercode';   // ← энд usercode байх ёстой
+    }
+
 
     public function organization()
     {
@@ -46,10 +52,6 @@ class User extends Authenticatable
     public function permissionLevel()
     {
         return $this->belongsTo(PermissionLevel::class, 'permission_level_id');
-    }
-    public function permissionCode()
-    {
-        return $this->belongsTo(PermissionLevel::class, 'permission_code', 'code');
     }
 
     /**

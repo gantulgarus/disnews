@@ -79,6 +79,23 @@ return [
             ],
         ],
 
+        'sms_db' => [
+            'driver' => env('DB_SMS_CONNECTION', 'mysql'),
+            'host' => env('DB_SMS_HOST', '127.0.0.1'),
+            'port' => env('DB_SMS_PORT', '3306'),
+            'database' => env('DB_SMS_DATABASE', 'forge'),
+            'username' => env('DB_SMS_USERNAME', 'forge'),
+            'password' => env('DB_SMS_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+            'options' => [
+                PDO::ATTR_TIMEOUT => env('DB_SECOND_CONNECTION_TIMEOUT', 3),
+            ],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
