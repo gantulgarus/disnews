@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('order-journals', OrderJournalController::class);
     Route::post('order-journals/{orderJournal}/forward', [OrderJournalController::class, 'forward'])->name('order-journals.forward');
     // Route::post('order-journal-approvals/{approval}/approve', [OrderJournalController::class, 'approve'])->name('order-journal-approvals.approve');
+    Route::post('order-journals/approve-opinion/{approval}', [OrderJournalController::class, 'approveOpinion'])
+        ->name('order-journals.approveOpinion');
     Route::post('order-journals/{orderJournal}/approve', [OrderJournalController::class, 'approve'])
         ->name('order-journals.approve');
 
