@@ -5,15 +5,14 @@
         <form action="{{ route('thermo-daily-regimes.store') }}" method="POST" class="card">
             @csrf
             <div class="card-header">
-                <h3 class="card-title">Шинэ дулааны горим нэмэх</h3>
+                <h3 class="card-title">Дулааны горим нэмэх</h3>
             </div>
 
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Цахилгаан станц</label>
+                        <label class="form-label">Станц</label>
                         <select name="power_plant_id" class="form-select" required>
-                            <option value="">-- Сонгох --</option>
                             @foreach ($powerPlants as $p)
                                 <option value="{{ $p->id }}">{{ $p->name }}</option>
                             @endforeach
@@ -22,7 +21,8 @@
 
                     <div class="col-md-3">
                         <label class="form-label">Огноо</label>
-                        <input type="date" name="date" class="form-control" required>
+                        <input type="date" name="date" class="form-control"
+                            value="{{ old('date', now()->format('Y-m-d')) }}">
                     </div>
 
                     <div class="col-md-3">

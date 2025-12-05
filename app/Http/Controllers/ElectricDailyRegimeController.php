@@ -2,23 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ElectricDailyRegime;
 use App\Models\PowerPlant;
 use Illuminate\Http\Request;
+use App\Models\ElectricDailyRegime;
+use Illuminate\Support\Facades\Auth;
 
 class ElectricDailyRegimeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $regimes = ElectricDailyRegime::latest()->paginate(10);
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        // Query эхлүүлэх
+        $query = ElectricDailyRegime::query()->orderBy('date', 'asc');
+
+        // Хэрэв админ биш (organ. id != 5) бол зөвхөн өөрийн байгууллагын станцуудыг харуулах
+        if ($userOrgId != 5) {
+            $query->whereHas('powerPlant', function ($q) use ($userOrgId) {
+                $q->where('organization_id', $userOrgId);
+            });
+        }
+
+        // 📌 Сарын фильтр
+        if ($request->filled('month')) {
+            // month = 2025-02 гэх мэт
+            $query->whereYear('date', substr($request->month, 0, 4))
+                ->whereMonth('date', substr($request->month, 5, 2));
+        }
+
+        $regimes = $query->get();
+
         return view('electric_daily_regimes.index', compact('regimes'));
     }
 
+
     public function create()
     {
-        $powerPlants = PowerPlant::all();
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        if ($userOrgId == 5) {
+            // Админ -> бүх станц
+            $powerPlants = PowerPlant::all();
+        } else {
+            // Админ биш -> зөвхөн өөрийн байгууллагын станцууд
+            $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        }
+
         return view('electric_daily_regimes.create', compact('powerPlants'));
     }
+
 
     public function store(Request $request)
     {
@@ -44,7 +78,17 @@ class ElectricDailyRegimeController extends Controller
 
     public function edit(ElectricDailyRegime $electricDailyRegime)
     {
-        $powerPlants = PowerPlant::all();
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        if ($userOrgId == 5) {
+            // Админ -> бүх станц
+            $powerPlants = PowerPlant::all();
+        } else {
+            // Админ биш -> зөвхөн өөрийн байгууллагын станцууд
+            $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        }
+
         return view('electric_daily_regimes.edit', compact('electricDailyRegime', 'powerPlants'));
     }
 
