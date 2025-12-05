@@ -50,6 +50,7 @@ class DashboardController extends Controller
         'battery' => [
             'name' => 'Батарей хуримтлуур',
             'stations' => [
+                'ERDENE_SPP_BHB_TOTAL_P',
                 'BAGANUUR_BESS_TOTAL_P_T',
                 'SONGINO_BESS_TOTAL_P'
             ]

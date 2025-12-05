@@ -32,6 +32,7 @@
                     'BUHUG_SPP_TOTAL_P' => 'Бөхөг НЦС',
                     'GOVI_SPP_TOTAL_P' => 'Говь НЦС',
                     'ERDENE_SPP_TOTAL_P' => 'Эрдэнэ НЦС',
+                    'ERDENE_SPP_BHB_TOTAL_P' => 'Эрдэнэ НЦС БХС',
                     'BAGANUUR_BESS_TOTAL_P_T' => 'Багануур БХС',
                     'SONGINO_BESS_TOTAL_P' => 'Сонгино БХС',
                 ];
@@ -82,6 +83,7 @@
                                             'BUHUG_SPP_TOTAL_P' => 'Бөхөг НЦС',
                                             'GOVI_SPP_TOTAL_P' => 'Говь НЦС',
                                             'ERDENE_SPP_TOTAL_P' => 'Эрдэнэ НЦС',
+                                            'ERDENE_SPP_BHB_TOTAL_P' => 'Эрдэнэ НЦС БХС',
                                             'BAGANUUR_BESS_TOTAL_P_T' => 'Багануур БХС',
                                             'SONGINO_BESS_TOTAL_P' => 'Сонгино БХС',
                                         ];

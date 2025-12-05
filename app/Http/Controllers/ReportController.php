@@ -275,6 +275,7 @@ class ReportController extends Controller
             'BUHUG_SPP_TOTAL_P',
             'GOVI_SPP_TOTAL_P',
             'ERDENE_SPP_TOTAL_P',
+            'ERDENE_SPP_BHB_TOTAL_P',
             'BAGANUUR_BESS_TOTAL_P_T',
             'SONGINO_BESS_TOTAL_P'
         ];
@@ -303,6 +304,7 @@ class ReportController extends Controller
             'Бөхөг НЦС',
             'Говь НЦС',
             'Эрдэнэ НЦС',
+            'Эрдэнэ НЦС БХС',
             'Багануур БХС',
             'Сонгино БХС',
         ];
