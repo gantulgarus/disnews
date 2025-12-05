@@ -30,7 +30,7 @@ use App\Http\Controllers\WesternRegionCapacityController;
 
 
 
-    Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
     Route::get('/dashboard/realtime', [DashboardController::class, 'realtimeData'])->name('dashboard.realtime');
@@ -60,8 +60,8 @@ use App\Http\Controllers\WesternRegionCapacityController;
     Route::resource('daily_power_equipments', DailyPowerEquipmentController::class);
 
     Route::get('/reports/daily-power-equipment', [DailyPowerEquipmentController::class, 'index'])
-    ->name('reports.dailyPowerEquipment'); 
-   
+        ->name('reports.dailyPowerEquipment');
+
     Route::get('/reports/daily-power-equipment', [ReportController::class, 'dailyPowerEquipment'])->name('reports.dailyPowerEquipment');
 
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
@@ -83,6 +83,7 @@ use App\Http\Controllers\WesternRegionCapacityController;
     Route::get('/reports/daily', [ReportController::class, 'dailyReport'])->name('reports.dailyReport');
     Route::get('/reports/local-daily', [ReportController::class, 'localDailyReport'])->name('reports.localDailyReport');
     Route::get('/reports/power-plant', [ReportController::class, 'powerPlantReport'])->name('reports.powerPlantReport');
+    Route::get('/reports/power-plant-renewable', [ReportController::class, 'powerPlantRenewableReport'])->name('reports.powerPlantRenewableReport');
     Route::resource('power-distribution-works', PowerDistributionWorkController::class);
     Route::get('station_thermo/news', [StationThermoDataController::class, 'news'])->name('station_thermo.news');
     Route::resource('station_thermo', StationThermoDataController::class);
@@ -112,22 +113,24 @@ use App\Http\Controllers\WesternRegionCapacityController;
 
     Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
 
-     
-   
-   Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
-    ->name('daily_power_hour_reports.report');
+
+
+    Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
+        ->name('daily_power_hour_reports.report');
 
     Route::resource('daily_power_hour_reports', DailyPowerHourReportController::class)
-    ->except(['edit', 'update', 'show']);
+        ->except(['edit', 'update', 'show']);
 
 
     Route::get('daily-power-hour-reports/{time}/edit', [DailyPowerHourReportController::class, 'editByTime'])
-    ->name('daily_power_hour_reports.edit')
-    ->where('time', '[0-9:]+'); // цаг форматанд : зөвшөөрнө
+        ->name('daily_power_hour_reports.edit')
+        ->where('time', '[0-9:]+'); // цаг форматанд : зөвшөөрнө
 
-    Route::put('daily-power-hour-reports/{time}', 
-    [DailyPowerHourReportController::class, 'updateByTime'])
-    ->name('daily_power_hour_reports.updateByTime');
+    Route::put(
+        'daily-power-hour-reports/{time}',
+        [DailyPowerHourReportController::class, 'updateByTime']
+    )
+        ->name('daily_power_hour_reports.updateByTime');
 
 
 

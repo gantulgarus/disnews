@@ -154,6 +154,7 @@
                         'thermo-daily-regimes.report',
                         'station_thermo.news',
                         'reports.powerPlantReport',
+                        'reports.powerPlantRenewableReport',
                     ];
                     $isRegimeActive = request()->routeIs(...$regimeRoutes);
                 @endphp
@@ -193,14 +194,15 @@
                                         href="{{ route('station_thermo.news') }}">
                                         Дулааны мэдээ
                                     </a>
-                                    <a class="dropdown-item" href="#">
+                                    {{-- <a class="dropdown-item" href="#">
                                         Импорт, Экспорт
+                                    </a> --}}
+                                    <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
+                                        href="{{ route('reports.powerPlantRenewableReport') }}">
+                                        СЭХ-ний горим, гүйцэтгэл
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
                                         href="{{ route('reports.powerPlantReport') }}">
-                                        СЭХ-ний горим, гүйцэтгэл
-                                    </a>
-                                    <a class="dropdown-item" href="#">
                                         ДЦС-ын горим, гүйцэтгэл
                                     </a>
                                 @endif

@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="container mt-4">
-        <h2 class="mb-4 fw-bold">СЭХ станцуудын горим, гүйцэтгэл</h2>
+    <div class="container-fluid">
+        <h2 class="mb-4 fw-bold">ДЦС-ын горим, гүйцэтгэл</h2>
 
         <form method="GET" class="mb-4 row g-3 align-items-center">
             <div class="col-auto">
@@ -22,39 +22,88 @@
             @php
                 $grouped = $results->groupBy('date');
                 $stationNames = [
-                    'SALKHIT_WPP_TOTAL_P' => 'Салхит',
-                    'TSETSII_WPP_TOTAL_P' => 'Цэцийн салхи',
-                    'SHAND_WPP_TOTAL_P' => 'Шанд',
-                    'DARKHAN_SPP_TOTAL_P' => 'Дархан',
-                    'MONNAR_SPP_TOTAL_P' => 'Моннартех',
-                    'GEGEEN_SPP_TOTAL_P' => 'Гэгээн',
-                    'SUMBER_SPP_TOTAL_P' => 'Сүмбэр',
-                    'BUHUG_SPP_TOTAL_P' => 'Бөхөг',
-                    'GOVI_SPP_TOTAL_P' => 'Говь',
-                    'ERDENE_SPP_TOTAL_P' => 'Эрдэнэ',
+                    'PP4_TOTAL_P' => 'ДЦС-4',
+                    'PP3_TOTAL_P' => 'ДЦС-3',
+                    'PP2_TOTAL_P' => 'ДЦС-2',
+                    'DARKHAN_PP_TOTAL_P' => 'ДДЦС',
+                    'ERDENET_PP_TOTAL_P' => 'ЭДЦС',
+                    'GOK_PP_TOTAL_P' => 'ЭҮ-н ДЦС',
+                    'DALANZADGAD_PP_TOTAL_P' => 'Даланзадгад ДЦС',
+                    'UHAAHUDAG_PP_TOTAL_P' => 'УХГ ЦС',
+                    'BUURULJUUT_PP_TOTAL_P' => 'Бөөрөлжүүт ЦС I',
+                    'TOSON_PP_TOTAL_P' => 'Тосон ДЦС',
+                    'IMPORT_TOTAL_P' => 'Импорт/экспорт',
+                    'EXPORT_TOTAL_P' => 'Экспорт',
+                    'SYSTEM_TOTAL_P' => 'Хэрэглээ',
                 ];
             @endphp
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
-                    <thead class="table-light">
+            <div class="" style="font-size: 12px;">
+                <table class="table table-bordered table-sm
+                align-middle">
+                    <thead class="table-light text-center align-middle">
                         <tr>
-                            <th>Огноо</th>
+                            <th rowspan="2">Огноо</th>
                             @foreach ($stationNames as $key => $name)
-                                <th>{{ $name }}</th>
+                                @if ($key === 'SYSTEM_TOTAL_P')
+                                    <th colspan="2" class="text-dark" style="background-color: #d1e7dd;">Систем нийлбэр
+                                    </th>
+                                @else
+                                    <th colspan="2">{{ $name }}</th>
+                                @endif
+                            @endforeach
+                        </tr>
+                        <tr>
+                            @foreach ($stationNames as $key => $name)
+                                @php $isSystem = $key === 'SYSTEM_TOTAL_P'; @endphp
+                                <th {{ $isSystem ? 'style=background-color:#d1e7dd;color:#000;' : '' }}>Горим</th>
+                                <th {{ $isSystem ? 'style=background-color:#d1e7dd;color:#000;' : '' }}>Гүйцэтгэл</th>
                             @endforeach
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach ($grouped as $datetime => $items)
                             @php
                                 $values = $items->keyBy('VAR');
+                                $regime = $regimeData
+                                    ->where('date', \Carbon\Carbon::parse($datetime)->format('Y-m-d'))
+                                    ->keyBy('plant_name');
                             @endphp
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($datetime)->format('Y-m-d H:i') }}</td>
-                                @foreach ($stationNames as $var => $name)
-                                    <td class="text-end">
-                                        {{ number_format(optional($values->get($var))->VALUE ?? 0, 2) }}
+
+                                @foreach ($stationNames as $var => $stationLabel)
+                                    @php
+                                        $mapping = [
+                                            'PP4_TOTAL_P' => 'ДЦС-4',
+                                            'PP3_TOTAL_P' => 'ДЦС-3',
+                                            'PP2_TOTAL_P' => 'ДЦС-2',
+                                            'DARKHAN_PP_TOTAL_P' => 'ДДЦС',
+                                            'ERDENET_PP_TOTAL_P' => 'ЭДЦС',
+                                            'GOK_PP_TOTAL_P' => 'ЭҮ-н ДЦС',
+                                            'DALANZADGAD_PP_TOTAL_P' => 'Даланзадгад ДЦС',
+                                            'UHAAHUDAG_PP_TOTAL_P' => 'УХГ ЦС',
+                                            'BUURULJUUT_PP_TOTAL_P' => 'Бөөрөлжүүт ЦС I',
+                                            'TOSON_PP_TOTAL_P' => 'Тосон ДЦС',
+                                            'IMPORT_TOTAL_P' => 'Импорт/экспорт',
+                                            'EXPORT_TOTAL_P' => 'Экспорт',
+                                            'SYSTEM_TOTAL_P' => 'Систем нийлбэр',
+                                        ];
+
+                                        $plantName = $mapping[$var];
+                                        $regimeValue = optional($regime->get($plantName))->t1 ?? 0;
+                                        $executionValue = optional($values->get($var))->VALUE ?? 0;
+                                        $isSystem = $var === 'SYSTEM_TOTAL_P';
+                                    @endphp
+
+                                    <td class="text-end"
+                                        style="{{ $isSystem ? 'background-color:#d1e7dd;font-weight:600;' : '' }}">
+                                        {{ number_format($regimeValue, 2) }}
+                                    </td>
+                                    <td class="text-end"
+                                        style="{{ $isSystem ? 'background-color:#d1e7dd;font-weight:600;' : '' }}">
+                                        {{ number_format($executionValue, 2) }}
                                     </td>
                                 @endforeach
                             </tr>

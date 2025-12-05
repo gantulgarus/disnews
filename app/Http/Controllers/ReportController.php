@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Tnews;
+use App\Models\Regime;
 use App\Models\DisCoal;
 use App\Models\PowerPlant;
 use App\Models\ZConclusion;
@@ -254,7 +255,8 @@ class ReportController extends Controller
         return view('reports.local_daily_report', compact('powerPlants', 'date', 'bbehs_total_p', 'bbehs_total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax', 'westernRegionCapacities'));
     }
 
-    public function powerPlantReport(Request $request)
+    // СЭХ станцуудын горим, гүйцэтгэл
+    public function powerPlantRenewableReport(Request $request)
     {
         $date = $request->input('date', now()->toDateString());
 
@@ -273,6 +275,8 @@ class ReportController extends Controller
             'BUHUG_SPP_TOTAL_P',
             'GOVI_SPP_TOTAL_P',
             'ERDENE_SPP_TOTAL_P',
+            'BAGANUUR_BESS_TOTAL_P_T',
+            'SONGINO_BESS_TOTAL_P'
         ];
 
         $results = ZConclusion::select(
@@ -286,6 +290,90 @@ class ReportController extends Controller
             ->orderBy('TIMESTAMP_S')
             ->get();
 
-        return view('reports.power_plant_report', compact('date', 'results'));
+
+        // Regime хүснэгтийн plant_name жагсаалт
+        $plantNames = [
+            'Салхит СЦС',
+            'Цэций СЦС',
+            'Шанд СЦС',
+            'Дархан НЦС',
+            'Моннаран НЦС',
+            'Гэгээн НЦС',
+            'Сүмбэр НЦС',
+            'Бөхөг НЦС',
+            'Говь НЦС',
+            'Эрдэнэ НЦС',
+            'Багануур БХС',
+            'Сонгино БХС',
+        ];
+
+        // Regime хүснэгтээс тухайн өдрийн горим авах
+        $regimeData = Regime::whereDate('date', $date)
+            ->whereIn('plant_name', $plantNames)
+            ->orderBy('plant_name')
+            ->get();
+
+        return view('reports.power_plant_renewable_report', compact('date', 'results', 'regimeData'));
+    }
+
+    // ДЦС-ын горим, гүйцэтгэлийн тайлан
+    public function powerPlantReport(Request $request)
+    {
+        $date = $request->input('date', now()->toDateString());
+
+        // Set time range from 01:00:00 of selected date to 00:00:00 of next day
+        $startDate = Carbon::parse($date)->startOfDay()->addHour(); // 01:00:00
+        $endDate = Carbon::parse($date)->addDay()->startOfDay();    // 00:00:00 next day
+
+        $vars = [
+            'PP4_TOTAL_P',
+            'PP3_TOTAL_P',
+            'PP2_TOTAL_P',
+            'DARKHAN_PP_TOTAL_P',
+            'ERDENET_PP_TOTAL_P',
+            'GOK_PP_TOTAL_P',
+            'DALANZADGAD_PP_TOTAL_P',
+            'UHAAHUDAG_PP_TOTAL_P',
+            'BUURULJUUT_PP_TOTAL_P',
+            'TOSON_PP_TOTAL_P',
+            'IMPORT_TOTAL_P',
+            'EXPORT_TOTAL_P',
+            'SYSTEM_TOTAL_P',
+        ];
+
+        $results = ZConclusion::select(
+            DB::raw('FROM_UNIXTIME(TIMESTAMP_S) as date'),
+            'VAR',
+            'VALUE'
+        )
+            ->whereBetween(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), [$startDate, $endDate])
+            ->where('CALCULATION', 50)
+            ->whereIn('VAR', $vars)
+            ->orderBy('TIMESTAMP_S')
+            ->get();
+
+
+        // Regime хүснэгтийн plant_name жагсаалт
+        $plantNames = [
+            'ДЦС-4',
+            'ДЦС-3',
+            'ДЦС-2',
+            'ДДЦС',
+            'ЭДЦС',
+            'ЭҮ-н ДЦС',
+            'Даланзадгад ДЦС',
+            'УХГ ЦС',
+            'Тосон ДЦС',
+            'Импорт/экспорт',
+            'Хэрэглээ'
+        ];
+
+        // Regime хүснэгтээс тухайн өдрийн горим авах
+        $regimeData = Regime::whereDate('date', $date)
+            ->whereIn('plant_name', $plantNames)
+            ->orderBy('plant_name')
+            ->get();
+
+        return view('reports.power_plant_report', compact('date', 'results', 'regimeData'));
     }
 }
