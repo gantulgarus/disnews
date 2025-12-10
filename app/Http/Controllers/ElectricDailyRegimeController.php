@@ -118,7 +118,7 @@ class ElectricDailyRegimeController extends Controller
         $date = $request->input('date', now()->toDateString());
 
         // Зөвхөн "ТБЭХС" бүсийн станцуудыг авна
-        $powerPlants = PowerPlant::where('region', 'ТБЭХС')
+        $powerPlants = PowerPlant::forDailyReport()->where('region', 'ТБЭХС')
             ->orderBy('Order')
             ->get();
 

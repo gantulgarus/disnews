@@ -19,6 +19,8 @@ use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\TelephoneMessageController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
+use App\Http\Controllers\AltaiRegionCapacityController;
+use App\Http\Controllers\DailyBalanceBatteryController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\DailyPowerEquipmentController;
 use App\Http\Controllers\ElectricDailyRegimeController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\DailyPowerHourReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 use App\Http\Controllers\WesternRegionCapacityController;
+use App\Http\Controllers\DailyBalanceImportExportController;
 
 
 
@@ -132,6 +135,9 @@ Route::middleware('auth')->group(function () {
     )
         ->name('daily_power_hour_reports.updateByTime');
 
+    Route::resource('daily-balance-batteries', DailyBalanceBatteryController::class);
+    Route::resource('daily-balance-import-exports', DailyBalanceImportExportController::class);
+    Route::resource('altai-region-capacity', AltaiRegionCapacityController::class);
 
 
 

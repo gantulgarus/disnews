@@ -125,6 +125,14 @@
                                         href="{{ route('daily-balance-journals.index') }}">
                                         Тооцооны журнал
                                     </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-batteries.index') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-batteries.index') }}">
+                                        Тооцооны журнал БХ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-import-exports.index') }}">
+                                        Тооцооны журнал Импорт/Экспорт
+                                    </a>
                                     <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
                                         href="{{ route('daily_power_hour_reports.index') }}">
                                         Ачааллын график

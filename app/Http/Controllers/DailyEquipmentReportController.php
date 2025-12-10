@@ -112,7 +112,18 @@ class DailyEquipmentReportController extends Controller
             'date' => $request->date,
         ]);
 
-        return redirect()->route('reports.dailyReport')
+        // ********** REGION шалгаад redirect хийх **********
+        $plant = PowerPlant::find($request->power_plant_id);
+
+        // region == 'ТБЭХС' бол reports.dailyReport, бусад бол reports.localDailyReport
+        if ($plant->region === 'ТБЭХС') {
+            return redirect()
+                ->route('reports.dailyReport')
+                ->with('success', 'Мэдээлэл амжилттай хадгалагдлаа');
+        }
+
+        return redirect()
+            ->route('reports.localDailyReport')
             ->with('success', 'Мэдээлэл амжилттай хадгалагдлаа');
     }
 

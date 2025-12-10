@@ -44,6 +44,21 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class);
     }
 
+    /**
+     * Хэрэглэгчийн байгууллагын үндсэн станц
+     */
+    public function mainPowerPlant()
+    {
+        return $this->hasOneThrough(
+            PowerPlant::class,
+            Organization::class,
+            'id',              // organizations table-н foreign key
+            'organization_id', // power_plants table-н foreign key
+            'organization_id', // users table-н local key
+            'id'               // organizations table-н local key
+        )->whereNull('power_plants.parent_id'); // Зөвхөн үндсэн станцууд
+    }
+
     public function division()
     {
         return $this->belongsTo(Division::class, 'div_code', 'Div_code');

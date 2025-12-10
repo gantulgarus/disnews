@@ -316,7 +316,44 @@
         </div>
 
 
-        <h3 class="mt-4 mb-0">Алтай улиастайн эрчим хүчний систем</h3>
+        <h3 class="mt-4 mb-2">Алтай улиастайн эрчим хүчний систем</h3>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive" style="overflow-x:auto;">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Их ачаалал (МВт)</th>
+                                <th>Бага ачаалал (МВт)</th>
+                                <th>ББЭХС-ээс</th>
+                                <th>ТБНС-ээс</th>
+                                <th>Тайлбар</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($altaiRegionCapacities as $i)
+                                <tr>
+                                    <td>{{ $i->max_load }}</td>
+                                    <td>{{ $i->min_load }}</td>
+                                    <td>{{ $i->import_from_bbexs }}</td>
+                                    <td>{{ $i->import_from_tbns }}</td>
+                                    <td>{{ $i->remark }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted"><a
+                                            href="{{ route('altai-region-capacity.create') }}">
+                                            Мэдээ нэмэх
+                                        </a></td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="card mt-4">
             <div class="card-body">
                 <div class="table-responsive">
