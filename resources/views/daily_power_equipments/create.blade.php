@@ -39,6 +39,12 @@
                 <input type="text" name="power_equipment" id="power_equipment" 
                        value="{{ old('power_equipment') }}" class="form-control" placeholder=" " required>
             </div>
+             <div class="mb-3">
+                <label for="equipment_name" class="form-label fw-bold">Тоноглол нэршил</label>
+                <input type="text" name="equipment_name" id="equipment_name" 
+                       value="{{ old('equipment_name') }}" class="form-control" placeholder=" " required>
+            </div>
+
 
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-success">Хадгалах</button>

@@ -47,11 +47,12 @@ class DailyPowerHourReportController extends Controller
                     'id'   => $r->id,   // ← ID нэмэгдлээ
                     'time' => $t,
                     'date' => $r->date, 
+                    'powerPlantId' => $r->power_plant_id, 
 
                 ];
                 }
 
-                $equipName = $r->equipment->power_equipment;
+                $equipName = $r->equipment->equipment_name;
                 $pivot[$t][$equipName] = $r->power_value;
                 }
 
@@ -61,9 +62,6 @@ class DailyPowerHourReportController extends Controller
                     
         
     }
-
-
-
 
     public function create()
     {
@@ -116,64 +114,46 @@ class DailyPowerHourReportController extends Controller
 
 
 
-    public function editByTime($time)
+    
+   public function edit($powerPlantId, $time)
         {
-            $rows = DailyPowerHourReport::where('time', $time)->with('equipment')->get();
+            $plant = PowerPlant::findOrFail($powerPlantId);
+            $equipments = DailyPowerEquipment::where('power_plant_id', $powerPlantId)->get();
+            $records = DailyPowerHourReport::where('power_plant_id', $powerPlantId)
+                        ->where('time', $time)
+                        ->get()
+                        ->keyBy('daily_power_equipment_id');
+            $date = now()->toDateString();
 
-            if ($rows->isEmpty()) {
-                return back()->withErrors("Тухайн цагийн бичлэг олдсонгүй.");
-            }
-
-            $first = $rows->first();
-
-            $report = (object)[
-                'time' => $time,
-                'power_plant_id' => $first->power_plant_id
-            ];
-
-            $equipments = DailyPowerEquipment::where('power_plant_id', $first->power_plant_id)->get();
-
-            // equipment_id => value
-            $pivotValues = [];
-            foreach ($rows as $r) {
-                $pivotValues[$r->daily_power_equipment_id] = $r->power_value;
-            }
-
-            return view('daily_power_hour_reports.edit', compact('report', 'equipments', 'pivotValues'));
+            return view('daily_power_hour_reports.edit', compact('plant', 'equipments', 'records', 'powerPlantId', 'time', 'date'));
         }
         
-     
+    public function update(Request $request, $powerPlantId, $time)
+        {
+            $records = $request->input('power_value', []); // [equipment_id => value]
+            $date = $request->input('date', now()->toDateString());
+            $userId = Auth::id();
 
-public function updateByTime(Request $request, $time)
-{
-    $request->validate([
-        'power_plant_id' => 'required|exists:power_plants,id',
-        'date' => 'required|date',
-        'equipments' => 'required|array',
-        'equipments.*.id' => 'required|exists:daily_power_equipments,id',
-        'equipments.*.power_value' => 'required',
-    ]);
+            foreach ($records as $equipmentId => $value) {
+                DailyPowerHourReport::updateOrCreate(
+                    [
+                        'power_plant_id' => $powerPlantId,
+                        'daily_power_equipment_id' => $equipmentId,
+                        'date' => $date,
+                        'time' => $time, // цаг параметр
+                    ],
+                    [
+                        'power_value' => $value,
+                        'user_id' => $userId,
+                    ]
+                );
+            }
 
-    foreach ($request->equipments as $eq) {
-        $report = DailyPowerHourReport::where('time', $time)
-            ->where('date', $request->date)
-            ->where('daily_power_equipment_id', $eq['id'])
-            ->first();
+            return redirect()->route('daily_power_hour_reports.editByPlantAndTime', [$powerPlantId, $time])
+                            ->with('success', 'Өгөгдөл амжилттай шинэчлэгдлээ!');
 
-        if ($report) {
-            $report->update([
-                'power_value' => $eq['power_value']
-            ]);
-        }
-    }
-
-
-    return redirect()->route('daily_power_hour_reports.index')
-                     ->with('success', 'Амжилттай шинэчиллээ');
-
-}
-
-
+          
+        } 
 
 public function userPowerReport(Request $request)
 {

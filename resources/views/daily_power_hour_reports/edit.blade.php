@@ -2,61 +2,41 @@
 
 @section('content')
 <div class="container mt-4">
+    <h3>Станцын тоноглолын ачааллын утгуудыг засварлах</h3>
 
-    <h3>Хоногийн ачааллын цаг засах</h3>
-
+    <form action="{{ route('daily_power_hour_reports.updateByPlantAndTime', [$powerPlantId, $time]) }}" method="POST">
    
 
-    {{-- Амжилтын мэдэгдэл --}}
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
 
-    {{-- Алдааны мэдэгдэл --}}
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+        @csrf
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>Тоноглол</th>
+                    <th>Ачаалал</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($equipments as $e)
+                <tr>
+                    <td>{{ $e->equipment_name }}</td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control"
+                               name="power_value[{{ $e->id }}]"
+                               value="{{ $records[$e->id]->power_value ?? '' }}">
+                    </td>
+                </tr>
                 @endforeach
-            </ul>
+            </tbody>
+        </table>
+
+        <div class="mb-3">
+            <label>Өдөр:</label>
+            <input type="date" class="form-control w-25" name="date"
+                   value="{{ $date }}">
         </div>
-    @endif
 
-
-   
- 
-<form action="{{ route('daily_power_hour_reports.updateByTime', $report->time) }}" method="POST">
-    @csrf
-    @method('PUT')
-
-    <input type="hidden" name="power_plant_id" value="{{ $report->power_plant_id }}">
-    <input type="hidden" name="date" value="{{ $report->date ?? date('Y-m-d') }}">
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Тоноглол</th>
-                <th>Утга</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($equipments as $eq)
-            <tr>
-                <td>{{ $eq->power_equipment }}</td>
-                <td>
-                    <input type="hidden" name="equipments[{{ $loop->index }}][id]" value="{{ $eq->id }}">
-                    <input type="text" name="equipments[{{ $loop->index }}][power_value]" 
-                           value="{{ $pivotValues[$eq->id] ?? '' }}" class="form-control">
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <button type="submit" class="btn btn-primary">Шинэчлэх</button>
-</form>
-
-
+        <button type="submit" class="btn btn-primary">Хадгалах</button>
+    </form>
 </div>
 @endsection

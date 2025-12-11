@@ -7,6 +7,7 @@
    
 
 <form method="GET" action="{{ route('daily_power_hour_reports.index') }}" class="mb-3">
+
     <div class="row">
         <div class="col-auto">
             <input type="date" name="date" value="{{ $date }}" class="form-control">
@@ -30,7 +31,7 @@
                 <th>Цаг</th>
 
                 @foreach($equipments as $e)
-                    <th>{{ $e->power_equipment }}</th>
+                    <th>{{ $e->equipment_name }}</th>
                 @endforeach
 
                 <th width="80">Үйлдэл</th>
@@ -44,17 +45,17 @@
                     <td>{{ $row['time'] }}</td>
 
                     @foreach($equipments as $e)
-                        <td>{{ $row[$e->power_equipment] ?? '-' }}</td>
+                        <td>{{ $row[$e->equipment_name] ?? '-' }}</td>
                     @endforeach
 
-                    <td>
-                        <a href="{{ route('daily_power_hour_reports.edit', $row['time']) }}" 
-                            class="btn btn-sm btn-primary">
-                                засах
-                        </a>
-                        
+               
+                      <td>
+                            <a href="{{ route('daily_power_hour_reports.editByPlantAndTime', [$row['powerPlantId'], $row['time']]) }}" 
+                            class="btn btn-warning btn-sm">Засах</a>
+                      </td>
 
-                    </td>
+
+                     
                 </tr>
             @endforeach
         </tbody>

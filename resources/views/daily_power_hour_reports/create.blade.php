@@ -52,7 +52,7 @@
                 @foreach($equipments as $index => $equipment)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $equipment->power_equipment }}</td>
+                    <td>{{ $equipment->equipment_name }}</td>
                     <td>
                         <input type="hidden" name="equipments[{{ $index }}][id]" value="{{ $equipment->id }}">
                         <input type="number" step="0.01" name="equipments[{{ $index }}][power_value]" class="form-control" placeholder="Жишээ: 26.5">

@@ -68,7 +68,7 @@
                     @endif
 
                     {{-- Тоноглол --}}
-                    <td>{{ $row['equipment']->power_equipment ?? '-' }}</td>
+                    <td>{{ $row['equipment']->equipment_name ?? '-' }}</td>
 
                     {{-- Цагууд --}}
                     @foreach($times as $time)

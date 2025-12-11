@@ -25,10 +25,12 @@ class DailyPowerEquipmentController extends Controller
         $request->validate([
             'power_plant_id' => 'required|exists:power_plants,id',
             'power_equipment' => 'required|string|max:255',
+            'equipment_name' => 'nullable|string|max:255',
+            
         ]);
 
         DailyPowerEquipment::create($request->all());
-        return redirect()->route('daily_power_equipments.index')->with('success', 'Equipment added successfully.');
+        return redirect()->route('daily_power_equipments.index')->with('success', 'Амжилттай.');
     }
 
     public function edit(DailyPowerEquipment $dailyPowerEquipment)
@@ -42,10 +44,11 @@ class DailyPowerEquipmentController extends Controller
         $request->validate([
             'power_plant_id' => 'required|exists:power_plants,id',
             'power_equipment' => 'required|string|max:255',
+            'equipment_name' => 'nullable|string|max:255',
         ]);
 
         $dailyPowerEquipment->update($request->all());
-        return redirect()->route('daily_power_equipments.index')->with('success', 'Equipment updated successfully.');
+        return redirect()->route('daily_power_equipments.index')->with('success', 'Амжилттай.');
     }
 
     public function destroy(DailyPowerEquipment $dailyPowerEquipment)

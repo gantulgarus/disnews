@@ -32,6 +32,7 @@
                     <td>#</td>
                     <th>Станц нэр</th>
                     <th>Тоноглол нэр</th>
+                    <th>Нэршил</th>
                     <th>Үйлдэл</th>
                 </tr>
             </thead>
@@ -41,6 +42,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $equipment->powerPlant->name ?? 'N/A' }}</td>
                     <td>{{ $equipment->power_equipment }}</td>
+                    <td>{{ $equipment->equipment_name }}</td>
                     <td>{{ $equipment->created_at->format('Y-m-d') }}</td>
                     <td>
                         <a href="{{ route('daily_power_equipments.edit', $equipment->id) }}" class="btn btn-sm btn-warning">Засах</a>

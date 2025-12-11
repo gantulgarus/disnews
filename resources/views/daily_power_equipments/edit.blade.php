@@ -43,6 +43,14 @@
                        class="form-control" placeholder="Тоноглолын нэр оруулна уу" required>
             </div>
 
+            <div class="mb-3">
+                <label for="equipment_name" class="form-label fw-bold">Нэршил</label>
+                <input type="text" name="equipment_name" id="equipment_name"
+                       value="{{ old('equipment_name', $dailyPowerEquipment->equipment_name) }}"
+                       class="form-control" placeholder="Нэршил оруулна уу" required>
+            </div>
+ 
+
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary">Шинэчлэх</button>
             </div>

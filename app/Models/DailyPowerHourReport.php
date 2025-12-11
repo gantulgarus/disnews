@@ -16,6 +16,7 @@ class DailyPowerHourReport extends Model
         'date',
         'time',
         'user_id',
+        
     ];
 
     // Харилцан холбоо (Relationships)

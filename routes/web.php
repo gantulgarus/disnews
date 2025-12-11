@@ -114,23 +114,23 @@ use App\Http\Controllers\WesternRegionCapacityController;
 
      
    
-   Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
+    Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
     ->name('daily_power_hour_reports.report');
 
     Route::resource('daily_power_hour_reports', DailyPowerHourReportController::class)
     ->except(['edit', 'update', 'show']);
 
 
-    Route::get('daily-power-hour-reports/{time}/edit', [DailyPowerHourReportController::class, 'editByTime'])
-    ->name('daily_power_hour_reports.edit')
-    ->where('time', '[0-9:]+'); // цаг форматанд : зөвшөөрнө
 
-    Route::put('daily-power-hour-reports/{time}', 
-    [DailyPowerHourReportController::class, 'updateByTime'])
-    ->name('daily_power_hour_reports.updateByTime');
+     Route::get('/daily-power-hour-reports/edit/{powerPlantId}/{time}',
+    [DailyPowerHourReportController::class, 'edit'])
+    ->name('daily_power_hour_reports.editByPlantAndTime');
 
+    Route::post('/daily-power-hour-reports/update/{powerPlantId}/{time}',
+    [DailyPowerHourReportController::class, 'update'])
+    ->name('daily_power_hour_reports.updateByPlantAndTime');
 
-
+    
 
     Route::resource('western_region_capacities', WesternRegionCapacityController::class);
 

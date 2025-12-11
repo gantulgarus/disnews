@@ -14,6 +14,7 @@ class DailyPowerEquipment extends Model
     protected $fillable = [
         'power_plant_id',
         'power_equipment',
+        'equipment_name',
     ];
 
     public function powerPlant()
