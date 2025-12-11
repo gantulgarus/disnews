@@ -410,7 +410,11 @@ class ReportController extends Controller
     {
         $date = $request->input('date', now()->toDateString());
 
+        // ====================================
+        // ББЭХС - Western Region
+        // ====================================
         $powerPlants = PowerPlant::with([
+            'equipments',
             'equipmentStatuses' => function ($q) use ($date) {
                 $q->whereDate('date', $date)
                     ->whereIn('id', function ($sub) use ($date) {
@@ -420,27 +424,52 @@ class ReportController extends Controller
                             ->groupBy('equipment_id');
                     });
             },
-
-            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
                 $q->whereDate('date', $date)
                     ->orderByDesc('id')
-                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+                    ->limit(1);
             },
-
-        ])->where('region', 'ББЭХС')->orderBy('Order')->get()
+            'powerPlantType'
+        ])
+            ->where('region', 'ББЭХС')
+            ->orderBy('Order')
+            ->get()
             ->map(function ($plant) {
-                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
                 $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
-        // ✅ Хэрвээ нийт дүн хэрэгтэй бол
+        // ББЭХС нийт дүн
         $bbehs_total_p = $powerPlants->sum('total_p');
         $bbehs_total_pmax = $powerPlants->sum('total_pmax');
 
+        // ББЭХС станцуудын нийлбэр (Хэрэглээ, Түгээлт тооцоолоход хэрэгтэй)
+        $bbehs_total_produced = $powerPlants->sum(function ($plant) {
+            return $plant->powerInfos->first()?->produced_energy ?? 0;
+        });
+
+        $bbehs_total_distributed = $powerPlants->sum(function ($plant) {
+            return $plant->powerInfos->first()?->distributed_energy ?? 0;
+        });
+
+        // ББЭХС системийн мэдээлэл
+        $westernRegionCapacities = WesternRegionCapacity::whereDate('date', $date)->get();
+
+        // Импортын түгээсэн ЦЭХ
+        $import_distributed = $westernRegionCapacities->first()?->import_distributed ?? 0;
+
+        // ✅ Хэрэглээ = Станцуудын үйлдвэрлэсэн + Импортын түгээсэн
+        $bbehs_consumption = $bbehs_total_produced + $import_distributed;
+
+        // ✅ Түгээлт = Станцуудын түгээсэн + Импортын түгээсэн
+        $bbehs_distribution = $bbehs_total_distributed + $import_distributed;
+
+        // ====================================
+        // АУЭХС - Altai Region
+        // ====================================
         $powerAltaiPlants = PowerPlant::with([
+            'equipments',
             'equipmentStatuses' => function ($q) use ($date) {
                 $q->whereDate('date', $date)
                     ->whereIn('id', function ($sub) use ($date) {
@@ -450,29 +479,55 @@ class ReportController extends Controller
                             ->groupBy('equipment_id');
                     });
             },
-
-            // PowerInfo
             'powerInfos' => function ($q) use ($date) {
                 $q->whereDate('date', $date)
                     ->orderByDesc('id')
-                    ->limit(1); // ✅ Зөвхөн хамгийн сүүлийн бичлэг
+                    ->limit(1);
             },
-        ])->where('region', 'АУЭХС')->orderBy('Order')->get()
+            'powerPlantType'
+        ])
+            ->where('region', 'АУЭХС')
+            ->orderBy('Order')
+            ->get()
             ->map(function ($plant) {
-                // powerInfos дотроос P болон Pmax талбарууд байгаа гэж үзье
                 $plant->total_p = $plant->powerInfos->sum('p');
                 $plant->total_pmax = $plant->powerInfos->sum('p_max');
                 return $plant;
             });
 
-        // ✅ Хэрвээ нийт дүн хэрэгтэй бол
+        // АУЭХС нийт дүн
         $altai_total_p = $powerAltaiPlants->sum('total_p');
         $altai_total_pmax = $powerAltaiPlants->sum('total_pmax');
 
-        $westernRegionCapacities = WesternRegionCapacity::whereDate('date', $date)->get();
+        // ББЭХС станцуудын нийлбэр (Хэрэглээ, Түгээлт тооцоолоход хэрэгтэй)
+        $altai_total_produced = $powerAltaiPlants->sum(function ($plant) {
+            return $plant->powerInfos->first()?->produced_energy ?? 0;
+        });
+
+        $altai_total_distributed = $powerAltaiPlants->sum(function ($plant) {
+            return $plant->powerInfos->first()?->distributed_energy ?? 0;
+        });
+
+        // АУЭХС системийн мэдээлэл
         $altaiRegionCapacities = AltaiRegionCapacity::whereDate('date', $date)->get();
 
-        return view('reports.local_daily_report', compact('powerPlants', 'date', 'bbehs_total_p', 'bbehs_total_pmax', 'powerAltaiPlants', 'altai_total_p', 'altai_total_pmax', 'westernRegionCapacities', 'altaiRegionCapacities'));
+        return view('reports.local_daily_report', compact(
+            'date',
+            'powerPlants',
+            'bbehs_total_p',
+            'bbehs_total_pmax',
+            'bbehs_total_produced',
+            'bbehs_total_distributed',
+            'bbehs_consumption',
+            'bbehs_distribution',
+            'westernRegionCapacities',
+            'powerAltaiPlants',
+            'altai_total_p',
+            'altai_total_pmax',
+            'altai_total_produced',
+            'altai_total_distributed',
+            'altaiRegionCapacities'
+        ));
     }
 
     // СЭХ станцуудын горим, гүйцэтгэл

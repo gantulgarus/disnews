@@ -310,6 +310,8 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th></th>
+                                        <th>Хэрэглээ</th>
+                                        <th>Түгээлт</th>
                                         <th>Pимп.max</th>
                                         <th>Pимп.min</th>
                                         <th>Импортоор авсан</th>
@@ -321,12 +323,15 @@
                                     @foreach ($westernRegionCapacities as $data)
                                         <tr>
                                             <td class="fw-semibold">Хоногт</td>
+                                            <td>{{ $bbehs_consumption }}</td>
+                                            <td>{{ $bbehs_distribution }}</td>
                                             <td>{{ $data->p_imp_max }}</td>
                                             <td>{{ $data->p_imp_min }}</td>
                                             <td>{{ $data->import_received }}</td>
                                             <td>{{ $data->import_distributed }}</td>
                                             <td class="text-center">
-                                                <a href="{{ route('western_region_capacities.create') }}" class="edit-icon">
+                                                <a href="{{ route('western_region_capacities.create') }}"
+                                                    class="edit-icon">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -404,6 +409,15 @@
                                             <td colspan="10" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                         </tr>
                                     @endforelse
+                                    <tr class="fw-bold">
+                                        <td colspan="4">Нийт дүн</td>
+                                        <td>{{ number_format($bbehs_total_p, 2) }}</td>
+                                        <td>{{ number_format($bbehs_total_pmax, 2) }}</td>
+                                        <td></td>
+                                        <td>{{ number_format($bbehs_total_produced, 2) }}</td>
+                                        <td>{{ number_format($bbehs_total_distributed, 2) }}</td>
+                                        <td></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -545,6 +559,17 @@
                                             <td colspan="11" class="text-center text-muted">Мэдээлэл байхгүй</td>
                                         </tr>
                                     @endforelse
+
+                                    <tr class="fw-bold">
+                                        <td colspan="4">Нийт дүн</td>
+                                        <td>{{ number_format($altai_total_p, 2) }}</td>
+                                        <td>{{ number_format($altai_total_pmax, 2) }}</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{ number_format($altai_total_produced, 2) }}</td>
+                                        <td>{{ number_format($altai_total_distributed, 2) }}</td>
+                                        <td></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
