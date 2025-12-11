@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ZConclusion extends Model
 {
-    protected $connection = 'second_db'; // Хоёр дахь өгөгдлийн сантай холбогдоно
+    // protected $connection = 'second_db'; // Хоёр дахь өгөгдлийн сантай холбогдоно
+    protected $connection = 'mysql';   // Local DB-г заана (default)
 
     protected $table = 'Z_Conclusion'; // Хүснэгтийн нэр
 
-    protected $primaryKey = 'id'; // Анхдагч key
+    // protected $primaryKey = 'id'; // Анхдагч key
 
     public $timestamps = false; // created_at, updated_at байхгүй
 

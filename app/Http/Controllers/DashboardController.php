@@ -24,7 +24,7 @@ class DashboardController extends Controller
                 'GOK_PP_TOTAL_P',
                 'DALANZADGAD_PP_TOTAL_P',
                 'UHAAHUDAG_PP_TOTAL_P',
-                'BUURULJUUT_PP_TOTAL_P',
+                'BUURULJUUT_TOTAL_P',
             ]
         ],
         'wind' => [
