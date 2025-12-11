@@ -2,21 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ThermoDailyRegime;
 use App\Models\PowerPlant;
 use Illuminate\Http\Request;
+use App\Models\ThermoDailyRegime;
+use Illuminate\Support\Facades\Auth;
 
 class ThermoDailyRegimeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $regimes = ThermoDailyRegime::with('powerPlant')->orderByDesc('date')->paginate(10);
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        // Query эхлүүлэх
+        $query = ThermoDailyRegime::query()->orderBy('date', 'asc');
+
+        if ($userOrgId != 5) {
+            $query->whereHas('powerPlant', function ($q) use ($userOrgId) {
+                $q->where('organization_id', $userOrgId);
+            });
+        }
+
+        // 📌 Сарын фильтр
+        if ($request->filled('month')) {
+            // month = 2025-02 гэх мэт
+            $query->whereYear('date', substr($request->month, 0, 4))
+                ->whereMonth('date', substr($request->month, 5, 2));
+        }
+
+
+        $regimes = $query->get();
+
         return view('thermo_daily_regimes.index', compact('regimes'));
     }
 
     public function create()
     {
-        $powerPlants = PowerPlant::whereIn('id', [1, 9, 11, 19, 20, 21, 22])->orderBy('Order')->get();
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        if ($userOrgId == 5) {
+            // Админ -> бүх станц
+            $powerPlants = PowerPlant::whereIn('id', [1, 9, 11, 19, 20, 21, 22])->orderBy('Order')->get();
+        } else {
+            // Админ биш -> зөвхөн өөрийн байгууллагын станцууд
+            $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        }
+
+
         return view('thermo_daily_regimes.create', compact('powerPlants'));
     }
 
@@ -43,7 +76,17 @@ class ThermoDailyRegimeController extends Controller
 
     public function edit(ThermoDailyRegime $thermoDailyRegime)
     {
-        $powerPlants = PowerPlant::whereIn('id', [1, 9, 11, 19, 20, 21, 22])->orderBy('Order')->get();
+        $user = Auth::user();
+        $userOrgId = $user->organization_id;
+
+        if ($userOrgId == 5) {
+            // Админ -> бүх станц
+            $powerPlants = PowerPlant::whereIn('id', [1, 9, 11, 19, 20, 21, 22])->orderBy('Order')->get();
+        } else {
+            // Админ биш -> зөвхөн өөрийн байгууллагын станцууд
+            $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        }
+
         return view('thermo_daily_regimes.edit', compact('thermoDailyRegime', 'powerPlants'));
     }
 

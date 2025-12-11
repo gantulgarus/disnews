@@ -50,6 +50,7 @@ class DashboardController extends Controller
         'battery' => [
             'name' => 'Батарей хуримтлуур',
             'stations' => [
+                'ERDENE_SPP_BHB_TOTAL_P',
                 'BAGANUUR_BESS_TOTAL_P_T',
                 'SONGINO_BESS_TOTAL_P'
             ]
@@ -70,32 +71,50 @@ class DashboardController extends Controller
         return view('dashboard', compact('date'));
     }
 
-    // Шинэ метод: Real-time мэдээлэл авах
+    // OPTIMIZED: Real-time мэдээлэл авах
     public function realtimeData(Request $request)
     {
         try {
             $currentDate = now()->toDateString();
+
+            // Calculate timestamp range for today
+            $startTimestamp = Carbon::parse($currentDate)->startOfDay()->timestamp;
+            $endTimestamp = Carbon::parse($currentDate)->endOfDay()->timestamp;
 
             // Get all station names
             $allStations = collect($this->stationGroups)->flatMap(function ($group) {
                 return $group['stations'];
             })->toArray();
 
-            // Get latest values for all stations
-            $latestData = ZConclusion::select('VAR', 'VALUE', 'TIMESTAMP_S')
-                ->whereIn('VAR', $allStations)
-                ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
-                ->where('CALCULATION', 50)
-                ->whereIn('TIMESTAMP_S', function ($query) use ($currentDate, $allStations) {
-                    $query->select(DB::raw('MAX(TIMESTAMP_S)'))
-                        ->from('Z_Conclusion')
-                        ->whereIn('VAR', $allStations)
-                        ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
-                        ->where('CALCULATION', 50)
-                        ->groupBy('VAR');
-                })
-                ->get()
-                ->keyBy('VAR');
+            // OPTIMIZED: Use window function to get latest record per VAR
+            // This is MUCH faster than the subquery approach
+            // $latestData = DB::table(DB::raw('(
+            //     SELECT
+            //         VAR,
+            //         VALUE,
+            //         TIMESTAMP_S,
+            //         ROW_NUMBER() OVER (PARTITION BY VAR ORDER BY TIMESTAMP_S DESC) as rn
+            //     FROM Z_Conclusion
+            //     WHERE VAR IN (' . implode(',', array_map(fn($s) => "'$s'", $allStations)) . ')
+            //         AND TIMESTAMP_S BETWEEN ' . $startTimestamp . ' AND ' . $endTimestamp . '
+            //         AND CALCULATION = 50
+            // ) as ranked'))
+            //     ->where('rn', 1)
+            //     ->get()
+            //     ->keyBy('VAR');
+
+            // Alternative approach if window functions are not available:
+            // Use a simple query with ORDER BY and LIMIT grouped results
+            $latestData = collect($allStations)->mapWithKeys(function ($station) use ($startTimestamp, $endTimestamp) {
+                $record = ZConclusion::select('VAR', 'VALUE', 'TIMESTAMP_S')
+                    ->where('VAR', $station)
+                    ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
+                    ->where('CALCULATION', 50)
+                    ->orderByDesc('TIMESTAMP_S')
+                    ->first();
+
+                return $record ? [$station => $record] : [];
+            });
 
             // Most recent timestamp
             $latestTimestamp = $latestData->isNotEmpty()
@@ -120,9 +139,9 @@ class DashboardController extends Controller
                 ];
             }
 
-            // Get latest system_total_p value
+            // Get latest system_total_p value - OPTIMIZED
             $systemTotal = ZConclusion::where('VAR', 'system_total_p')
-                ->whereDate(DB::raw('FROM_UNIXTIME(TIMESTAMP_S)'), $currentDate)
+                ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
                 ->where('CALCULATION', 50)
                 ->orderByDesc('TIMESTAMP_S')
                 ->first();
@@ -167,7 +186,7 @@ class DashboardController extends Controller
                 }
             }
 
-            // Get ZConclusion data
+            // OPTIMIZED: Get ZConclusion data using timestamp directly
             $zconclusionData = ZConclusion::select(
                 DB::raw('HOUR(FROM_UNIXTIME(timestamp_s)) as hour_num'),
                 DB::raw('FROM_UNIXTIME(timestamp_s, "%H:00") as hour'),

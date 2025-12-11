@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\PowerPlant;
 use Illuminate\Http\Request;
+use App\Models\DailyBalanceBattery;
 use App\Models\DailyBalanceJournal;
+use App\Models\DailyBalanceImportExport;
 
 class DailyBalanceJournalController extends Controller
 {
@@ -34,9 +36,6 @@ class DailyBalanceJournalController extends Controller
             $query->where('power_plant_id', intval($request->plant_id));
         }
 
-
-
-
         $journals = $query->orderBy('date', 'asc')->get();
 
         return view('daily_balance_journals.index', [
@@ -54,11 +53,11 @@ class DailyBalanceJournalController extends Controller
      */
     public function create()
     {
-        $userOrgId = auth()->user()->organization_id;
+        $user = auth()->user();
 
-        $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        $powerPlant = $user->mainPowerPlant;
 
-        return view('daily_balance_journals.create', compact('powerPlants'));
+        return view('daily_balance_journals.create', compact('powerPlant'));
     }
 
 
@@ -70,7 +69,6 @@ class DailyBalanceJournalController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'power_plant_id' => 'required|exists:power_plants,id',
             'date' => 'required|date',
             'processed_amount' => 'nullable|numeric',
             'distribution_amount' => 'nullable|numeric',
@@ -104,6 +102,9 @@ class DailyBalanceJournalController extends Controller
             'dispatcher_name' => 'required|string|max:255',
         ]);
 
+        // Хэрэглэгчийн үндсэн цахилгаан станцын ID-г автоматаар нэмэх
+        $validated['power_plant_id'] = auth()->user()->mainPowerPlant->id;
+
         DailyBalanceJournal::create($validated);
 
         return redirect()->route('daily-balance-journals.index')->with('success', 'Мэдээ амжилттай үүслээ.');
@@ -122,9 +123,9 @@ class DailyBalanceJournalController extends Controller
      */
     public function edit(DailyBalanceJournal $dailyBalanceJournal)
     {
-        $userOrgId = auth()->user()->organization_id;
+        $user = auth()->user();
 
-        $powerPlants = PowerPlant::where('organization_id', $userOrgId)->get();
+        $powerPlants = $user->mainPowerPlant;
 
         return view('daily_balance_journals.edit', compact('dailyBalanceJournal', 'powerPlants'));
     }
@@ -138,7 +139,6 @@ class DailyBalanceJournalController extends Controller
     public function update(Request $request, DailyBalanceJournal $dailyBalanceJournal)
     {
         $validated = $request->validate([
-            'power_plant_id' => 'required|exists:power_plants,id',
             'date' => 'required|date',
             'processed_amount' => 'nullable|numeric',
             'distribution_amount' => 'nullable|numeric',
@@ -189,68 +189,186 @@ class DailyBalanceJournalController extends Controller
         return redirect()->route('daily-balance-journals.index')->with('success', 'Мэдээ устгагдлаа.');
     }
 
+    // public function dailyMatrixReport(Request $request)
+    // {
+    //     // Сарын шүүлтүүр авах (YYYY-MM хэлбэрээр)
+    //     $selectedMonth = $request->input('month', now()->format('Y-m'));
+    //     $startOfMonth = Carbon::parse($selectedMonth . '-01');
+    //     $endOfMonth = $startOfMonth->copy()->endOfMonth();
+    //     $daysInMonth = $startOfMonth->daysInMonth;
+
+    //     // Журналын өгөгдлийг тухайн сараар шүүнэ
+    //     $journals = DailyBalanceJournal::with('powerPlant')
+    //         ->selectRaw('
+    //         power_plant_id,
+    //         date,
+    //         SUM(processed_amount) as processed,
+    //         SUM(distribution_amount) as distributed,
+    //         SUM(internal_demand) as internal_demand,
+    //         AVG(percent) as percent
+    //     ')
+    //         ->whereBetween('date', [$startOfMonth, $endOfMonth])
+    //         ->groupBy('power_plant_id', 'date')
+    //         ->orderBy('date')
+    //         ->get();
+
+    //     $plants = [];
+    //     $pivot = [];
+
+    //     // Журнал өгөгдлөөс pivot үүсгэх
+    //     foreach ($journals as $row) {
+    //         $plant = $row->powerPlant->name ?? 'Unknown';
+    //         $day = Carbon::parse($row->date)->day;
+
+    //         // Станцын нэр хадгалах
+    //         $plants[$plant] = true;
+
+    //         // 🌟 plant_id-г заавал хадгална
+    //         $pivot[$plant]['plant_id'] = $row->power_plant_id;
+
+    //         $pivot[$plant]['processed'][$day] = $row->processed;
+    //         $pivot[$plant]['distributed'][$day] = $row->distributed;
+    //         $pivot[$plant]['internal_demand'][$day] = $row->internal_demand;
+    //         $pivot[$plant]['percent'][$day] = $row->percent;
+    //     }
+
+
+    //     // Бүх станцад тухайн сарын бүх өдөрт default 0 өгөгдөл үүсгэх
+    //     foreach ($plants as $plant => $_) {
+    //         foreach (range(1, $daysInMonth) as $day) {
+    //             foreach (['processed', 'distributed', 'internal_demand', 'percent'] as $key) {
+    //                 if (!isset($pivot[$plant][$key][$day])) {
+    //                     $pivot[$plant][$key][$day] = 0;
+    //                 }
+    //             }
+    //         }
+
+    //         // Өдөр бүрийг сортлох, plant_id-г оролцуулахгүй
+    //         foreach ($pivot[$plant] as $key => &$values) {
+    //             if (is_array($values)) {
+    //                 ksort($values);
+    //             }
+    //         }
+    //     }
+
+
+    //     ksort($plants);
+
+    //     return view('daily_balance_journals.report', [
+    //         'pivot' => $pivot,
+    //         'plants' => array_keys($plants),
+    //         'days' => range(1, $daysInMonth),
+    //         'selectedMonth' => $selectedMonth,
+    //     ]);
+    // }
     public function dailyMatrixReport(Request $request)
     {
-        // Сарын шүүлтүүр авах (YYYY-MM хэлбэрээр)
         $selectedMonth = $request->input('month', now()->format('Y-m'));
         $startOfMonth = Carbon::parse($selectedMonth . '-01');
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
         $daysInMonth = $startOfMonth->daysInMonth;
 
-        // Журналын өгөгдлийг тухайн сараар шүүнэ
+        // 1. Журналын өгөгдөл
         $journals = DailyBalanceJournal::with('powerPlant')
-            ->selectRaw('
-            power_plant_id,
-            date,
-            SUM(processed_amount) as processed,
-            SUM(distribution_amount) as distributed,
-            SUM(internal_demand) as internal_demand,
-            AVG(percent) as percent
-        ')
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
-            ->groupBy('power_plant_id', 'date')
-            ->orderBy('date')
             ->get();
 
-        $plants = [];
-        $pivot = [];
+        // 2. Battery өгөгдөл
+        $batteries = DailyBalanceBattery::with('powerPlant')
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->get();
 
-        // Журнал өгөгдлөөс pivot үүсгэх
+        // 3. Импорт/Экспорт өгөгдөл
+        $importExports = DailyBalanceImportExport::with('powerPlant')
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        $pivot = [];
+        $plants = [];
+
+        /* -----------------------------
+       1. DailyBalanceJournal data
+    ------------------------------*/
         foreach ($journals as $row) {
-            $plant = $row->powerPlant->name ?? 'Unknown';
+            $plant = $row->powerPlant->name;
             $day = Carbon::parse($row->date)->day;
 
-            // Станцын нэр хадгалах
             $plants[$plant] = true;
-
-            // 🌟 plant_id-г заавал хадгална
             $pivot[$plant]['plant_id'] = $row->power_plant_id;
 
-            $pivot[$plant]['processed'][$day] = $row->processed;
-            $pivot[$plant]['distributed'][$day] = $row->distributed;
+            // ЭНЭ СТАНЦАД JOURNAL ӨГӨГДӨЛ БАЙГААГ ТЭМДЭГЛЭХ
+            $pivot[$plant]['has_journal'] = true;
+
+            $pivot[$plant]['processed'][$day] = $row->processed_amount;
+            $pivot[$plant]['distributed'][$day] = $row->distribution_amount;
             $pivot[$plant]['internal_demand'][$day] = $row->internal_demand;
             $pivot[$plant]['percent'][$day] = $row->percent;
         }
 
+        /* -----------------------------
+       2. Battery data
+    ------------------------------*/
+        foreach ($batteries as $row) {
+            $plant = $row->powerPlant->name;
+            $day = Carbon::parse($row->date)->day;
 
-        // Бүх станцад тухайн сарын бүх өдөрт default 0 өгөгдөл үүсгэх
+            $plants[$plant] = true;
+            $pivot[$plant]['plant_id'] = $row->power_plant_id;
+
+            // ЭНЭ СТАНЦАД BATTERY ӨГӨГДӨЛ БАЙГААГ ТЭМДЭГЛЭХ
+            $pivot[$plant]['has_battery'] = true;
+
+            $pivot[$plant]['battery_given'][$day] = $row->energy_given;
+            $pivot[$plant]['battery_taken'][$day] = $row->energy_taken;
+        }
+
+        /* -----------------------------
+       3. Import / Export data
+    ------------------------------*/
+        foreach ($importExports as $row) {
+            $plant = $row->powerPlant->name;
+            $day = Carbon::parse($row->date)->day;
+
+            $plants[$plant] = true;
+            $pivot[$plant]['plant_id'] = $row->power_plant_id;
+
+            // ЭНЭ СТАНЦАД IMPORT/EXPORT ӨГӨГДӨЛ БАЙГААГ ТЭМДЭГЛЭХ
+            $pivot[$plant]['has_import_export'] = true;
+
+            $pivot[$plant]['import'][$day] = $row->import;
+            $pivot[$plant]['export'][$day] = $row->export;
+        }
+
+        /* -----------------------------
+       Өдөр бүр default 0 үүсгэх
+    ------------------------------*/
         foreach ($plants as $plant => $_) {
             foreach (range(1, $daysInMonth) as $day) {
-                foreach (['processed', 'distributed', 'internal_demand', 'percent'] as $key) {
+                $keys = [
+                    'processed',
+                    'distributed',
+                    'internal_demand',
+                    'percent',
+                    'battery_given',
+                    'battery_taken',
+                    'import',
+                    'export'
+                ];
+
+                foreach ($keys as $key) {
                     if (!isset($pivot[$plant][$key][$day])) {
                         $pivot[$plant][$key][$day] = 0;
                     }
                 }
             }
 
-            // Өдөр бүрийг сортлох, plant_id-г оролцуулахгүй
+            // Өдөр сортлох
             foreach ($pivot[$plant] as $key => &$values) {
                 if (is_array($values)) {
                     ksort($values);
                 }
             }
         }
-
 
         ksort($plants);
 
@@ -261,6 +379,7 @@ class DailyBalanceJournalController extends Controller
             'selectedMonth' => $selectedMonth,
         ]);
     }
+
 
     public function showPlant(Request $request, $plantId)
     {

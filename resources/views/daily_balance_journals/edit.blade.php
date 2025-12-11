@@ -32,14 +32,9 @@
                         <div class="row g-2">
                             <div class="col-md-6">
                                 <label class="form-label-sm">Станц</label>
-                                <select name="power_plant_id" class="form-select form-select-sm" required>
-                                    @foreach ($powerPlants as $plant)
-                                        <option value="{{ $plant->id }}"
-                                            {{ $dailyBalanceJournal->power_plant_id == $plant->id ? 'selected' : '' }}>
-                                            {{ $plant->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <input type="text" step="0.001" name="power_plant_id" id="power_plant_id"
+                                    class="form-control form-control-sm"
+                                    value="{{ $dailyBalanceJournal->powerPlant->name }}" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label-sm">Огноо</label>
@@ -117,7 +112,8 @@
                                     </div>
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">- шийд</label>
-                                        <input type="number" step="0.01" name="negative_resolution_{{ $timeSlot[1] }}"
+                                        <input type="number" step="0.01"
+                                            name="negative_resolution_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('negative_resolution_' . $timeSlot[1], $dailyBalanceJournal->{'negative_resolution_' . $timeSlot[1]}) }}">
                                     </div>

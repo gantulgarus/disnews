@@ -56,6 +56,7 @@
                         'power-distribution-works.index',
                         'telephone_messages.index',
                         'daily_power_hour_reports.index',
+                        'daily_power_hour_reports.report',
                         'sms.index',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
@@ -110,6 +111,10 @@
                                         href="{{ route('daily-balance-journals.report') }}">
                                         Тооцооны журнал
                                     </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.report') ? 'active' : '' }}"
+                                        href="{{ route('daily_power_hour_reports.report') }}">
+                                        Ачааллын график
+                                    </a>
                                 @endif
                                 <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
                                     href="{{ route('order-journals.index') }}">
@@ -119,6 +124,18 @@
                                     <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
                                         href="{{ route('daily-balance-journals.index') }}">
                                         Тооцооны журнал
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-batteries.index') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-batteries.index') }}">
+                                        Тооцооны журнал БХ
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
+                                        href="{{ route('daily-balance-import-exports.index') }}">
+                                        Тооцооны журнал Импорт/Экспорт
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
+                                        href="{{ route('daily_power_hour_reports.index') }}">
+                                        Ачааллын график
                                     </a>
                                 @endif
 
@@ -131,18 +148,6 @@
                                     href="{{ route('dis_coal.index') }}">
                                     Түлшний мэдээ
                                 </a>
-                                <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}" 
-                                    href="{{ route('daily_power_hour_reports.index') }}">
-                                    Ачааллын график
-                                </a>
-                                
-                               <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.report') ? 'active' : '' }}"
-                                href="{{ route('daily_power_hour_reports.report') }}">
-                                Ачааллын график харах
-                               </a>
-
-
-
                             </div>
                         </div>
                     </div>
@@ -152,10 +157,12 @@
                     $regimeRoutes = [
                         'electric_daily_regimes.index',
                         'electric_daily_regimes.report',
+                        'electric_daily_regimes',
                         'thermo-daily-regimes.index',
+                        'thermo-daily-regimes.report',
                         'station_thermo.news',
                         'reports.powerPlantReport',
-                        'electric_daily_regimes',
+                        'reports.powerPlantRenewableReport',
                     ];
                     $isRegimeActive = request()->routeIs(...$regimeRoutes);
                 @endphp
@@ -185,32 +192,39 @@
                                 @if ($orgId == 5)
                                     <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
                                         href="{{ route('electric_daily_regimes.report') }}">
-                                        Цахилгааны мэдээ
+                                        Цахилгааны горим
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('station_thermo.report') ? 'active' : '' }}"
+                                        href="{{ route('thermo-daily-regimes.report') }}">
+                                        Дулааны горим
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
                                         href="{{ route('station_thermo.news') }}">
                                         Дулааны мэдээ
                                     </a>
-                                    <a class="dropdown-item" href="#">
+                                    {{-- <a class="dropdown-item" href="#">
                                         Импорт, Экспорт
+                                    </a> --}}
+                                    <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
+                                        href="{{ route('reports.powerPlantRenewableReport') }}">
+                                        СЭХ-ний горим, гүйцэтгэл
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
                                         href="{{ route('reports.powerPlantReport') }}">
-                                        СЭХ-ний горим, гүйцэтгэл
-                                    </a>
-                                    <a class="dropdown-item" href="#">
                                         ДЦС-ын горим, гүйцэтгэл
                                     </a>
                                 @endif
-                                <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
-                                    href="{{ route('electric_daily_regimes.index') }}">
-                                    Цахилгааны горим
-                                </a>
+                                @if ($orgId != 5)
+                                    <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
+                                        href="{{ route('electric_daily_regimes.index') }}">
+                                        Цахилгааны горим
+                                    </a>
 
-                                <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
-                                    href="{{ route('thermo-daily-regimes.index') }}">
-                                    Дулааны горим
-                                </a>
+                                    <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
+                                        href="{{ route('thermo-daily-regimes.index') }}">
+                                        Дулааны горим
+                                    </a>
+                                @endif
 
 
                             </div>
@@ -248,10 +262,7 @@
                                 <div class="dropdown-menu-column">
                                     <a class="dropdown-item {{ request()->routeIs('reports.index') ? 'active' : '' }}"
                                         href="{{ route('reports.index') }}">
-                                        Тайлан 1
-                                    </a>
-                                    <a class="dropdown-item" href="#">
-                                        Тайлан 2
+                                        Тайлан
                                     </a>
                                 </div>
                             </div>
@@ -290,28 +301,28 @@
                             <span class="nav-link-title">Тохиргоо</span>
                         </a>
 
-                    <div class="dropdown-menu">
-                        <div class="dropdown-menu-columns">
-                            <div class="dropdown-menu-column">
-                                <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
-                                    href="{{ route('power-plants.index') }}">
-                                    Эх үүсвэр
-                                </a>
-                                <a class="dropdown-item {{ request()->routeIs('equipments.index') ? 'active' : '' }}"
-                                    href="{{ route('equipments.index') }}">
-                                    Тоноглол
-                                </a>
-                            
-                                <a class="dropdown-item {{ request()->routeIs('daily_power_equipments.index') ? 'active' : '' }}"
-                                    href="{{ route('daily_power_equipments.index') }}">
-                                    Ачааллын тоноглол
-                                </a>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item {{ request()->routeIs('power-plants.index') ? 'active' : '' }}"
+                                        href="{{ route('power-plants.index') }}">
+                                        Эх үүсвэр
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('equipments.index') ? 'active' : '' }}"
+                                        href="{{ route('equipments.index') }}">
+                                        Тоноглол
+                                    </a>
 
-                                
-                                <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
-                                    href="{{ route('organizations.index') }}">
-                                    Байгууллага
-                                </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily_power_equipments.index') ? 'active' : '' }}"
+                                        href="{{ route('daily_power_equipments.index') }}">
+                                        Ачааллын тоноглол
+                                    </a>
+
+
+                                    <a class="dropdown-item {{ request()->routeIs('organizations.index') ? 'active' : '' }}"
+                                        href="{{ route('organizations.index') }}">
+                                        Байгууллага
+                                    </a>
 
                                     <a class="dropdown-item {{ request()->routeIs('divisions.index') ? 'active' : '' }}"
                                         href="{{ route('divisions.index') }}">

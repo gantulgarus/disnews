@@ -38,6 +38,7 @@
                                 <th class="text-wrap">Э.экспорт (мян кВт.цаг)</th>
                                 <th class="text-wrap">Pимп.max (МВт)</th>
                                 <th class="text-wrap">Э.хязгаарлалт (кВт.цаг)</th>
+                                <th class="text-wrap">Э.Хөнгөлөлт (кВт.цаг)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,16 +49,20 @@
                                 </td>
                                 <td>{{ number_format($journals->first()->total_processed ?? 0, 2) }}</td>
                                 <td>{{ number_format($journals->first()->total_distribution ?? 0, 2) }}</td>
-                                <td>—</td>
-                                <td>—</td>
+                                <td>
+                                    {{ number_format($dailyImportExport->total_import ?? 0, 2) }}
+                                </td>
+                                <td>{{ number_format($dailyImportExport->total_export ?? 0, 2) }}</td>
                                 <td rowspan="2">{{ $import_data->max_value }}</td>
+                                <td>—</td>
                                 <td>—</td>
                             </tr>
                             <tr>
                                 <td>Сарын эхнээс</td>
                                 <td>{{ number_format($monthToDate->total_processed ?? 0, 2) }}</td>
                                 <td>{{ number_format($monthToDate->total_distribution ?? 0, 2) }}</td>
-                                <td>—</td>
+                                <td>{{ number_format($monthToDateImportExport->total_import ?? 0, 2) }}</td>
+                                <td>{{ number_format($monthToDateImportExport->total_export ?? 0, 2) }}</td>
                                 <td>—</td>
                                 <td>—</td>
                             </tr>

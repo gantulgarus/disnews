@@ -12,37 +12,29 @@ class DailyPowerHourReportController extends Controller
 {
     public function index(Request $request)
     {
-        
-          // хэрэглэгчийн байгууллагын бүх станц
-            $plants = PowerPlant::where('organization_id', Auth::user()->organization_id)->get();
+        $user = Auth::user();
 
-            // dd($plants);
+        // Хэрэглэгчийн байгууллагын станцыг олно (нэг л ширхэг)
+        $plant = $user->mainPowerPlant;
 
-            // станц сонгогдоогүй бол эхний станцыг default болгоно
-            $plantId = $request->power_plant_id ?? ($plants->first()->id ?? null);
+        $date = $request->date ?? date('Y-m-d');
 
-            if (!$plantId) {
-                return back()->withErrors("Таны байгууллагад станц бүртгэгдээгүй байна.");
-            }
+        // тухайн станцын бүх мэдээ
+        $reports = DailyPowerHourReport::where('power_plant_id', $plant->id)
+            ->where('date', $date)
+            ->orderBy('time', 'asc')
+            ->get();
 
-               $date = $request->date ?? date('Y-m-d');
+        // станцын бүх тоноглол
+        $equipments = DailyPowerEquipment::where('power_plant_id', $plant->id)->get();
 
-            // тухайн станцын бүх мэдээ
-            $reports = DailyPowerHourReport::where('power_plant_id', $plantId)
-                ->where('date', $date)
-                ->orderBy('time', 'asc')
-                ->get();
+        // Pivot
+        $pivot = [];
 
-            // станцын бүх тоноглол
-            $equipments = DailyPowerEquipment::where('power_plant_id', $plantId)->get();
+        foreach ($reports as $r) {
+            $t = $r->time;
 
-            // Pivot
-            $pivot = [];
-
-                foreach ($reports as $r) {
-                $t = $r->time;
-
-                if (!isset($pivot[$t])) {
+            if (!isset($pivot[$t])) {
                 $pivot[$t] = [
                     'id'   => $r->id,   // ← ID нэмэгдлээ
                     'time' => $t,
@@ -50,26 +42,24 @@ class DailyPowerHourReportController extends Controller
                     'powerPlantId' => $r->power_plant_id, 
 
                 ];
-                }
+            }
 
                 $equipName = $r->equipment->equipment_name;
                 $pivot[$t][$equipName] = $r->power_value;
                 }
 
-                $pivot = array_values($pivot);
+        $pivot = array_values($pivot);
 
-            return view('daily_power_hour_reports.index', compact('plants', 'equipments', 'pivot', 'plantId', 'date'));
-                    
-        
+        return view('daily_power_hour_reports.index', compact('equipments', 'pivot', 'date'));
     }
 
     public function create()
     {
         $user = Auth::user();
-        $org_id = $user->organization_id;
-        
+
         // Хэрэглэгчийн байгууллагын станцыг олно (нэг л ширхэг)
-        $plant = PowerPlant::where('organization_id', $org_id)->first();
+        $plant = $user->mainPowerPlant;
+        // $plant = PowerPlant::mainStations()->where('organization_id', $org_id)->first();
 
         if (!$plant) {
             return redirect()->back()->with('error', 'Таны байгууллагад станц бүртгэлгүй байна!');
@@ -78,12 +68,12 @@ class DailyPowerHourReportController extends Controller
         // Тухайн станцын тоноглолуудыг авна
         $equipments = DailyPowerEquipment::where('power_plant_id', $plant->id)->get();
 
-       // dd($equipments);
+        // dd($equipments);
 
         return view('daily_power_hour_reports.create', compact('plant', 'equipments'));
     }
 
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -155,33 +145,33 @@ class DailyPowerHourReportController extends Controller
           
         } 
 
-public function userPowerReport(Request $request)
-{
-    $date = $request->input('date', date('Y-m-d'));
+    public function userPowerReport(Request $request)
+    {
+        $date = $request->input('date', date('Y-m-d'));
 
-    // Цагууд
-    $times = DailyPowerHourReport::where('date', $date)
-                ->select('time')
-                ->distinct()
-                ->orderBy('time')
-                ->pluck('time')
-                ->toArray();
+        // Цагууд
+        $times = DailyPowerHourReport::where('date', $date)
+            ->select('time')
+            ->distinct()
+            ->orderBy('time')
+            ->pluck('time')
+            ->toArray();
 
-    // Хэрэглэгчид + станц + equipment-тай report-уудыг авна
-    $reports = DailyPowerHourReport::with(['powerPlant','equipment'])
-                ->where('date', $date)
-                ->orderBy('power_plant_id')
-                ->orderBy('daily_power_equipment_id')
-                ->orderBy('time')
-                ->get();
+        // Хэрэглэгчид + станц + equipment-тай report-уудыг авна
+        $reports = DailyPowerHourReport::with(['powerPlant', 'equipment'])
+            ->where('date', $date)
+            ->orderBy('power_plant_id')
+            ->orderBy('daily_power_equipment_id')
+            ->orderBy('time')
+            ->get();
 
-    // Pivot data бэлтгэх
-    $data = [];
-    foreach ($reports as $r) {
-        $plantId = $r->power_plant_id;
-        $equipId = $r->daily_power_equipment_id;
+        // Pivot data бэлтгэх
+        $data = [];
+        foreach ($reports as $r) {
+            $plantId = $r->power_plant_id;
+            $equipId = $r->daily_power_equipment_id;
 
-        $rowKey = $plantId . '_' . $equipId;
+            $rowKey = $plantId . '_' . $equipId;
 
             if (!isset($data[$rowKey])) {
                 $data[$rowKey] = [
@@ -194,19 +184,18 @@ public function userPowerReport(Request $request)
                     $data[$rowKey][$time] = '-';
                 }
             }
-        // тухайн цагийн утгыг оруулах
-         $data[$rowKey][$r->time] = $r->power_value;
+            // тухайн цагийн утгыг оруулах
+            $data[$rowKey][$r->time] = $r->power_value;
+        }
+        // dd($data);
+
+        return view('daily_power_hour_reports.report', compact('times', 'data', 'date'));
     }
 
-    return view('daily_power_hour_reports.report', compact('times', 'data', 'date'));
-}
 
-
-public function show($id)
-{
-    $report = DailyPowerHourReport::findOrFail($id);
-    return view('daily_power_hour_reports.show', compact('report'));
-}
-
-
+    public function show($id)
+    {
+        $report = DailyPowerHourReport::findOrFail($id);
+        return view('daily_power_hour_reports.show', compact('report'));
+    }
 }
