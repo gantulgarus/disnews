@@ -13,6 +13,8 @@ class SyncZConclusion extends Command
 
     public function handle()
     {
+        info("Cron Job ZConclusion running at " . now());
+
         $lastTs = ZConclusion::max('TIMESTAMP_S') ?? 0;
 
         $this->info("Starting sync after ID: $lastTs");
