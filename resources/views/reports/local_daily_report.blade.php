@@ -458,7 +458,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($altaiRegionCapacities as $i)
+                                    @foreach ($altaiRegionCapacities as $i)
                                         <tr>
                                             <td class="fw-semibold">Хоногт</td>
                                             <td>{{ $i->import_from_bbexs }}</td>
@@ -478,16 +478,7 @@
                                                 </a>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center">
-                                                <a href="{{ route('altai-region-capacity.create') }}"
-                                                    class="text-decoration-none">
-                                                    + Мэдээ нэмэх
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
