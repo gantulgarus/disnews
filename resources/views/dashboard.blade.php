@@ -24,7 +24,7 @@
 
         @font-face {
             font-family: 'LED';
-            src: url('https://fonts.cdnfonts.com/s/20482/DS-DIGI.woff') format('woff');
+            src: url('https://fonts.cdnfonts.com/s/20482/DS-DIGI.TTF') format('truetype');
         }
 
         /* Subtitle */
@@ -47,6 +47,14 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        .scada-station-name {
+            font-size: 16px;
+            color: #5cc0ff;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .scada-station-number {
@@ -79,55 +87,6 @@
             }
         }
 
-        /* Inline loader */
-        .inline-loader {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #00ff33;
-        }
-
-        .spinner-small {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #333;
-            border-top: 3px solid #00ff33;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Skeleton loader for stations */
-        .skeleton {
-            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-        }
-
-        @keyframes loading {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
-        }
-
-        .skeleton-number {
-            height: 40px;
-        }
-
         /* Chart loading */
         .chart-loading {
             display: flex;
@@ -148,56 +107,59 @@
             margin-bottom: 15px;
         }
 
-        .view-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        .view-badge.system {
-            background: #007bff;
-            color: white;
-        }
-
-        .view-badge.station {
-            background: #28a745;
-            color: white;
+        /* Error state */
+        .scada-error {
+            color: #ff6b6b;
+            font-size: 20px;
         }
     </style>
 
     <div class="container-fluid p-4">
-        <form id="dateForm" method="GET" class="mb-4 row g-2 align-items-end">
+        <form method="GET" class="mb-4 row g-2 align-items-end">
             <div class="col-auto">
                 <input type="date" name="date" id="dateInput" value="{{ $date }}" class="form-control">
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Харах</button>
             </div>
-            <div class="col-auto ms-auto">
-                <span id="viewBadge" class="view-badge" style="display: none;"></span>
-            </div>
         </form>
 
         <!-- Нийт чадал SCADA panel -->
-        <div class="scada-panel mb-4">
-            <div class="scada-title" id="totalPowerTitle">НИЙТ ХЭРЭГЛЭЭ</div>
-            <div class="scada-number" id="totalPowerDisplay">
-                <div class="inline-loader">
-                    <div class="spinner-small"></div>
-                    <span>Уншиж байна...</span>
+        @if ($isSystemView)
+            <div class="scada-panel mb-4">
+                <div class="scada-title">НИЙТ ХЭРЭГЛЭЭ</div>
+                <div class="scada-number">
+                    @if ($realtimeData && isset($realtimeData['totalP']))
+                        {{ number_format($realtimeData['totalP'], 2) }} МВт
+                    @else
+                        <span class="scada-error">Мэдээлэл байхгүй</span>
+                    @endif
+                </div>
+                <div class="mt-2">
+                    <span class="live-led"></span>
+                    <span class="ms-2">Огноо:
+                        @if ($realtimeData && isset($realtimeData['formattedTimestamp']))
+                            {{ $realtimeData['formattedTimestamp'] }}
+                        @else
+                            --
+                        @endif
+                    </span>
                 </div>
             </div>
-            <div class="mt-2">
-                <span class="live-led"></span>
-                <span class="ms-2">Огноо: <span id="lastUpdate">--</span></span>
-            </div>
-        </div>
+        @endif
 
         @php
-            $stationTypeIcons = [
+            $stationIcons = [
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
                 'Салхин цахилгаан станц' => 'wind-power.svg',
                 'Нарны цахилгаан станц' => 'solar-power.svg',
@@ -207,26 +169,48 @@
         @endphp
 
         <!-- Станцуудын grid -->
-        <div class="station-grid" id="stationGrid">
-            @foreach ($stationGroups as $key => $group)
-                <div class="scada-station">
-                    <div class="scada-title">{{ $group['name'] }}</div>
-                    <div class="d-flex align-items-center justify-content-center gap-3">
-                        <img src="{{ asset('images/' . $stationTypeIcons[$group['name']]) }}" alt="{{ $group['name'] }}"
-                            style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
-                        <div class="scada-station-number" style="line-height: 1;">
-                            <div class="skeleton skeleton-number d-inline-block" style="width: 140px; height: 28px;"></div>
+        <div class="station-grid">
+            @if ($realtimeData && isset($realtimeData['typeSums']))
+                @foreach ($realtimeData['typeSums'] as $typeSum)
+                    <div class="scada-station">
+                        <div class="scada-title">{{ $typeSum['type_name'] }}</div>
+                        <div class="d-flex align-items-center justify-content-center gap-3">
+                            <img src="{{ asset('images/' . ($stationIcons[$typeSum['type_name']] ?? 'power-plant.svg')) }}"
+                                alt="{{ $typeSum['type_name'] }}"
+                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+                            <div class="scada-station-number" style="line-height: 1;">
+                                {{ number_format($typeSum['sumP'], 2) }} МВт
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            @else
+                {{-- Хэрэв мэдээлэл байхгүй бол --}}
+                @foreach ($stationIcons as $name => $icon)
+                    <div class="scada-station">
+                        <div class="scada-title">{{ $name }}</div>
+                        <div class="d-flex align-items-center justify-content-center gap-3">
+                            <img src="{{ asset('images/' . $icon) }}" alt="{{ $name }}"
+                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+                            <div class="scada-station-number" style="line-height: 1;">
+                                <span class="scada-error">--</span>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
         </div>
 
         <div class="row row-deck row-cards">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
-                        <h3 class="card-title" id="chartTitle">24 цагийн системийн нийт чадлын график</h3>
+                        @if ($isSystemView)
+                            <h3 class="card-title"> 24 цагийн системийн нийт чадлын график</h3>
+                        @else
+                            <h3 class="card-title"> Станцын нийт чадлын график</h3>
+                        @endif
+
                         <div id="chart-area">
                             <div id="loading" class="chart-loading">
                                 <div class="spinner-large"></div>
@@ -244,89 +228,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Version: 2.0 - Fix regime display issue
         let chart;
-        const icons = {
-            'Дулааны цахилгаан станц': 'power-plant.svg',
-            'Салхин цахилгаан станц': 'wind-power.svg',
-            'Нарны цахилгаан станц': 'solar-power.svg',
-            'Батарей хуримтлуур': 'battery-bolt.svg',
-            'Импорт': 'power-tower.svg'
-        };
 
-        function updateViewLabels(isSystem) {
-            const badge = document.getElementById('viewBadge');
-            const totalPowerTitle = document.getElementById('totalPowerTitle');
-            const chartTitle = document.getElementById('chartTitle');
-
-            if (isSystem) {
-                badge.className = 'view-badge system';
-                badge.textContent = 'СИСТЕМИЙН ХАРАГДАЦ';
-                totalPowerTitle.textContent = 'НИЙТ ХЭРЭГЛЭЭ';
-                chartTitle.textContent = '24 цагийн системийн нийт чадлын график';
-            } else {
-                badge.className = 'view-badge station';
-                badge.textContent = 'СТАНЦЫН ХАРАГДАЦ';
-                totalPowerTitle.textContent = 'СТАНЦЫН НИЙТ ЧАДАЛ';
-                chartTitle.textContent = '24 цагийн станцын нийт чадлын график';
-            }
-            badge.style.display = 'inline-block';
-        }
-
-        async function loadRealtimeData() {
-            try {
-                const res = await fetch("{{ route('dashboard.realtime') }}");
-                const data = await res.json();
-
-                if (!data.success) {
-                    document.getElementById('totalPowerDisplay').innerHTML =
-                        '<span style="color: #ff6b6b; font-size: 20px;">Алдаа гарлаа</span>';
-                    return;
-                }
-
-                updateViewLabels(data.isSystemView);
-
-                document.getElementById('totalPowerDisplay').innerHTML =
-                    `${parseFloat(data.totalP).toFixed(2)} МВт`;
-
-                if (data.latestTimestamp) {
-                    const date = new Date(data.latestTimestamp * 1000);
-                    document.getElementById('lastUpdate').innerText =
-                        date.toLocaleString('en-CA', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        }).replace(',', '');
-                }
-
-                const stationGrid = document.getElementById('stationGrid');
-                stationGrid.innerHTML = '';
-
-                data.typeSums.forEach(type => {
-                    const stationDiv = document.createElement('div');
-                    stationDiv.className = 'scada-station';
-                    stationDiv.innerHTML = `
-                        <div class="scada-title">${type.type_name}</div>
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <img src="/images/${icons[type.type_name]}" alt="${type.type_name}"
-                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
-                            <div class="scada-station-number" style="line-height: 1;">
-                                ${parseFloat(type.sumP).toFixed(2)} МВт
-                            </div>
-                        </div>
-                    `;
-                    stationGrid.appendChild(stationDiv);
-                });
-            } catch (e) {
-                console.error('Error loading realtime data:', e);
-                document.getElementById('totalPowerDisplay').innerHTML =
-                    '<span style="color: #ff6b6b; font-size: 20px;">Холболтын алдаа</span>';
-            }
-        }
-
+        // Load chart data ONLY
         async function loadChart(date) {
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('lineChart').style.display = 'none';
@@ -345,90 +249,56 @@
                     return;
                 }
 
-                console.log('Chart data:', {
-                    isSystemView: data.isSystemView,
-                    hasRegime: !!(data.regimeValues && data.regimeValues.length > 0),
-                    regimeLength: data.regimeValues ? data.regimeValues.length : 0,
-                    zconclusionLength: data.zconclusionValues ? data.zconclusionValues.length : 0
-                });
-
                 document.getElementById('lineChart').style.display = 'block';
 
                 if (chart) chart.destroy();
                 const ctx = document.getElementById('lineChart').getContext('2d');
-
-                const datasets = [];
-
-                // Горим dataset нэмэх
-                const hasRegimeData = data.regimeValues && Array.isArray(data.regimeValues) && data.regimeValues
-                    .length > 0;
-
-                if (hasRegimeData) {
-                    console.log('✓ Adding regime dataset');
-                    datasets.push({
-                        label: 'Горим',
-                        data: data.regimeValues,
-                        borderColor: '#0066ff',
-                        backgroundColor: 'rgba(0, 102, 255, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        spanGaps: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                    });
-                }
-
-                // Гүйцэтгэл dataset нэмэх
-                datasets.push({
-                    label: data.isSystemView ? 'Гүйцэтгэл' : 'Станцын чадал',
-                    data: data.zconclusionValues,
-                    borderColor: '#ff0000',
-                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    spanGaps: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                });
-
-                console.log('Creating chart with', datasets.length, 'datasets');
-
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.times,
-                        datasets: datasets
+                        datasets: [{
+                            label: 'Горим',
+                            data: data.regimeValues,
+                            borderColor: 'blue',
+                            tension: 0.3,
+                            spanGaps: true,
+                        }, {
+                            label: 'Гүйцэтгэл',
+                            data: data.zconclusionValues,
+                            borderColor: 'red',
+                            tension: 0.3,
+                            spanGaps: true,
+                        }]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
                         plugins: {
                             tooltip: {
                                 mode: 'index',
                                 intersect: false,
                                 callbacks: {
                                     label: function(context) {
-                                        return `${context.dataset.label}: ${(context.raw ?? 0).toFixed(2)} МВт`;
+                                        const datasetLabel = context.dataset.label || '';
+                                        const value = context.raw ?? 0;
+                                        return `${datasetLabel}: ${value.toFixed(2)} МВт`;
                                     },
                                     afterBody: function(contexts) {
-                                        if (contexts.length < 2) return '';
-                                        const regime = contexts.find(c => c.dataset.label === 'Горим')?.raw;
-                                        const actual = contexts.find(c => c.dataset.label === 'Гүйцэтгэл' ||
-                                            c.dataset.label === 'Станцын чадал')?.raw;
-                                        if (regime != null && actual != null) {
-                                            const diff = actual - regime;
-                                            return `Зөрүү: ${diff >= 0 ? '+' : ''}${diff.toFixed(2)} МВт`;
+                                        if (contexts.length < 2) return;
+                                        const regime = contexts.find(c => c.dataset.label === 'Горим')
+                                            ?.raw ?? null;
+                                        const zconclusion = contexts.find(c => c.dataset.label ===
+                                            'Гүйцэтгэл')?.raw ?? null;
+                                        if (regime != null && zconclusion != null) {
+                                            const diff = zconclusion - regime;
+                                            const sign = diff >= 0 ? '+' : '';
+                                            return `Зөрүү: ${sign}${diff.toFixed(2)} МВт`;
                                         }
                                         return '';
                                     }
                                 }
                             },
                             legend: {
-                                position: 'top',
-                                labels: {
-                                    usePointStyle: true,
-                                    padding: 15
-                                }
+                                position: 'top'
                             }
                         },
                         interaction: {
@@ -437,22 +307,15 @@
                         },
                         scales: {
                             y: {
-                                beginAtZero: false,
                                 title: {
                                     display: true,
                                     text: 'МВт'
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
                                 }
                             },
                             x: {
                                 title: {
                                     display: true,
                                     text: 'Цаг'
-                                },
-                                grid: {
-                                    display: false
                                 }
                             }
                         },
@@ -460,7 +323,7 @@
                     },
                     plugins: [{
                         id: 'hoverLine',
-                        afterDatasetsDraw(chart) {
+                        afterDatasetsDraw(chart, args, opts) {
                             const {
                                 ctx,
                                 tooltip,
@@ -470,13 +333,15 @@
                                 }
                             } = chart;
                             if (tooltip?._active?.length) {
-                                const x = tooltip._active[0].element.x;
+                                const activePoint = tooltip._active[0].element;
+                                const x = activePoint.x;
+
                                 ctx.save();
                                 ctx.beginPath();
                                 ctx.moveTo(x, top);
                                 ctx.lineTo(x, bottom);
                                 ctx.lineWidth = 1;
-                                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                                ctx.strokeStyle = '#ff0000';
                                 ctx.setLineDash([4, 4]);
                                 ctx.stroke();
                                 ctx.restore();
@@ -488,27 +353,25 @@
                 if (data.peakLoad && data.peakLoad.value) {
                     document.getElementById('peak').innerHTML =
                         `<h4>Хамгийн их ачаалал ${data.date}</h4>
-                         <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
-                         <strong>Утга:</strong> ${data.peakLoad.formatted_value} МВт</p>`;
+                 <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
+                 <strong>Утга:</strong> ${data.peakLoad.formatted_value} МВт</p>`;
                     document.getElementById('peak').classList.remove('d-none');
                 }
+
             } catch (e) {
-                console.error('Chart error:', e);
+                console.error('Chart loading error:', e);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').innerText = "Холболтын алдаа гарлаа";
                 document.getElementById('error').classList.remove('d-none');
             }
         }
 
+        // Initial chart load
         window.addEventListener('DOMContentLoaded', function() {
-            loadRealtimeData();
             const dateInput = document.getElementById('dateInput');
-            if (dateInput) loadChart(dateInput.value);
-        });
-
-        document.getElementById('dateForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            loadChart(document.getElementById('dateInput').value);
+            if (dateInput && dateInput.value) {
+                loadChart(dateInput.value);
+            }
         });
     </script>
 @endsection

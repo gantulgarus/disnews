@@ -85,14 +85,7 @@ class DashboardController extends Controller
         }
 
         // Станцуудын short_name-уудыг цуглуулах
-        // $stationShortNames = $powerPlants->pluck('short_name')->toArray();
-
-        // VAR кодууд үүсгэх (жишээ: PP4 -> PP4_TOTAL_P)
-        // $userStationVars = array_map(function ($shortName) {
-        //     return $shortName . '_TOTAL_P';
-        // }, $stationShortNames);
         $userStationVars = $powerPlants->pluck('short_name')->toArray();
-        // ['PP4_TOTAL_P', 'PP3_TOTAL_P'] шууд ийм ирнэ
 
         return $userStationVars;
     }
@@ -143,38 +136,23 @@ class DashboardController extends Controller
             ->first();
     }
 
-    public function index(Request $request)
-    {
-        $date = $request->input('date', now()->format('Y-m-d'));
-
-        // Хэрэглэгчийн эрхээр шүүсэн станцуудыг дамжуулах
-        $stationGroups = $this->filterStationGroups();
-        $isSystemView = $this->getUserStationVars() === null;
-
-        return view('dashboard', compact('date', 'stationGroups', 'isSystemView'));
-    }
-
-    public function realtimeData(Request $request)
+    /**
+     * View-д зориулж realtime мэдээлэл бэлдэх
+     */
+    private function getRealtimeDataForView()
     {
         try {
             $currentDate = now()->toDateString();
             $startTimestamp = Carbon::parse($currentDate)->startOfDay()->timestamp;
             $endTimestamp = Carbon::parse($currentDate)->endOfDay()->timestamp;
 
-            // Хэрэглэгчийн эрхээр шүүсэн станцууд
             $stationGroups = $this->filterStationGroups();
-            $isSystemView = $this->getUserStationVars() === null;
-
-            // Бүх станцуудын жагсаалт
             $allStations = collect($stationGroups)->flatMap(function ($group) {
                 return $group['stations'];
             })->toArray();
 
             if (empty($allStations)) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Таны эрх байхгүй байна'
-                ], 403);
+                return null;
             }
 
             // Сүүлийн мэдээллийг авах
@@ -211,9 +189,9 @@ class DashboardController extends Controller
                 ];
             }
 
-            // Нийт чадал авах
-            // Хэрэв системийн харагдац бол system_total_p ашиглах
-            // Хэрэв станцын харагдац бол станцуудын нийлбэр
+            // Нийт чадал
+            $isSystemView = $this->getUserStationVars() === null;
+
             if ($isSystemView) {
                 $systemTotal = ZConclusion::where('VAR', 'system_total_p')
                     ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
@@ -223,25 +201,34 @@ class DashboardController extends Controller
 
                 $totalP = $systemTotal ? (float)$systemTotal->VALUE : 0;
             } else {
-                // Станцуудын нийлбэр
                 $totalP = collect($typeSums)->sum('sumP');
             }
 
-            return response()->json([
-                'success' => true,
+            return [
                 'typeSums' => $typeSums,
                 'totalP' => $totalP,
                 'latestTimestamp' => $latestTimestamp,
-                'isSystemView' => $isSystemView,
-            ]);
+                'formattedTimestamp' => $latestTimestamp ?
+                    Carbon::createFromTimestamp($latestTimestamp)->format('Y-m-d H:i') : null,
+            ];
         } catch (\Exception $e) {
             Log::error('Dashboard realtime data error: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'error' => 'Холболтын алдаа гарлаа'
-            ], 500);
+            return null;
         }
+    }
+
+    public function index(Request $request)
+    {
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        // Хэрэглэгчийн эрхээр шүүсэн станцуудыг дамжуулах
+        $stationGroups = $this->filterStationGroups();
+        $isSystemView = $this->getUserStationVars() === null;
+
+        // Realtime мэдээллийг server-side-д авах
+        $realtimeData = $this->getRealtimeDataForView();
+
+        return view('dashboard', compact('date', 'stationGroups', 'isSystemView', 'realtimeData'));
     }
 
     public function data(Request $request)
