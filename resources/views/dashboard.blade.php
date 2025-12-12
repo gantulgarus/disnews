@@ -24,7 +24,7 @@
 
         @font-face {
             font-family: 'LED';
-            src: url('https://fonts.cdnfonts.com/s/20482/DS-DIGI.TTF') format('truetype');
+            src: url('https://fonts.cdnfonts.com/s/20482/DS-DIGI.woff') format('woff');
         }
 
         /* Subtitle */
@@ -47,14 +47,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        .scada-station-name {
-            font-size: 16px;
-            color: #5cc0ff;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-transform: uppercase;
         }
 
         .scada-station-number {
@@ -132,11 +124,6 @@
             }
         }
 
-        .skeleton-text {
-            height: 20px;
-            margin-bottom: 10px;
-        }
-
         .skeleton-number {
             height: 40px;
         }
@@ -160,6 +147,25 @@
             animation: spin 1s linear infinite;
             margin-bottom: 15px;
         }
+
+        .view-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .view-badge.system {
+            background: #007bff;
+            color: white;
+        }
+
+        .view-badge.station {
+            background: #28a745;
+            color: white;
+        }
     </style>
 
     <div class="container-fluid p-4">
@@ -170,11 +176,14 @@
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Харах</button>
             </div>
+            <div class="col-auto ms-auto">
+                <span id="viewBadge" class="view-badge" style="display: none;"></span>
+            </div>
         </form>
 
         <!-- Нийт чадал SCADA panel -->
         <div class="scada-panel mb-4">
-            <div class="scada-title">НИЙТ ХЭРЭГЛЭЭ</div>
+            <div class="scada-title" id="totalPowerTitle">НИЙТ ХЭРЭГЛЭЭ</div>
             <div class="scada-number" id="totalPowerDisplay">
                 <div class="inline-loader">
                     <div class="spinner-small"></div>
@@ -188,7 +197,7 @@
         </div>
 
         @php
-            $stationTypes = [
+            $stationTypeIcons = [
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
                 'Салхин цахилгаан станц' => 'wind-power.svg',
                 'Нарны цахилгаан станц' => 'solar-power.svg',
@@ -199,11 +208,11 @@
 
         <!-- Станцуудын grid -->
         <div class="station-grid" id="stationGrid">
-            @foreach ($stationTypes as $name => $icon)
+            @foreach ($stationGroups as $key => $group)
                 <div class="scada-station">
-                    <div class="scada-title">{{ $name }}</div>
+                    <div class="scada-title">{{ $group['name'] }}</div>
                     <div class="d-flex align-items-center justify-content-center gap-3">
-                        <img src="{{ asset('images/' . $icon) }}" alt="{{ $name }}"
+                        <img src="{{ asset('images/' . $stationTypeIcons[$group['name']]) }}" alt="{{ $group['name'] }}"
                             style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
                         <div class="scada-station-number" style="line-height: 1;">
                             <div class="skeleton skeleton-number d-inline-block" style="width: 140px; height: 28px;"></div>
@@ -217,8 +226,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body">
-                        <h3 class="card-title">24 цагийн системийн нийт чадлын график</h3>
-
+                        <h3 class="card-title" id="chartTitle">24 цагийн системийн нийт чадлын график</h3>
                         <div id="chart-area">
                             <div id="loading" class="chart-loading">
                                 <div class="spinner-large"></div>
@@ -236,9 +244,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Version: 2.0 - Fix regime display issue
         let chart;
-        let refreshInterval;
-
         const icons = {
             'Дулааны цахилгаан станц': 'power-plant.svg',
             'Салхин цахилгаан станц': 'wind-power.svg',
@@ -247,25 +254,41 @@
             'Импорт': 'power-tower.svg'
         };
 
-        // Load realtime data (station powers)
+        function updateViewLabels(isSystem) {
+            const badge = document.getElementById('viewBadge');
+            const totalPowerTitle = document.getElementById('totalPowerTitle');
+            const chartTitle = document.getElementById('chartTitle');
+
+            if (isSystem) {
+                badge.className = 'view-badge system';
+                badge.textContent = 'СИСТЕМИЙН ХАРАГДАЦ';
+                totalPowerTitle.textContent = 'НИЙТ ХЭРЭГЛЭЭ';
+                chartTitle.textContent = '24 цагийн системийн нийт чадлын график';
+            } else {
+                badge.className = 'view-badge station';
+                badge.textContent = 'СТАНЦЫН ХАРАГДАЦ';
+                totalPowerTitle.textContent = 'СТАНЦЫН НИЙТ ЧАДАЛ';
+                chartTitle.textContent = '24 цагийн станцын нийт чадлын график';
+            }
+            badge.style.display = 'inline-block';
+        }
+
         async function loadRealtimeData() {
             try {
                 const res = await fetch("{{ route('dashboard.realtime') }}");
                 const data = await res.json();
 
                 if (!data.success) {
-                    console.error('Failed to load realtime data');
-                    // Show error state
                     document.getElementById('totalPowerDisplay').innerHTML =
                         '<span style="color: #ff6b6b; font-size: 20px;">Алдаа гарлаа</span>';
                     return;
                 }
 
-                // Update total power
+                updateViewLabels(data.isSystemView);
+
                 document.getElementById('totalPowerDisplay').innerHTML =
                     `${parseFloat(data.totalP).toFixed(2)} МВт`;
 
-                // Update timestamp
                 if (data.latestTimestamp) {
                     const date = new Date(data.latestTimestamp * 1000);
                     document.getElementById('lastUpdate').innerText =
@@ -279,7 +302,6 @@
                         }).replace(',', '');
                 }
 
-                // Update station grid
                 const stationGrid = document.getElementById('stationGrid');
                 stationGrid.innerHTML = '';
 
@@ -298,7 +320,6 @@
                     `;
                     stationGrid.appendChild(stationDiv);
                 });
-
             } catch (e) {
                 console.error('Error loading realtime data:', e);
                 document.getElementById('totalPowerDisplay').innerHTML =
@@ -306,7 +327,6 @@
             }
         }
 
-        // Load chart data
         async function loadChart(date) {
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('lineChart').style.display = 'none';
@@ -325,56 +345,90 @@
                     return;
                 }
 
+                console.log('Chart data:', {
+                    isSystemView: data.isSystemView,
+                    hasRegime: !!(data.regimeValues && data.regimeValues.length > 0),
+                    regimeLength: data.regimeValues ? data.regimeValues.length : 0,
+                    zconclusionLength: data.zconclusionValues ? data.zconclusionValues.length : 0
+                });
+
                 document.getElementById('lineChart').style.display = 'block';
 
                 if (chart) chart.destroy();
                 const ctx = document.getElementById('lineChart').getContext('2d');
+
+                const datasets = [];
+
+                // Горим dataset нэмэх
+                const hasRegimeData = data.regimeValues && Array.isArray(data.regimeValues) && data.regimeValues
+                    .length > 0;
+
+                if (hasRegimeData) {
+                    console.log('✓ Adding regime dataset');
+                    datasets.push({
+                        label: 'Горим',
+                        data: data.regimeValues,
+                        borderColor: '#0066ff',
+                        backgroundColor: 'rgba(0, 102, 255, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        spanGaps: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                    });
+                }
+
+                // Гүйцэтгэл dataset нэмэх
+                datasets.push({
+                    label: data.isSystemView ? 'Гүйцэтгэл' : 'Станцын чадал',
+                    data: data.zconclusionValues,
+                    borderColor: '#ff0000',
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    spanGaps: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                });
+
+                console.log('Creating chart with', datasets.length, 'datasets');
+
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: data.times,
-                        datasets: [{
-                            label: 'Горим',
-                            data: data.regimeValues,
-                            borderColor: 'blue',
-                            tension: 0.3,
-                            spanGaps: true,
-                        }, {
-                            label: 'Гүйцэтгэл',
-                            data: data.zconclusionValues,
-                            borderColor: 'red',
-                            tension: 0.3,
-                            spanGaps: true,
-                        }]
+                        datasets: datasets
                     },
                     options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
                         plugins: {
                             tooltip: {
                                 mode: 'index',
                                 intersect: false,
                                 callbacks: {
                                     label: function(context) {
-                                        const datasetLabel = context.dataset.label || '';
-                                        const value = context.raw ?? 0;
-                                        return `${datasetLabel}: ${value.toFixed(2)} МВт`;
+                                        return `${context.dataset.label}: ${(context.raw ?? 0).toFixed(2)} МВт`;
                                     },
                                     afterBody: function(contexts) {
-                                        if (contexts.length < 2) return;
-                                        const regime = contexts.find(c => c.dataset.label === 'Горим')
-                                            ?.raw ?? null;
-                                        const zconclusion = contexts.find(c => c.dataset.label ===
-                                            'Гүйцэтгэл')?.raw ?? null;
-                                        if (regime != null && zconclusion != null) {
-                                            const diff = zconclusion - regime;
-                                            const sign = diff >= 0 ? '+' : '';
-                                            return `Зөрүү: ${sign}${diff.toFixed(2)} МВт`;
+                                        if (contexts.length < 2) return '';
+                                        const regime = contexts.find(c => c.dataset.label === 'Горим')?.raw;
+                                        const actual = contexts.find(c => c.dataset.label === 'Гүйцэтгэл' ||
+                                            c.dataset.label === 'Станцын чадал')?.raw;
+                                        if (regime != null && actual != null) {
+                                            const diff = actual - regime;
+                                            return `Зөрүү: ${diff >= 0 ? '+' : ''}${diff.toFixed(2)} МВт`;
                                         }
                                         return '';
                                     }
                                 }
                             },
                             legend: {
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
                             }
                         },
                         interaction: {
@@ -383,15 +437,22 @@
                         },
                         scales: {
                             y: {
+                                beginAtZero: false,
                                 title: {
                                     display: true,
                                     text: 'МВт'
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
                                 }
                             },
                             x: {
                                 title: {
                                     display: true,
                                     text: 'Цаг'
+                                },
+                                grid: {
+                                    display: false
                                 }
                             }
                         },
@@ -399,7 +460,7 @@
                     },
                     plugins: [{
                         id: 'hoverLine',
-                        afterDatasetsDraw(chart, args, opts) {
+                        afterDatasetsDraw(chart) {
                             const {
                                 ctx,
                                 tooltip,
@@ -409,15 +470,13 @@
                                 }
                             } = chart;
                             if (tooltip?._active?.length) {
-                                const activePoint = tooltip._active[0].element;
-                                const x = activePoint.x;
-
+                                const x = tooltip._active[0].element.x;
                                 ctx.save();
                                 ctx.beginPath();
                                 ctx.moveTo(x, top);
                                 ctx.lineTo(x, bottom);
                                 ctx.lineWidth = 1;
-                                ctx.strokeStyle = '#ff0000';
+                                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
                                 ctx.setLineDash([4, 4]);
                                 ctx.stroke();
                                 ctx.restore();
@@ -429,32 +488,24 @@
                 if (data.peakLoad && data.peakLoad.value) {
                     document.getElementById('peak').innerHTML =
                         `<h4>Хамгийн их ачаалал ${data.date}</h4>
-                 <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
-                 <strong>Утга:</strong> ${data.peakLoad.formatted_value} МВт</p>`;
+                         <p><strong>Цаг:</strong> ${data.peakLoad.time}<br>
+                         <strong>Утга:</strong> ${data.peakLoad.formatted_value} МВт</p>`;
                     document.getElementById('peak').classList.remove('d-none');
                 }
-
             } catch (e) {
+                console.error('Chart error:', e);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').innerText = "Холболтын алдаа гарлаа";
                 document.getElementById('error').classList.remove('d-none');
             }
         }
 
-        // Initial load
         window.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('dateInput');
-
-            // Load realtime data first (faster)
             loadRealtimeData();
-
-            // Then load chart
-            if (dateInput) {
-                loadChart(dateInput.value);
-            }
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput) loadChart(dateInput.value);
         });
 
-        // Form submit handler
         document.getElementById('dateForm').addEventListener('submit', function(e) {
             e.preventDefault();
             loadChart(document.getElementById('dateInput').value);

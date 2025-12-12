@@ -9,4 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('fetch:station-thermo')->hourly();
-Schedule::command('sync:zconclusion')->everyThirtyMinutes();
+Schedule::command('sync:zconclusion')->everyTenMinutes();
