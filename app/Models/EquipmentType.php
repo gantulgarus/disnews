@@ -8,6 +8,7 @@ class EquipmentType extends Model
 {
     protected $fillable = [
         'name',
+        'icon_name',
         'description',
     ];
 }

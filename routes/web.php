@@ -28,6 +28,7 @@ use App\Http\Controllers\ElectricDailyRegimeController;
 use App\Http\Controllers\DailyEquipmentReportController;
 use App\Http\Controllers\DailyPowerHourReportController;
 use App\Http\Controllers\PowerDistributionWorkController;
+use App\Http\Controllers\PowerEnergyAdjustmentController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 use App\Http\Controllers\WesternRegionCapacityController;
 use App\Http\Controllers\DailyBalanceImportExportController;
@@ -147,6 +148,8 @@ Route::middleware('auth')->group(function () {
         ->name('zenon.hourly-power');
     Route::get('/zenon/evening-power', [ZenonHourlyPowerController::class, 'evening'])
         ->name('zenon.evening-power');
+
+    Route::resource('power-energy-adjustments', PowerEnergyAdjustmentController::class);
 
 
 

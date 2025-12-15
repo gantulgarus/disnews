@@ -18,6 +18,7 @@ use App\Models\PowerDistributionWork;
 use App\Models\PowerPlantDailyReport;
 use App\Models\WesternRegionCapacity;
 use App\Models\DailyBalanceImportExport;
+use App\Models\PowerEnergyAdjustment;
 
 class ReportController extends Controller
 {
@@ -270,6 +271,9 @@ class ReportController extends Controller
             ->whereBetween('date', [$monthStart, $date])
             ->first();
 
+
+        $powerEnergyAdjustments = PowerEnergyAdjustment::whereDate('date', $date)->first();
+
         // ========================================
         // 4. OPTIMIZED: Power Plants with Latest Status
         // ========================================
@@ -401,7 +405,8 @@ class ReportController extends Controller
             'battery_total_p',
             'battery_total_pmax',
             'dailyImportExport',
-            'monthToDateImportExport'
+            'monthToDateImportExport',
+            'powerEnergyAdjustments'
         ));
     }
 
