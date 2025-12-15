@@ -17,6 +17,7 @@ use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\TelephoneMessageController;
+use App\Http\Controllers\ZenonHourlyPowerController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\AltaiRegionCapacityController;
@@ -116,29 +117,38 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('telephone_messages', TelephoneMessageController::class)->middleware('auth');
 
-     
-   
+
+
     Route::get('/daily_power_hour_reports/report', [DailyPowerHourReportController::class, 'userPowerReport'])
-    ->name('daily_power_hour_reports.report');
+        ->name('daily_power_hour_reports.report');
 
     Route::resource('daily_power_hour_reports', DailyPowerHourReportController::class)
         ->except(['edit', 'update', 'show']);
 
 
 
-     Route::get('/daily-power-hour-reports/edit/{powerPlantId}/{time}',
-    [DailyPowerHourReportController::class, 'edit'])
-    ->name('daily_power_hour_reports.editByPlantAndTime');
+    Route::get(
+        '/daily-power-hour-reports/edit/{powerPlantId}/{time}',
+        [DailyPowerHourReportController::class, 'edit']
+    )
+        ->name('daily_power_hour_reports.editByPlantAndTime');
 
     Route::resource('daily-balance-batteries', DailyBalanceBatteryController::class);
     Route::resource('daily-balance-import-exports', DailyBalanceImportExportController::class);
     Route::resource('altai-region-capacity', AltaiRegionCapacityController::class);
 
-    Route::post('/daily-power-hour-reports/update/{powerPlantId}/{time}',
-    [DailyPowerHourReportController::class, 'update'])
-    ->name('daily_power_hour_reports.updateByPlantAndTime');
+    Route::post(
+        '/daily-power-hour-reports/update/{powerPlantId}/{time}',
+        [DailyPowerHourReportController::class, 'update']
+    )
+        ->name('daily_power_hour_reports.updateByPlantAndTime');
 
-    
+    Route::get('/zenon-hourly-power', [ZenonHourlyPowerController::class, 'index'])
+        ->name('zenon.hourly-power');
+    Route::get('/zenon/evening-power', [ZenonHourlyPowerController::class, 'evening'])
+        ->name('zenon.evening-power');
+
+
 
     Route::resource('western_region_capacities', WesternRegionCapacityController::class);
 
