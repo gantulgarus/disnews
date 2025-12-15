@@ -61,8 +61,8 @@
                                 </td>
                                 <td>{{ number_format($dailyImportExport->total_export ?? 0, 2) }}</td>
                                 <td rowspan="2">{{ $import_data->max_value }}</td>
-                                <td>{{ number_format($powerEnergyAdjustments->restricted_kwh) ?? 0 }}</td>
-                                <td>{{ number_format($powerEnergyAdjustments->discounted_kwh) ?? 0 }}</td>
+                                <td>{{ number_format($powerEnergyAdjustments->restricted_kwh ?? 0) }}</td>
+                                <td>{{ number_format($powerEnergyAdjustments->discounted_kwh ?? 0) }}</td>
                                 <td>
                                     <a href="{{ route('power-energy-adjustments.create') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
