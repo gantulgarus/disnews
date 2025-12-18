@@ -70,12 +70,12 @@ class ZenonHourlyPowerController extends Controller
         'PP2_TOTAL_P' => 'ДЦС-2',
         'DARKHAN_PP_TOTAL_P' => 'Дархан ДЦС',
         'ERDENET_PP_TOTAL_P' => 'Эрдэнэт ДЦС',
-        'GOK_PP_TOTAL_P' => 'ГОК ДЦС',
+        'GOK_PP_TOTAL_P' => 'ЭҮДЦС',
         'DALANZADGAD_PP_TOTAL_P' => 'Даланзадгад ДЦС',
         'UHAAHUDAG_PP_TOTAL_P' => 'Ухаа Худаг ДЦС',
         'BUURULJUUT_TOTAL_P' => 'Бөөрөлжүүт ДЦС',
         'SALKHIT_WPP_TOTAL_P' => 'Салхит СЦС',
-        'TSETSII_WPP_TOTAL_P' => 'Цэцүү СЦС',
+        'TSETSII_WPP_TOTAL_P' => 'Цэций СЦС',
         'SHAND_WPP_TOTAL_P' => 'Шанд СЦС',
         'DARKHAN_SPP_TOTAL_P' => 'Дархан НЦС',
         'MONNAR_SPP_TOTAL_P' => 'Моннар НЦС',
@@ -150,7 +150,68 @@ class ZenonHourlyPowerController extends Controller
         // Станцуудын цаг тутмын мэдээллийг авах
         $hourlyData = $this->getHourlyData($date);
 
-        return view('zenon.hourly-power', compact('date', 'stationGroups', 'isSystemView', 'hourlyData'));
+        // Системийн нийт ачааллын цаг тутмын мэдээллийг авах
+        $systemPeakHours = $this->getSystemPeakHours($date);
+
+        return view('zenon.hourly-power', compact('date', 'stationGroups', 'isSystemView', 'hourlyData', 'systemPeakHours'));
+    }
+
+    /**
+     * Системийн нийт ачааллын оргил цагуудыг олох
+     */
+    private function getSystemPeakHours($date)
+    {
+        try {
+            $startDate = Carbon::parse($date)->startOfDay()->addHour();
+            $endDate = Carbon::parse($date)->addDay()->startOfDay();
+
+            // SYSTEM_TOTAL_P-ийн 24 цагийн мэдээллийг авах
+            $systemHourlyData = ZConclusion::select(
+                DB::raw('HOUR(FROM_UNIXTIME(timestamp_s)) as hour_num'),
+                DB::raw('AVG(CAST(VALUE AS DECIMAL(10,2))) as avg_value')
+            )
+                ->where('VAR', 'SYSTEM_TOTAL_P')
+                ->where('calculation', 50)
+                ->whereBetween('timestamp_s', [
+                    $startDate->timestamp,
+                    $endDate->timestamp
+                ])
+                ->groupBy('hour_num')
+                ->orderBy('hour_num')
+                ->get();
+
+            // 24 цагийн утгуудыг массивт хадгалах
+            $hourlyValues = [];
+            for ($hour = 1; $hour <= 24; $hour++) {
+                $hourIndex = $hour % 24;
+                $value = $systemHourlyData->where('hour_num', $hourIndex)->first();
+                $hourlyValues[$hour - 1] = $value ? round($value->avg_value, 2) : 0;
+            }
+
+            // Хамгийн их утгыг олох
+            $maxValue = max($hourlyValues);
+
+            // Оргил цагуудыг олох
+            $peakHours = [];
+            foreach ($hourlyValues as $hour => $value) {
+                if ($value == $maxValue && $value > 0) {
+                    $peakHours[] = $hour;
+                }
+            }
+
+            return [
+                'hourly_values' => $hourlyValues,
+                'peak_value' => $maxValue,
+                'peak_hours' => $peakHours
+            ];
+        } catch (\Exception $e) {
+            Log::error('System peak hours error: ' . $e->getMessage());
+            return [
+                'hourly_values' => array_fill(0, 24, 0),
+                'peak_value' => 0,
+                'peak_hours' => []
+            ];
+        }
     }
 
     /**
@@ -234,6 +295,146 @@ class ZenonHourlyPowerController extends Controller
             Log::error('Hourly power data error: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Системийн оргил цагийн ачаалал
+     */
+    public function peakHour(Request $request)
+    {
+        $date = $request->input('date', now()->format('Y-m-d'));
+        $stationGroups = $this->filterStationGroups();
+
+        // Системийн оргил цагийг олох
+        $systemPeakInfo = $this->getSystemPeakHours($date);
+
+        if (empty($systemPeakInfo['peak_hours'])) {
+            return view('zenon.peak-hour-power', [
+                'date' => $date,
+                'peakHourData' => null,
+                'systemPeakInfo' => null
+            ]);
+        }
+
+        // Эхний оргил цагийг авах (хэрэв олон оргил цаг байвал)
+        $peakHour = $systemPeakInfo['peak_hours'][0] + 1; // 0-23 -> 1-24
+
+        // Оргил цагийн мэдээллийг авах
+        $peakHourData = $this->getPeakHourData($date, $peakHour);
+
+        // Статистик тооцоолох
+        $statistics = $this->calculatePeakStatistics($peakHourData, $systemPeakInfo);
+
+        return view('zenon.peak-hour-power', array_merge(
+            compact('date', 'peakHourData', 'systemPeakInfo'),
+            $statistics
+        ));
+    }
+
+    /**
+     * Оргил цагийн мэдээлэл авах
+     */
+    private function getPeakHourData($date, $hour)
+    {
+        try {
+            $targetTime = Carbon::parse($date)->setTime($hour - 1, 0, 0); // hour 1-24 -> 0-23
+            $stationGroups = $this->filterStationGroups();
+
+            $allStations = collect($stationGroups)->flatMap(function ($group) {
+                return $group['stations'];
+            })->toArray();
+
+            if (empty($allStations)) {
+                return null;
+            }
+
+            // Тухайн цагийн мэдээллийг авах
+            $data = ZConclusion::select('VAR', DB::raw('AVG(CAST(VALUE AS DECIMAL(10,2))) as avg_value'))
+                ->whereIn('VAR', $allStations)
+                ->where('calculation', 50)
+                ->whereBetween('timestamp_s', [
+                    $targetTime->timestamp,
+                    $targetTime->addMinutes(59)->timestamp
+                ])
+                ->groupBy('VAR')
+                ->get();
+
+            // Бүтцжүүлэх
+            $structuredData = [];
+            foreach ($stationGroups as $groupKey => $group) {
+                $stations = [];
+                foreach ($group['stations'] as $stationVar) {
+                    $value = $data->where('VAR', $stationVar)->first();
+                    $stations[] = [
+                        'var' => $stationVar,
+                        'name' => $this->stationNames[$stationVar] ?? $stationVar,
+                        'value' => $value ? round($value->avg_value, 2) : 0,
+                    ];
+                }
+
+                $structuredData[$groupKey] = [
+                    'name' => $group['name'],
+                    'stations' => $stations
+                ];
+            }
+
+            return $structuredData;
+        } catch (\Exception $e) {
+            Log::error('Peak hour data error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Оргил цагийн статистик тооцоолох
+     */
+    private function calculatePeakStatistics($peakHourData, $systemPeakInfo)
+    {
+        if ($peakHourData === null) {
+            return [
+                'systemTotal' => $systemPeakInfo['peak_value'] ?? 0,
+                'totalLoad' => 0,
+                'activeStations' => 0,
+                'totalStations' => 0,
+                'averageLoad' => 0,
+                'maxLoad' => 0,
+                'maxStationName' => '-',
+                'peakHour' => !empty($systemPeakInfo['peak_hours']) ? $systemPeakInfo['peak_hours'][0] + 1 : 0
+            ];
+        }
+
+        $totalLoad = 0;
+        $activeStations = 0;
+        $totalStations = 0;
+        $maxLoad = 0;
+        $maxStationName = '-';
+
+        foreach ($peakHourData as $groupData) {
+            foreach ($groupData['stations'] as $station) {
+                $totalStations++;
+                $totalLoad += $station['value'];
+
+                if ($station['value'] > 0) {
+                    $activeStations++;
+                }
+
+                if ($station['value'] > $maxLoad) {
+                    $maxLoad = $station['value'];
+                    $maxStationName = $station['name'];
+                }
+            }
+        }
+
+        return [
+            'systemTotal' => $systemPeakInfo['peak_value'],
+            'totalLoad' => $totalLoad,
+            'activeStations' => $activeStations,
+            'totalStations' => $totalStations,
+            'averageLoad' => $totalStations > 0 ? $totalLoad / $totalStations : 0,
+            'maxLoad' => $maxLoad,
+            'maxStationName' => $maxStationName,
+            'peakHour' => !empty($systemPeakInfo['peak_hours']) ? $systemPeakInfo['peak_hours'][0] + 1 : 0
+        ];
     }
 
     /**

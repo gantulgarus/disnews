@@ -63,7 +63,7 @@
                         'daily_power_hour_reports.report',
                         'sms.index',
                         'zenon.hourly-power',
-                        'zenon.evening-power',
+                        'zenon.peak-hour-power',
                     ];
                     $isOperationActive = request()->routeIs(...$operationRoutes);
                 @endphp
@@ -105,8 +105,8 @@
                                         href="{{ route('zenon.hourly-power') }}">
                                         Скада
                                     </a>
-                                    <a class="dropdown-item {{ request()->routeIs('zenon.evening-power') ? 'active' : '' }}"
-                                        href="{{ route('zenon.evening-power') }}">
+                                    <a class="dropdown-item {{ request()->routeIs('zenon.peak-hour-power') ? 'active' : '' }}"
+                                        href="{{ route('zenon.peak-hour-power') }}">
                                         Скада Их ачаалал
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"

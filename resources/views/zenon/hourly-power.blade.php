@@ -27,13 +27,105 @@
                 <i class="fas fa-exclamation-triangle"></i> Мэдээлэл олдсонгүй.
             </div>
         @else
+            <!-- System Total Summary -->
+            @if ($isSystemView && isset($systemPeakHours))
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card shadow border-left-danger">
+                            <div class="card-header py-3 bg-gradient-danger">
+                                <h6 class="m-0 font-weight-bold">
+                                    <i class="fas fa-bolt"></i> Системийн нийт ачаалал
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-left mb-3">
+                                    <div class="col-md-4">
+                                        <div class="border-right">
+                                            <h3 class="text-danger mb-1">
+                                                Оргил ачаалал {{ number_format($systemPeakHours['peak_value'], 2) }} МВт
+                                                ({{ implode(', ',array_map(function ($h) {return $h + 1 . ':00';}, $systemPeakHours['peak_hours'])) }})
+                                            </h3>
+                                        </div>
+                                    </div>
+                                    {{-- <div class="col-md-4">
+                                        <div class="border-right">
+                                            <h4 class="text-info mb-1">
+                                                {{ number_format(array_sum($systemPeakHours['hourly_values']), 2) }} МВт·ц
+                                            </h4>
+                                            <small class="text-muted">Өдрийн нийт</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h4 class="text-success mb-1">
+                                            {{ number_format(array_sum($systemPeakHours['hourly_values']) / 24, 2) }} МВт
+                                        </h4>
+                                        <small class="text-muted">Дундаж чадал</small>
+                                    </div> --}}
+                                </div>
+
+                                <!-- Hourly Values Chart -->
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th class="text-center">Цаг</th>
+                                                @for ($hour = 1; $hour <= 24; $hour++)
+                                                    <th
+                                                        class="text-center {{ in_array($hour - 1, $systemPeakHours['peak_hours']) ? 'bg-warning text-dark' : '' }}">
+                                                        {{ $hour }}:00
+                                                        @if (in_array($hour - 1, $systemPeakHours['peak_hours']))
+                                                            <i class="fas fa-crown text-danger ml-1"
+                                                                style="font-size: 10px;"></i>
+                                                        @endif
+                                                    </th>
+                                                @endfor
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="font-weight-bold text-center">МВт</td>
+                                                @foreach ($systemPeakHours['hourly_values'] as $hourIndex => $value)
+                                                    @php
+                                                        $isSystemPeak = in_array(
+                                                            $hourIndex,
+                                                            $systemPeakHours['peak_hours'],
+                                                        );
+                                                    @endphp
+                                                    <td
+                                                        class="text-center {{ $isSystemPeak ? 'bg-warning font-weight-bold' : '' }}">
+                                                        {{ number_format($value, 2) }}
+                                                        @if ($isSystemPeak)
+                                                            <i class="fas fa-crown text-danger ml-1"
+                                                                style="font-size: 10px;"></i>
+                                                        @endif
+                                                    </td>
+                                                @endforeach
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i>
+                                        Системийн оргил ачааллын цагууд <span class="badge badge-warning">шар өнгөөр</span>
+                                        тэмдэглэгдсэн.
+                                        Дараах хүснэгтүүдэд энэ цагуудын станцуудын чадлыг тодруулж харуулна.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- System Summary (if viewing all stations) -->
-            @if ($isSystemView)
+            {{-- @if ($isSystemView)
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card shadow">
                             <div class="card-header py-3 bg-primary text-white">
-                                <h6 class="m-0 font-weight-bold">Системийн нийт үзүүлэлт</h6>
+                                <h6 class="m-0 font-weight-bold">Станцуудын нийт үзүүлэлт</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row text-center">
@@ -65,7 +157,7 @@
                         </div>
                     </div>
                 </div>
-            @endif
+            @endif --}}
 
             <!-- Station Groups -->
             @foreach ($hourlyData as $groupKey => $groupData)
@@ -87,36 +179,36 @@
                                     <tr>
                                         <th class="text-center" style="min-width: 150px;">Станц</th>
                                         @for ($hour = 1; $hour <= 24; $hour++)
-                                            <th class="text-center" style="min-width: 60px;">{{ $hour }}:00</th>
+                                            @php
+                                                $isSystemPeakHour =
+                                                    isset($systemPeakHours) &&
+                                                    in_array($hour - 1, $systemPeakHours['peak_hours']);
+                                            @endphp
+                                            <th class="text-center {{ $isSystemPeakHour ? 'bg-warning' : '' }}"
+                                                style="min-width: 60px;">
+                                                {{ $hour }}:00
+                                                @if ($isSystemPeakHour)
+                                                    <i class="fas fa-crown text-danger" style="font-size: 10px;"
+                                                        title="Системийн оргил цаг"></i>
+                                                @endif
+                                            </th>
                                         @endfor
                                         <th class="text-center bg-light" style="min-width: 80px;">Нийт</th>
                                         <th class="text-center bg-light" style="min-width: 80px;">Дундаж</th>
-                                        <th class="text-center bg-warning" style="min-width: 80px;">Оргил</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($groupData['stations'] as $station)
-                                        @php
-                                            // Оргил ачааллыг олох
-                                            $peakValue = max(
-                                                array_filter($station['hourly_data'], function ($v) {
-                                                    return $v !== null;
-                                                }),
-                                            );
-                                            $peakHours = [];
-                                            foreach ($station['hourly_data'] as $hour => $value) {
-                                                if ($value !== null && $value == $peakValue) {
-                                                    $peakHours[] = $hour;
-                                                }
-                                            }
-                                        @endphp
                                         <tr>
                                             <td class="font-weight-bold">{{ $station['name'] }}</td>
                                             @foreach ($station['hourly_data'] as $hourIndex => $value)
                                                 @php
-                                                    $isPeak = $value !== null && $value == $peakValue && $value > 0;
+                                                    $isSystemPeakHour =
+                                                        isset($systemPeakHours) &&
+                                                        in_array($hourIndex, $systemPeakHours['peak_hours']);
+
                                                     $cellClass = 'text-right ';
-                                                    if ($isPeak) {
+                                                    if ($isSystemPeakHour && $value !== null && $value > 0) {
                                                         $cellClass .= 'bg-warning font-weight-bold';
                                                     } elseif ($value !== null && $value > 0) {
                                                         $cellClass .= 'text-success';
@@ -125,9 +217,9 @@
                                                     }
                                                 @endphp
                                                 <td class="{{ $cellClass }}"
-                                                    title="{{ $isPeak ? 'Оргил ачаалал' : '' }}">
+                                                    title="{{ $isSystemPeakHour ? 'Системийн оргил цаг' : '' }}">
                                                     {{ $value !== null ? number_format($value, 2) : '-' }}
-                                                    @if ($isPeak)
+                                                    @if ($isSystemPeakHour && $value !== null && $value > 0)
                                                         <i class="fas fa-crown text-danger ml-1"
                                                             style="font-size: 10px;"></i>
                                                     @endif
@@ -138,12 +230,6 @@
                                             </td>
                                             <td class="text-right font-weight-bold bg-light">
                                                 {{ number_format($station['average'], 2) }}
-                                            </td>
-                                            <td class="text-right font-weight-bold bg-warning">
-                                                {{ number_format($peakValue, 2) }}
-                                                <small class="d-block text-muted" style="font-size: 10px;">
-                                                    {{ implode(', ',array_map(function ($h) {return $h + 1 . ':00';}, $peakHours)) }}
-                                                </small>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -161,23 +247,18 @@
                                             $groupTotal += $station['total'];
                                         }
                                         $groupAverage = count($groupData['stations']) > 0 ? $groupTotal / 24 : 0;
-                                        $groupPeakValue = max($groupHourlyTotals);
-                                        $groupPeakHours = [];
-                                        foreach ($groupHourlyTotals as $hour => $value) {
-                                            if ($value == $groupPeakValue && $value > 0) {
-                                                $groupPeakHours[] = $hour;
-                                            }
-                                        }
                                     @endphp
                                     <tr class="table-info font-weight-bold">
                                         <td>Нийт</td>
                                         @foreach ($groupHourlyTotals as $hourIndex => $hourTotal)
                                             @php
-                                                $isGroupPeak = $hourTotal == $groupPeakValue && $hourTotal > 0;
+                                                $isSystemPeakHour =
+                                                    isset($systemPeakHours) &&
+                                                    in_array($hourIndex, $systemPeakHours['peak_hours']);
                                             @endphp
-                                            <td class="text-right {{ $isGroupPeak ? 'bg-warning' : '' }}">
+                                            <td class="text-right {{ $isSystemPeakHour ? 'bg-warning' : '' }}">
                                                 {{ number_format($hourTotal, 2) }}
-                                                @if ($isGroupPeak)
+                                                @if ($isSystemPeakHour)
                                                     <i class="fas fa-crown text-danger ml-1" style="font-size: 10px;"></i>
                                                 @endif
                                             </td>
@@ -188,22 +269,17 @@
                                         <td class="text-right bg-info text-white">
                                             {{ number_format($groupAverage, 2) }}
                                         </td>
-                                        <td class="text-right bg-warning">
-                                            {{ number_format($groupPeakValue, 2) }}
-                                            <small class="d-block text-dark" style="font-size: 10px;">
-                                                {{ implode(', ',array_map(function ($h) {return $h + 1 . ':00';}, $groupPeakHours)) }}
-                                            </small>
-                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Peak Load Legend -->
+                        <!-- Legend -->
                         <div class="mt-2">
                             <small class="text-muted">
-                                <i class="fas fa-crown text-danger"></i> Оргил ачаалал -
-                                <span class="badge badge-warning">Шар өнгөөр</span> тэмдэглэгдсэн
+                                <i class="fas fa-crown text-danger"></i>
+                                <span class="badge badge-warning">Системийн оргил ачааллын цаг</span> - Шар өнгөөр
+                                тэмдэглэгдсэн
                             </small>
                         </div>
                     </div>
@@ -225,6 +301,14 @@
         <style>
             .bg-warning {
                 background-color: #ffc107 !important;
+            }
+
+            .bg-gradient-danger {
+                background: linear-gradient(180deg, #e74a3b 0%, #be2617 100%);
+            }
+
+            .border-left-danger {
+                border-left: 0.25rem solid #e74a3b !important;
             }
 
             .table td.bg-warning {

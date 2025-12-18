@@ -160,8 +160,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/zenon-hourly-power', [ZenonHourlyPowerController::class, 'index'])
         ->name('zenon.hourly-power');
-    Route::get('/zenon/evening-power', [ZenonHourlyPowerController::class, 'evening'])
-        ->name('zenon.evening-power');
+    Route::get('/zenon/peak-hour-power', [ZenonHourlyPowerController::class, 'peakHour'])
+        ->name('zenon.peak-hour-power');
 
     Route::resource('power-energy-adjustments', PowerEnergyAdjustmentController::class);
 
