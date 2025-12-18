@@ -11,7 +11,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-4">
                             <span class="avatar avatar-xl me-3"
-                                style="background-image: url({{ asset('images/man.png') }});"></span>
+                                style="background-image: url({{ asset('images/user.png') }});"></span>
                             <div>
                                 <h5 class="mb-0">{{ Auth::user()?->name }}</h5>
                                 <small class="text-muted">{{ Auth::user()?->email }}</small>
@@ -27,7 +27,7 @@
                                 <span>Байгууллага:</span>
                                 <span>{{ optional(Auth::user()->organization)->name ?? '-' }}</span>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between">
+                            {{-- <li class="list-group-item d-flex justify-content-between">
                                 <span>Хэлтэс:</span>
                                 <span>{{ optional(Auth::user()->division)->Div_name ?? '-' }}</span>
                             </li>
@@ -38,14 +38,14 @@
                             <li class="list-group-item d-flex justify-content-between">
                                 <span>Permission Code:</span>
                                 <span>{{ optional(Auth::user()->permissionCode)->name ?? Auth::user()?->permission_code }}</span>
-                            </li>
+                            </li> --}}
                         </ul>
 
-                        <div class="mt-4 d-flex justify-content-end">
+                        {{-- <div class="mt-4 d-flex justify-content-end">
                             <a href="#" class="btn btn-primary">
-                                Прoфайл засах
+                                Нууц үг солих
                             </a>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

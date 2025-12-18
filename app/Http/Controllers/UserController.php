@@ -105,4 +105,61 @@ class UserController extends Controller
         $user = auth()->user();
         return view('users.profile', compact('user'));
     }
+
+    /**
+     * Тусдаа нууц үг солих хуудас
+     */
+    public function editPassword(User $user)
+    {
+        return view('users.edit-password', compact('user'));
+    }
+
+    /**
+     * Нууц үг шинэчлэх
+     */
+    public function updatePassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'password.required' => 'Нууц үг оруулна уу',
+            'password.min' => 'Нууц үг дор хаяж 8 тэмдэгттэй байх ёстой',
+            'password.confirmed' => 'Нууц үг таарахгүй байна',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password'])
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'Нууц үг амжилттай солигдлоо.');
+    }
+
+    /**
+     * Өөрийн профайлын нууц үг солих
+     */
+    public function updateOwnPassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Одоогийн нууц үгээ оруулна уу',
+            'password.required' => 'Шинэ нууц үг оруулна уу',
+            'password.min' => 'Нууц үг дор хаяж 8 тэмдэгттэй байх ёстой',
+            'password.confirmed' => 'Нууц үг таарахгүй байна',
+        ]);
+
+        // Одоогийн нууц үг зөв эсэхийг шалгах
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Одоогийн нууц үг буруу байна']);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password'])
+        ]);
+
+        return back()->with('success', 'Нууц үг амжилттай солигдлоо.');
+    }
 }

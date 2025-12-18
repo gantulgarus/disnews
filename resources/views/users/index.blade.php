@@ -54,6 +54,11 @@
                                         <i class="ti ti-edit"></i> Засах
                                     </a>
 
+                                    {{-- Нууц үг солих товч --}}
+                                    <a href="{{ route('users.edit-password', $user) }}" class="btn btn-sm btn-warning">
+                                        <i class="ti ti-lock"></i> Нууц үг
+                                    </a>
+
                                     {{-- Устгах --}}
                                     <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Устгахдаа итгэлтэй байна уу?');">

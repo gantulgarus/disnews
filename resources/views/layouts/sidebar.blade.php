@@ -7,15 +7,19 @@
         <h1 class="navbar-brand w-100 text-center mb-0">
             <a href="/"
                 class="d-inline-flex align-items-center justify-content-center w-100 gap-2 text-decoration-none">
-                <img src="{{ asset('images/ndc.min.svg') }}" alt="NDC Logo" class="navbar-brand-image"
-                    style="height: 60px; width: auto; object-fit: contain;">
-                <span class="fw-bold text-white fs-4">ДҮТ ТӨХХК</span>
+                {{-- <img src="{{ asset('images/ndc.min.svg') }}" alt="NDC Logo" class="navbar-brand-image"
+                    style="height: 60px; width: auto; object-fit: contain;"> --}}
+                <img src="{{ asset('images/ndc-logo-white-all.png') }}" alt="NDC Logo" class="navbar-brand-image"
+                    style="height: 50px; margin-left: 30px;">
+                {{-- <span class="fw-bold text-white fs-4">ДҮТ ТӨХХК</span> --}}
             </a>
         </h1>
 
 
         @php
             $orgId = auth()->user()->organization_id;
+            $powerPlant = auth()->user()->mainPowerPlant;
+            $orgTypeId = $powerPlant ? $powerPlant->powerPlantType->id : null;
         @endphp
 
 
@@ -135,17 +139,22 @@
                                         href="{{ route('daily-balance-journals.index') }}">
                                         Тооцооны журнал
                                     </a>
+                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
+                                        href="{{ route('daily_power_hour_reports.index') }}">
+                                        Ачааллын график
+                                    </a>
+                                @endif
+
+                                @if ($orgTypeId != null && $orgTypeId == 3)
                                     <a class="dropdown-item {{ request()->routeIs('daily-balance-batteries.index') ? 'active' : '' }}"
                                         href="{{ route('daily-balance-batteries.index') }}">
                                         Тооцооны журнал БХ
                                     </a>
+                                @endif
+                                @if ($orgId == 27)
                                     <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
                                         href="{{ route('daily-balance-import-exports.index') }}">
                                         Тооцооны журнал Импорт/Экспорт
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
-                                        href="{{ route('daily_power_hour_reports.index') }}">
-                                        Ачааллын график
                                     </a>
                                 @endif
 

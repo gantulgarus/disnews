@@ -71,6 +71,20 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::resource('users', UserController::class);
+    // Тусдаа нууц үг солих route-ууд
+    Route::get('users/{user}/password', [UserController::class, 'editPassword'])
+        ->name('users.edit-password');
+
+    Route::put('users/{user}/password', [UserController::class, 'updatePassword'])
+        ->name('users.update-password');
+
+    // Өөрийн профайлын нууц үг солих
+    Route::get('profile/password', [UserController::class, 'editOwnPassword'])
+        ->name('profile.edit-password');
+
+    Route::put('profile/password', [UserController::class, 'updateOwnPassword'])
+        ->name('profile.update-password');
+
     Route::resource('tnews', TnewsController::class);
 
     Route::resource('order-journals', OrderJournalController::class);
