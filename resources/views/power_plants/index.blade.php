@@ -36,6 +36,7 @@
                     <th>Бүс</th>
                     <th>Эрэмбэ</th>
                     <th>Байгууллага</th>
+                    <th>Нүүрсний тогтмол</th>
                     <th>Үйлдэл</th>
                 </tr>
             </thead>
@@ -49,6 +50,7 @@
                         <td>{{ $powerPlant->region }}</td>
                         <td>{{ $powerPlant->Order }}</td>
                         <td>{{ $powerPlant->organization->name ?? 'Байгууллага тодорхойгүй' }}</td>
+                        <td>{{ $powerPlant->coal_constant }}</td>
                         <td>
                             <a href="{{ route('power-plants.edit', $powerPlant) }}"
                                 class="btn btn-sm btn-warning">Засах</a>

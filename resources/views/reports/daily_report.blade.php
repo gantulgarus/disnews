@@ -805,6 +805,33 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="table-info">
+                            <tr>
+                                <td class="text-center"><strong>Нийт:</strong></td>
+
+                                <td class="text-center"><strong>{{ $disCoals->sum('CAME_TRAIN') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('UNLOADING_TRAIN') }}</strong></td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('ULDSEIN_TRAIN') }}</strong></td>
+
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_INCOME') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_OUTCOME') }}</strong></td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_TRAIN_QUANTITY') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN_BYDAY') }}</strong></td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_REMAIN_BYWINTERDAY') }}</strong>
+                                </td>
+
+                                <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_INCOME') }}</strong></td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_OUTCOME') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('MAZUT_REMAIN') }}</strong></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
