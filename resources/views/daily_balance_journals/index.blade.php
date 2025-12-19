@@ -100,26 +100,27 @@
                                         <td>{{ $journal->powerPlant->name ?? 'N/A' }}</td>
                                         <td class="text-center">{{ \Carbon\Carbon::parse($journal->date)->format('Y-m-d') }}
                                         </td>
-                                        <td class="text-end">{{ number_format($journal->processed_amount ?? 0, 2) }}</td>
-                                        <td class="text-end">{{ number_format($journal->distribution_amount ?? 0, 2) }}</td>
-                                        <td class="text-end">{{ number_format($journal->internal_demand ?? 0, 2) }}</td>
+                                        <td class="text-center">{{ number_format($journal->processed_amount ?? 0, 2) }}</td>
+                                        <td class="text-center">{{ number_format($journal->distribution_amount ?? 0, 2) }}
+                                        </td>
+                                        <td class="text-center">{{ number_format($journal->internal_demand ?? 0, 2) }}</td>
                                         <td class="text-center">{{ number_format($journal->percent ?? 0, 2) }}</td>
 
-                                        <td class="text-end text-success fw-semibold">
+                                        <td class="text-center text-success fw-semibold">
                                             {{ number_format($totalPosDeviation, 2) }}</td>
-                                        <td class="text-end text-danger fw-semibold">
+                                        <td class="text-center text-danger fw-semibold">
                                             {{ number_format($totalNegDeviationSpot, 2) }}</td>
-                                        <td class="text-end text-danger fw-semibold">
+                                        <td class="text-center text-danger fw-semibold">
                                             {{ number_format($totalNegDeviationImport, 2) }}</td>
-                                        <td class="text-end text-primary fw-semibold">
+                                        <td class="text-center text-primary fw-semibold">
                                             {{ number_format($totalPosResolution, 2) }}</td>
-                                        <td class="text-end text-warning fw-semibold">
+                                        <td class="text-center text-warning fw-semibold">
                                             {{ number_format($totalNegResolution, 2) }}</td>
 
-                                        <td class="text-end">
+                                        <td class="text-center">
                                             {{ $journal->by_consumption_growth ? number_format($journal->by_consumption_growth, 2) : '-' }}
                                         </td>
-                                        <td class="text-end">
+                                        <td class="text-center">
                                             {{ $journal->by_other_station_issue ? number_format($journal->by_other_station_issue, 2) : '-' }}
                                         </td>
                                         <td>{{ $journal->dispatcher_name ?? '-' }}</td>

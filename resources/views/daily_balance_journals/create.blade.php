@@ -79,33 +79,33 @@
                                 <div class="row g-1">
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">+ зөрчил</label>
-                                        <input type="number" step="0.01" name="positive_deviation_{{ $timeSlot[1] }}"
+                                        <input type="number" step="0.001" name="positive_deviation_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('positive_deviation_' . $timeSlot[1]) }}">
                                     </div>
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">- зөрчил (Спот)</label>
-                                        <input type="number" step="0.01"
+                                        <input type="number" step="0.001"
                                             name="negative_deviation_spot_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('negative_deviation_spot_' . $timeSlot[1]) }}">
                                     </div>
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">- зөрчил (Импорт)</label>
-                                        <input type="number" step="0.01"
+                                        <input type="number" step="0.001"
                                             name="negative_deviation_import_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('negative_deviation_import_' . $timeSlot[1]) }}">
                                     </div>
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">+ шийд</label>
-                                        <input type="number" step="0.01" name="positive_resolution_{{ $timeSlot[1] }}"
+                                        <input type="number" step="0.001" name="positive_resolution_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('positive_resolution_' . $timeSlot[1]) }}">
                                     </div>
                                     <div class="col-6 col-lg">
                                         <label class="form-label-xs">- шийд</label>
-                                        <input type="number" step="0.01"
+                                        <input type="number" step="0.001"
                                             name="negative_resolution_{{ $timeSlot[1] }}"
                                             class="form-control form-control-xs"
                                             value="{{ old('negative_resolution_' . $timeSlot[1]) }}">
@@ -127,12 +127,12 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label-sm">Хэрэглээний өсөлтөөр</label>
-                                <input type="number" step="0.01" name="by_consumption_growth"
+                                <input type="number" step="0.001" name="by_consumption_growth"
                                     class="form-control form-control-sm" value="{{ old('by_consumption_growth') }}">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label-sm">Бусад станцын доголдлоор</label>
-                                <input type="number" step="0.01" name="by_other_station_issue"
+                                <input type="number" step="0.001" name="by_other_station_issue"
                                     class="form-control form-control-sm" value="{{ old('by_other_station_issue') }}">
                             </div>
                             <div class="col-md-4">
