@@ -7,11 +7,8 @@
         <h1 class="navbar-brand w-100 text-center mb-0">
             <a href="/"
                 class="d-inline-flex align-items-center justify-content-center w-100 gap-2 text-decoration-none">
-                {{-- <img src="{{ asset('images/ndc.min.svg') }}" alt="NDC Logo" class="navbar-brand-image"
-                    style="height: 60px; width: auto; object-fit: contain;"> --}}
-                <img src="{{ asset('images/ndc-logo-white-all.png') }}" alt="NDC Logo" class="navbar-brand-image"
+                <img src="{{ asset('images/ndc-logo.svg') }}" alt="NDC Logo" class="navbar-brand-image"
                     style="height: 50px; margin-left: 30px;">
-                {{-- <span class="fw-bold text-white fs-4">ДҮТ ТӨХХК</span> --}}
             </a>
         </h1>
 
