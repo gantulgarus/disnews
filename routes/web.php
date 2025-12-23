@@ -164,7 +164,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/zenon/peak-hour-power', [ZenonHourlyPowerController::class, 'peakHour'])
         ->name('zenon.peak-hour-power');
 
-    
+
 
     Route::resource('western_region_capacities', WesternRegionCapacityController::class);
 
@@ -174,9 +174,9 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/reports/regional', [RegionalReportController::class, 'index'])
-    ->name('reports.Regional');
+        ->name('reports.Regional');
 
-
+    Route::resource('power-energy-adjustments', PowerEnergyAdjustmentController::class);
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
