@@ -98,7 +98,7 @@
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                    <a href="#" class="dropdown-item">Статус</a>
+                    {{-- <a href="#" class="dropdown-item">Статус</a> --}}
                     <a href="{{ route('users.profile') }}" class="dropdown-item">Профайл</a>
                     <div class="dropdown-divider"></div>
                     <form method="POST" action="{{ route('logout') }}">

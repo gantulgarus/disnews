@@ -56,6 +56,11 @@
                     <input type="text" name="Order" class="form-control" required>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">Нүүрсний тогмтол</label>
+                    <input type="number" name="coal_constant" class="form-control" value="{{ old('coal_constant') }}">
+                </div>
+
                 <button type="submit" class="btn btn-success w-100">
                     <i class="ti ti-device-floppy"></i> Хадгалах
                 </button>

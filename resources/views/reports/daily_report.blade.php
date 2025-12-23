@@ -37,8 +37,8 @@
                                 <th class="text-wrap">Э.импорт (мян кВт.цаг)</th>
                                 <th class="text-wrap">Э.экспорт (мян кВт.цаг)</th>
                                 <th class="text-wrap">Pимп.max (МВт)</th>
-                                <th class="text-wrap">Э.хязгаарлалт (кВт.цаг)</th>
-                                <th class="text-wrap">Э.Хөнгөлөлт (кВт.цаг)</th>
+                                <th class="text-wrap">Э.хязгаарлалт (МВт)</th>
+                                <th class="text-wrap">Э.Хөнгөлөлт (МВт)</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -64,18 +64,35 @@
                                 <td>{{ number_format($powerEnergyAdjustments->restricted_kwh ?? 0) }}</td>
                                 <td>{{ number_format($powerEnergyAdjustments->discounted_kwh ?? 0) }}</td>
                                 <td>
-                                    <a href="{{ route('power-energy-adjustments.create') }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
-                                            <path
-                                                d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
-                                            <path d="M16 5l3 3" />
-                                        </svg>
-                                    </a>
+                                    @if ($powerEnergyAdjustments == null)
+                                        <a href="{{ route('power-energy-adjustments.create') }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    @endif
+                                    @if ($powerEnergyAdjustments != null)
+                                        <a
+                                            href="{{ route('power-energy-adjustments.edit', $powerEnergyAdjustments->id) }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                <path
+                                                    d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                <path d="M16 5l3 3" />
+                                            </svg>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
@@ -303,7 +320,7 @@
                                 <th>P (МВт)</th>
                                 {{-- <th>P max (МВт)</th> --}}
                                 <th class="text-center">Ажилд буй<br>зуух / турбин</th>
-                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Тэмдэглэл</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -455,7 +472,7 @@
                                 <th class="text-center">Инвертер</th>
                                 <th>P (МВт)</th>
                                 <th>P max (МВт)</th>
-                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Тэмдэглэл</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -575,7 +592,7 @@
                                 <th class="text-center">Багц</th>
                                 <th>P (МВт)</th>
                                 <th>P max (МВт)</th>
-                                <th style="width: 300px;">Үндсэн тоноглолын засвар, гарсан доголдол</th>
+                                <th style="width: 300px;">Тэмдэглэл</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -788,6 +805,39 @@
                                 </tr>
                             @endforeach
                         </tbody>
+                        <tfoot class="table-info">
+                            <tr>
+                                <td class="text-center"><strong>Нийт:</strong></td>
+
+                                <td class="text-center"><strong>{{ $disCoals->sum('CAME_TRAIN') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('UNLOADING_TRAIN') }}</strong>
+                                </td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('ULDSEIN_TRAIN') }}</strong></td>
+
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_INCOME') }}</strong>
+                                </td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_OUTCOME') }}</strong>
+                                </td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_TRAIN_QUANTITY') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN') }}</strong>
+                                </td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN_BYDAY') }}</strong>
+                                </td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_REMAIN_BYWINTERDAY') }}</strong>
+                                </td>
+
+                                <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_INCOME') }}</strong></td>
+                                <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_OUTCOME') }}</strong></td>
+                                <td class="text-center table-secondary">
+                                    <strong>{{ $disCoals->sum('MAZUT_REMAIN') }}</strong>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

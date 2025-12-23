@@ -5,7 +5,7 @@
         <div class="card shadow-sm">
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">{{ $powerPlant->name }} — Тоноглолын төлөв</h5>
+                    <h5 class="mb-0">{{ $powerPlant->name }} {{ $powerPlant->powerPlantType->name }}— Тоноглолын төлөв</h5>
                     <div class="d-flex gap-2 align-items-center">
                         <input type="date" name="date" form="equipment-form" class="form-control form-control-sm"
                             style="width: 160px;" value="{{ old('date', date('Y-m-d')) }}" required>
@@ -77,7 +77,7 @@
 
                                                 // Зургийн нэр тодорхойлох
                                                 $iconName = match (
-                                                    $equipment->type->name ?? $powerPlant->powerPlantType->name
+                                                    $equipment->type->icon_name ?? $powerPlant->powerPlantType->name
                                                 ) {
                                                     'Зуух' => 'k.svg',
                                                     'Турбогенератор' => 'tg.svg',

@@ -167,9 +167,18 @@ class DashboardController extends Controller
                 return $record ? [$station => $record] : [];
             });
 
-            $latestTimestamp = $latestData->isNotEmpty()
-                ? $latestData->max('TIMESTAMP_S')
-                : null;
+            // Хамгийн сүүлийн цагийг system_total_p эсвэл бүх станцуудаас авах
+            $latestRecord = ZConclusion::select('TIMESTAMP_S')
+                ->whereIn('VAR', array_merge($allStations, ['system_total_p']))
+                ->where('CALCULATION', 50)
+                ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
+                ->orderByDesc('TIMESTAMP_S')
+                ->first();
+
+            $latestTimestamp = $latestRecord ? $latestRecord->TIMESTAMP_S : null;
+
+            // Debug: Timestamp утгыг шалгах
+            Log::info('Latest Timestamp Raw Value:', ['timestamp' => $latestTimestamp]);
 
             // Бүлгээр нийлбэр тооцоолох
             $typeSums = [];
@@ -204,15 +213,38 @@ class DashboardController extends Controller
                 $totalP = collect($typeSums)->sum('sumP');
             }
 
+            // Timestamp форматлах
+            $formattedTimestamp = null;
+            if ($latestTimestamp) {
+                // UNIX timestamp-ээс огноо үүсгэхдээ UTC timezone ашиглаад дараа нь UB timezone руу хөрвүүлнө
+                try {
+                    $carbonDate = Carbon::createFromTimestamp($latestTimestamp, 'UTC')
+                        ->setTimezone('Asia/Ulaanbaatar');
+
+                    $formattedTimestamp = $carbonDate->format('Y-m-d H:i:s');
+
+                    Log::info('Timestamp Debug:', [
+                        'raw_timestamp' => $latestTimestamp,
+                        'formatted' => $formattedTimestamp,
+                        'server_timezone' => config('app.timezone'),
+                        'carbon_timezone' => $carbonDate->timezoneName
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Timestamp formatting error: ' . $e->getMessage());
+                }
+            }
+
+            Log::info('Formatted Timestamp:', ['formatted' => $formattedTimestamp]);
+
             return [
                 'typeSums' => $typeSums,
                 'totalP' => $totalP,
                 'latestTimestamp' => $latestTimestamp,
-                'formattedTimestamp' => $latestTimestamp ?
-                    Carbon::createFromTimestamp($latestTimestamp)->format('Y-m-d H:i') : null,
+                'formattedTimestamp' => $formattedTimestamp,
             ];
         } catch (\Exception $e) {
             Log::error('Dashboard realtime data error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return null;
         }
     }

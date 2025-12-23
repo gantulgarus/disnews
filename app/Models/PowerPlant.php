@@ -16,6 +16,7 @@ class PowerPlant extends Model
         'Order',
         'organization_id',
         'parent_id',
+        'coal_constant'
     ];
 
     public function equipments()
@@ -113,5 +114,13 @@ class PowerPlant extends Model
             return $this->parent->name . ' - ' . $this->name;
         }
         return $this->name;
+    }
+
+    public function getCoalRemainByWinterDayAttribute()
+    {
+        if ($this->powerPlant && $this->powerPlant->coal_constant) {
+            return $this->COAL_REMAIN / $this->powerPlant->coal_constant;
+        }
+        return 0;
     }
 }

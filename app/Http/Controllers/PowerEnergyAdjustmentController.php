@@ -58,7 +58,7 @@ class PowerEnergyAdjustmentController extends Controller
 
         $powerEnergyAdjustment->update($request->all());
 
-        return redirect()->route('power-energy-adjustments.index')
+        return redirect()->route('reports.dailyReport')
             ->with('success', 'Мэдээлэл амжилттай шинэчлэгдлээ');
     }
 

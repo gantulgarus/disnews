@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\DisCoal;
 use App\Models\Organization;
-use Illuminate\Http\Request;
+use App\Models\PowerPlant;
 use App\Models\PowerPlantType;
+use Illuminate\Http\Request;
 
 class DisCoalController extends Controller
 {
-
     public function index(Request $request)
     {
         $query = DisCoal::query();
@@ -19,60 +19,70 @@ class DisCoalController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        // Хэрэглэгчийн байгууллагын ID
         $userOrgId = auth()->user()->organization_id;
 
-        // Хэрэв хэрэглэгч ДҮТ биш бол зөвхөн өөрийн байгууллагын бичлэг
-        if ($userOrgId != 5) { // is_admin бол boolean талбар гэж үзсэн
-            $query->where('organization_id', $userOrgId);
+        if ($userOrgId != 5) {
+            // ДҮТ биш бол зөвхөн өөрийн байгууллагын ДЦС-ууд
+            $query->whereHas('powerPlant', function ($q) use ($userOrgId) {
+                $q->where('organization_id', $userOrgId);
+            });
         } else {
-            // ДҮТ бол organization_id-р фильтр хийж болно
-            if ($request->filled('organization_id')) {
-                $query->where('organization_id', $request->organization_id);
+            // ДҮТ бол power_plant_id-р фильтр хийх боломжтой
+            if ($request->filled('power_plant_id')) {
+                $query->where('power_plant_id', $request->power_plant_id);
             }
         }
 
         $disCoals = $query->latest()->get();
 
-        // 1. ДЦС төрлийг олж авна
+        // ДЦС төрлийн станцын жагсаалт (select-д харуулах)
         $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
-
         if ($powerPlantType) {
-            // 2. ДЦС төрлийн станцтай байгууллагуудыг distinct байдлаар гаргаж авна
-            $organizations = Organization::whereHas('powerPlants', function ($query) use ($powerPlantType) {
-                $query->where('power_plant_type_id', $powerPlantType->id);
-            })->get();
+            if ($userOrgId == 5) {
+                $powerPlants = PowerPlant::where('power_plant_type_id', $powerPlantType->id)
+                    ->whereNull('parent_id')
+                    ->orderBy('order')
+                    ->get();
+            } else {
+                $powerPlants = PowerPlant::where('organization_id', $userOrgId)
+                    ->where('power_plant_type_id', $powerPlantType->id)
+                    ->whereNull('parent_id')
+                    ->get();
+            }
         } else {
-            $organizations = collect(); // хоосон коллекц
+            $powerPlants = collect();
         }
 
-        return view('dis_coal.index', compact('disCoals', 'organizations', 'userOrgId'));
+        return view('dis_coal.index', compact('disCoals', 'powerPlants', 'userOrgId'));
     }
 
 
-    // Show create form
     public function create()
     {
-        $org_id = auth()->user()->organization_id;
-        if ($org_id == 5) {
-            $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
-            // 2. ДЦС төрлийн станцтай байгууллагуудыг distinct байдлаар гаргаж авна
-            $organizations = Organization::whereHas('powerPlants', function ($query) use ($powerPlantType) {
-                $query->where('power_plant_type_id', $powerPlantType->id);
-            })->get();
+        $orgId = auth()->user()->organization_id;
+        $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
+
+        if ($orgId == 5) {
+            $powerPlants = PowerPlant::where('power_plant_type_id', $powerPlantType->id)
+                ->whereNull('parent_id')
+                ->orderBy('order')
+                ->get(); // үндсэн станц->get();
         } else {
-            $organizations = Organization::where('id', $org_id)->get();
+            $powerPlants = PowerPlant::where('organization_id', $orgId)
+                ->where('power_plant_type_id', $powerPlantType->id)
+                ->whereNull('parent_id') // үндсэн станц
+                ->get();
         }
 
-        return view('dis_coal.create', compact('organizations'));
+        return view('dis_coal.create', compact('powerPlants'));
     }
 
-    // Store new record
     public function store(Request $request)
     {
-        //dd($request->all());
         $request->validate([
             'date' => 'required|date',
+            'power_plant_id' => 'required|exists:power_plants,id',
+
             'CAME_TRAIN' => 'nullable|integer',
             'UNLOADING_TRAIN' => 'nullable|integer',
             'ULDSEIN_TRAIN' => 'nullable|integer',
@@ -80,7 +90,6 @@ class DisCoalController extends Controller
             'COAL_OUTCOME' => 'nullable|integer',
             'COAL_TRAIN_QUANTITY' => 'nullable|numeric',
             'COAL_REMAIN' => 'nullable|integer',
-            'COAL_REMAIN_BYDAY' => 'nullable|numeric',
             'COAL_REMAIN_BYWINTERDAY' => 'nullable|integer',
             'MAZUT_INCOME' => 'nullable|integer',
             'MAZUT_OUTCOME' => 'nullable|integer',
@@ -92,103 +101,80 @@ class DisCoalController extends Controller
             'OTHER_MINIG_COAL_SUPPLY' => 'nullable|integer',
             'FUEL_SENDING_EMPL' => 'nullable|integer',
             'FUEL_RECEIVER_EMPL' => 'nullable|integer',
-            'organization_id' => 'nullable|exists:organizations,id',
         ]);
 
         $input = $request->all();
 
-        // ORG_NAME-г автоматаар нэмэх
-        $input['ORG_NAME'] = auth()->user()->organization->name ?? '';
+        $powerPlant = PowerPlant::with('organization')->find($request->power_plant_id);
+        $input['ORG_NAME'] = $powerPlant->organization->name ?? '';
 
-        // organization_id-г request-аас шууд авна
-        $input['organization_id'] = $request->organization_id;
+        // COAL_REMAIN_BYDAY
+        $input['COAL_REMAIN_BYDAY'] = (!empty($input['COAL_OUTCOME']) && $input['COAL_OUTCOME'] > 0)
+            ? round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2)
+            : 0;
 
-        // COAL_REMAIN_BYDAY-г тооцоолох
-        if (!empty($input['COAL_OUTCOME']) && $input['COAL_OUTCOME'] > 0) {
-            $input['COAL_REMAIN_BYDAY'] = round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2);
-        } else {
-            $input['COAL_REMAIN_BYDAY'] = 0;
-        }
+        // COAL_REMAIN_BYWINTERDAY - станц тус бүрийн тогтмол ашиглан
+        $coalConstant = $powerPlant->coal_constant ?? 1; // default 1
+        $input['COAL_REMAIN_BYWINTERDAY'] = !empty($input['COAL_REMAIN'])
+            ? round($input['COAL_REMAIN'] / $coalConstant, 2)
+            : 0;
 
-        // Бүртгэх
         DisCoal::create($input);
 
-
-        return redirect()->route('dis_coal.index')
-            ->with('success', 'Амжилттай.');
+        return redirect()->route('dis_coal.index')->with('success', 'Амжилттай.');
     }
-
-    // Show one record
-    public function show(string $id)
-    {
-        $disCoal = DisCoal::findOrFail($id); // one record
-        return view('dis_coal.show', compact('disCoal'));
-    }
-
 
     public function edit(string $id)
     {
-        $disCoal = DisCoal::findOrFail($id); // one record
-        $org_id = auth()->user()->organization_id;
-        if ($org_id == 5) {
-            $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
-            // 2. ДЦС төрлийн станцтай байгууллагуудыг distinct байдлаар гаргаж авна
-            $organizations = Organization::whereHas('powerPlants', function ($query) use ($powerPlantType) {
-                $query->where('power_plant_type_id', $powerPlantType->id);
-            })->get();
+        $disCoal = DisCoal::findOrFail($id);
+
+        $orgId = auth()->user()->organization_id;
+        $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
+
+        if ($orgId == 5) {
+            $powerPlants = PowerPlant::where('power_plant_type_id', $powerPlantType->id)
+                ->whereNull('parent_id')
+                ->orderBy('order')
+                ->get(); // үндсэн станц->get();
         } else {
-            $organizations = Organization::where('id', $org_id)->get();
+            $powerPlants = PowerPlant::where('organization_id', $orgId)
+                ->where('power_plant_type_id', $powerPlantType->id)
+                ->whereNull('parent_id') // үндсэн станц
+                ->get();
         }
 
-        return view('dis_coal.edit', compact('disCoal', 'organizations'));
+        return view('dis_coal.edit', compact('disCoal', 'powerPlants'));
     }
-
 
     public function update(Request $request, string $id)
     {
         $request->validate([
             'date' => 'required|date',
-            'CAME_TRAIN' => 'nullable|integer',
-            'UNLOADING_TRAIN' => 'nullable|integer',
-            'ULDSEIN_TRAIN' => 'nullable|integer',
-            'COAL_INCOME' => 'nullable|integer',
-            'COAL_OUTCOME' => 'nullable|integer',
-            'COAL_TRAIN_QUANTITY' => 'nullable|numeric',
-            'COAL_REMAIN' => 'nullable|integer',
-            'COAL_REMAIN_BYWINTERDAY' => 'nullable|integer',
-            'MAZUT_INCOME' => 'nullable|integer',
-            'MAZUT_OUTCOME' => 'nullable|integer',
-            'MAZUT_TRAIN_QUANTITY' => 'nullable|integer',
-            'MAZUT_REMAIN' => 'nullable|integer',
-            'BAGANUUR_MINING_COAL_D' => 'nullable|integer',
-            'SHARINGOL_MINING_COAL_D' => 'nullable|integer',
-            'SHIVEEOVOO_MINING_COAL' => 'nullable|integer',
-            'OTHER_MINIG_COAL_SUPPLY' => 'nullable|integer',
-            'FUEL_SENDING_EMPL' => 'nullable|integer',
-            'FUEL_RECEIVER_EMPL' => 'nullable|integer',
-            'organization_id' => 'nullable|exists:organizations,id',
+            'power_plant_id' => 'required|exists:power_plants,id',
         ]);
 
         $input = $request->all();
 
-        if (!empty($input['COAL_OUTCOME']) && $input['COAL_OUTCOME'] > 0) {
-            $input['COAL_REMAIN_BYDAY'] = round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2);
-        } else {
-            $input['COAL_REMAIN_BYDAY'] = 0;
-        }
+        $powerPlant = PowerPlant::find($request->power_plant_id);
 
-        $disCoal = DisCoal::findOrFail($id);
-        $disCoal->update($input);
+        $input['COAL_REMAIN_BYDAY'] = (!empty($input['COAL_OUTCOME']) && $input['COAL_OUTCOME'] > 0)
+            ? round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2)
+            : 0;
+
+        $coalConstant = $powerPlant->coal_constant ?? 1;
+        $input['COAL_REMAIN_BYWINTERDAY'] = !empty($input['COAL_REMAIN'])
+            ? round($input['COAL_REMAIN'] / $coalConstant, 2)
+            : 0;
+
+        DisCoal::findOrFail($id)->update($input);
 
         return redirect()->route('dis_coal.index')
-            ->with('success', 'Амжилттай шинэчлэгдсэн..');
+            ->with('success', 'Амжилттай шинэчлэгдсэн.');
     }
 
-    // Delete record
     public function destroy(string $id)
     {
-        $disCoal = DisCoal::findOrFail($id); // one record
-        $disCoal->delete();
+        DisCoal::findOrFail($id)->delete();
 
         return redirect()->route('dis_coal.index')
             ->with('success', 'Амжилттай устгагдсан.');

@@ -45,9 +45,10 @@ class PowerPlantController extends Controller
             'region' => 'required|string',
             'Order' => 'required|integer',
             'organization_id' => 'required|exists:organizations,id',
+            'coal_constant' => 'nullable|integer'
         ]);
 
-        PowerPlant::create($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id'));
+        PowerPlant::create($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id', 'coal_constant'));
 
         return redirect()->route('power-plants.index')->with('success', 'Шинэ станц амжилттай бүртгэгдлээ.');
     }
@@ -83,10 +84,11 @@ class PowerPlantController extends Controller
             'region' => 'required|string',
             'Order' => 'required|integer',
             'organization_id' => 'required|exists:organizations,id',
+            'coal_constant' => 'nullable|integer'
         ]);
 
         // Update main power plant info
-        $powerPlant->update($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id'));
+        $powerPlant->update($request->only('name', 'short_name', 'power_plant_type_id', 'region', 'Order', 'organization_id', 'coal_constant'));
 
         return redirect()->route('power-plants.index')->with('success', 'Станцын мэдээлэл амжилттай шинэчлэгдлээ.');
     }

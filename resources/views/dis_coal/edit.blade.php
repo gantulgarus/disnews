@@ -31,22 +31,23 @@
                         @enderror
                     </div>
 
-                    {{-- Organization --}}
+                    {{-- Power Plant --}}
                     <div class="col-md-6">
-                        <label class="form-label">Станц <span class="text-danger">*</span></label>
-                        <select name="organization_id" class="form-select @error('organization_id') is-invalid @enderror"
+                        <label class="form-label">Цахилгаан станц <span class="text-danger">*</span></label>
+                        <select name="power_plant_id" class="form-select @error('power_plant_id') is-invalid @enderror"
                             required>
-                            @foreach ($organizations as $org)
-                                <option value="{{ $org->id }}"
-                                    {{ old('organization_id', $disCoal->organization_id) == $org->id ? 'selected' : '' }}>
-                                    {{ $org->name }}
+                            @foreach ($powerPlants as $plant)
+                                <option value="{{ $plant->id }}"
+                                    {{ old('power_plant_id', $disCoal->power_plant_id) == $plant->id ? 'selected' : '' }}>
+                                    {{ $plant->name }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('organization_id')
+                        @error('power_plant_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
                 </div>
 
                 <hr class="my-4">

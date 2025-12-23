@@ -35,11 +35,11 @@
             text-transform: uppercase;
         }
 
-        /* Station block */
+        /* Station block - Responsive design */
         .scada-station {
             background: #111;
             border: 1px solid #333;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
             text-align: center;
             box-shadow: inset 0 0 10px #000;
@@ -49,12 +49,62 @@
             justify-content: center;
         }
 
-        .scada-station-name {
-            font-size: 16px;
-            color: #5cc0ff;
-            font-weight: bold;
+        /* Station title - Responsive font size */
+        .scada-title {
+            font-size: 11px;
+            color: rgb(186, 186, 205);
             margin-bottom: 8px;
             text-transform: uppercase;
+            line-height: 1.2;
+            /* Хэт урт текстийг багасгах */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Дундаж дэлгэц дээр илүү бага фонт */
+        @media (max-width: 1400px) and (min-width: 992px) {
+            .scada-title {
+                font-size: 9px;
+            }
+
+            .scada-station {
+                padding: 10px 8px;
+            }
+
+            .scada-station img {
+                width: 32px !important;
+            }
+
+            .scada-station-number {
+                font-size: 24px !important;
+            }
+        }
+
+        /* Tablet дээр */
+        @media (max-width: 991px) {
+            .scada-title {
+                font-size: 12px;
+            }
+
+            .station-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        /* Mobile дээр */
+        @media (max-width: 576px) {
+            .scada-title {
+                font-size: 10px;
+            }
+
+            .station-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scada-station {
+                height: 120px;
+            }
         }
 
         .scada-station-number {
@@ -63,64 +113,12 @@
             text-shadow: 0 0 10px #00ff33;
         }
 
-        /* Live Update LED */
-        .live-led {
-            width: 12px;
-            height: 12px;
-            background: #00ff00;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px #00ff00;
-            animation: blink 1s infinite;
-        }
-
+        /* Station grid - минимум өргөнийг багасгах */
         .station-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
             margin-bottom: 2rem;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0.3;
-            }
-        }
-
-        /* Chart loading */
-        .chart-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .chart-loading .spinner-large {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #e0e0e0;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Error state */
-        .scada-error {
-            color: #ff6b6b;
-            font-size: 20px;
         }
     </style>
 
@@ -140,7 +138,7 @@
                 <div class="scada-title">НИЙТ ХЭРЭГЛЭЭ</div>
                 <div class="scada-number">
                     @if ($realtimeData && isset($realtimeData['totalP']))
-                        {{ number_format($realtimeData['totalP'], 2) }} МВт
+                        {{ number_format($realtimeData['totalP'], 1) }} МВт
                     @else
                         <span class="scada-error">Мэдээлэл байхгүй</span>
                     @endif
@@ -173,25 +171,28 @@
             @if ($realtimeData && isset($realtimeData['typeSums']))
                 @foreach ($realtimeData['typeSums'] as $typeSum)
                     <div class="scada-station">
-                        <div class="scada-title">{{ $typeSum['type_name'] }}</div>
-                        <div class="d-flex align-items-center justify-content-center gap-3">
+                        <div class="scada-title" title="{{ $typeSum['type_name'] }}">
+                            {{ $typeSum['type_name'] }}
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
                             <img src="{{ asset('images/' . ($stationIcons[$typeSum['type_name']] ?? 'power-plant.svg')) }}"
                                 alt="{{ $typeSum['type_name'] }}"
-                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+                                style="width: 36px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
                             <div class="scada-station-number" style="line-height: 1;">
-                                {{ number_format($typeSum['sumP'], 2) }} МВт
+                                {{ number_format($typeSum['sumP'], 1) }} МВт
                             </div>
                         </div>
                     </div>
                 @endforeach
             @else
-                {{-- Хэрэв мэдээлэл байхгүй бол --}}
                 @foreach ($stationIcons as $name => $icon)
                     <div class="scada-station">
-                        <div class="scada-title">{{ $name }}</div>
-                        <div class="d-flex align-items-center justify-content-center gap-3">
+                        <div class="scada-title" title="{{ $name }}">
+                            {{ $name }}
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
                             <img src="{{ asset('images/' . $icon) }}" alt="{{ $name }}"
-                                style="width: 40px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
+                                style="width: 36px; filter: invert(1) brightness(1.6) drop-shadow(0 0 6px #00eaff);">
                             <div class="scada-station-number" style="line-height: 1;">
                                 <span class="scada-error">--</span>
                             </div>

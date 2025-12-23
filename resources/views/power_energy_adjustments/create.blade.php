@@ -23,13 +23,13 @@
             </div>
 
             <div class="mb-3">
-                <label>Хязгаарласан ЦЭХ (кВт.цаг)</label>
+                <label>Хязгаарласан (МВт)</label>
                 <input type="number" step="0.001" name="restricted_kwh" value="{{ old('restricted_kwh') }}"
                     class="form-control" required>
             </div>
 
             <div class="mb-3">
-                <label>Хөнгөлсөн ЦЭХ (кВт.цаг)</label>
+                <label>Хөнгөлсөн (МВт)</label>
                 <input type="number" step="0.001" name="discounted_kwh" value="{{ old('discounted_kwh') }}"
                     class="form-control" required>
             </div>

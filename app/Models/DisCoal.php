@@ -34,11 +34,11 @@ class DisCoal extends Model
         'FUEL_RECEIVER_EMPL',
         'ORG_CODE',
         'ORG_NAME',
-        'organization_id',
+        'power_plant_id',
     ];
 
-    public function organization()
+    public function powerPlant()
     {
-        return $this->belongsTo(\App\Models\Organization::class);
+        return $this->belongsTo(\App\Models\PowerPlant::class);
     }
 }
