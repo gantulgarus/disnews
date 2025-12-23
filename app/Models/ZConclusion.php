@@ -9,7 +9,7 @@ class ZConclusion extends Model
     // protected $connection = 'second_db'; // Хоёр дахь өгөгдлийн сантай холбогдоно
     protected $connection = 'mysql';   // Local DB-г заана (default)
 
-    protected $table = 'Z_Conclusion'; // Хүснэгтийн нэр
+    protected $table = 'z_conclusion'; // Хүснэгтийн нэр
 
     // protected $primaryKey = 'id'; // Анхдагч key
 

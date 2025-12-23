@@ -274,6 +274,13 @@
                                         href="{{ route('reports.index') }}">
                                         Тайлан
                                     </a>
+
+                                    <a class="dropdown-item {{ request()->routeIs('reports.Regional') ? 'active' : '' }}"
+                                        href="{{ route('reports.Regional') }}">
+                                        Скада бүсүүд 
+                                    </a>
+                                    
+                                    
                                 </div>
                             </div>
                         </div>

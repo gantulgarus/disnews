@@ -32,6 +32,7 @@ use App\Http\Controllers\PowerEnergyAdjustmentController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 use App\Http\Controllers\WesternRegionCapacityController;
 use App\Http\Controllers\DailyBalanceImportExportController;
+use App\Http\Controllers\RegionalReportController;
 
 
 
@@ -149,15 +150,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/zenon/evening-power', [ZenonHourlyPowerController::class, 'evening'])
         ->name('zenon.evening-power');
 
-    Route::resource('power-energy-adjustments', PowerEnergyAdjustmentController::class);
-
-
+    
 
     Route::resource('western_region_capacities', WesternRegionCapacityController::class);
 
     Route::get('/sms', [SmsController::class, 'index'])->name('sms.index');
     Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
     Route::get('/sms/messages', [SmsController::class, 'messages'])->name('sms.messages');
+
+
+    Route::get('/reports/regional', [RegionalReportController::class, 'index'])
+    ->name('reports.Regional');
+
+
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
