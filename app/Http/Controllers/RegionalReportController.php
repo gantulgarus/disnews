@@ -121,7 +121,7 @@ class RegionalReportController extends Controller
         // 🔹 3. View рүү дамжуулах
         $days = range(1, $daysInMonth);
 
-        return view('reports.Regional', compact(
+        return view('reports.regional', compact(
 
             'data',
             'selectedMonth',
