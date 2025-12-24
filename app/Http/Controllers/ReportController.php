@@ -293,7 +293,7 @@ class ReportController extends Controller
             ->pluck('latest_id');
 
         // Load thermal power plants with optimized relationships
-        $powerPlants = PowerPlant::forDailyReport()->with([
+        $powerPlants = PowerPlant::mainStations()->with([
             'equipmentStatuses' => function ($q) use ($latestEquipmentStatusIds) {
                 $q->whereIn('id', $latestEquipmentStatusIds);
             },
