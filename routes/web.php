@@ -15,9 +15,11 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\RegionalReportController;
 use App\Http\Controllers\PermissionLevelController;
 use App\Http\Controllers\TelephoneMessageController;
 use App\Http\Controllers\ZenonHourlyPowerController;
+use App\Http\Controllers\PowerPlantReadingController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\AltaiRegionCapacityController;
@@ -32,7 +34,7 @@ use App\Http\Controllers\PowerEnergyAdjustmentController;
 use App\Http\Controllers\PowerPlantDailyReportController;
 use App\Http\Controllers\WesternRegionCapacityController;
 use App\Http\Controllers\DailyBalanceImportExportController;
-use App\Http\Controllers\RegionalReportController;
+use App\Http\Controllers\PowerPlantThermoEquipmentController;
 
 
 
@@ -177,6 +179,50 @@ Route::middleware('auth')->group(function () {
         ->name('reports.Regional');
 
     Route::resource('power-energy-adjustments', PowerEnergyAdjustmentController::class);
+    Route::resource('power-plant-thermo-equipments', PowerPlantThermoEquipmentController::class);
+
+
+    Route::prefix('power-plant-readings')->group(function () {
+        // Үндсэн хуудас - жагсаалт
+        Route::get('/', [PowerPlantReadingController::class, 'index'])
+            ->name('power-plant-readings.index');
+
+        // Өдрийн нэгтгэл - ШИНЭ
+        Route::get('/daily-overview', [PowerPlantReadingController::class, 'dailyOverview'])
+            ->name('power-plant-readings.daily-overview');
+
+        Route::get('/temperature-charts', [PowerPlantReadingController::class, 'temperatureCharts'])
+            ->name('power-plant-readings.temperature-charts');
+
+        // API endpoints
+        Route::post('fetch', [PowerPlantReadingController::class, 'fetch'])
+            ->name('power-plant-readings.fetch');
+
+        Route::get('show', [PowerPlantReadingController::class, 'show'])
+            ->name('power-plant-readings.show');
+
+        Route::get('statistics', [PowerPlantReadingController::class, 'statistics'])
+            ->name('power-plant-readings.statistics');
+
+        Route::get('latest', [PowerPlantReadingController::class, 'latest'])
+            ->name('power-plant-readings.latest');
+    });
+    // Гараар бүртгэх
+    Route::get('/power-plant-readings/manual-entry', [PowerPlantReadingController::class, 'create'])
+        ->name('power-plant-readings.create');
+    Route::post('/power-plant-readings/manual-entry', [PowerPlantReadingController::class, 'storeBulk'])
+        ->name('power-plant-readings.storeBulk');
+
+    Route::get('/power-plant-readings/edit', [PowerPlantReadingController::class, 'edit'])
+        ->name('power-plant-readings.edit');
+    Route::put('/power-plant-readings/update', [PowerPlantReadingController::class, 'updateBulk'])
+        ->name('power-plant-readings.updateBulk');
+    // bulk delete
+    Route::delete('/power-plant-readings/delete', [PowerPlantReadingController::class, 'destroyBulk'])
+        ->name('power-plant-readings.destroyBulk');
+
+
+    Route::get('power-plant-readings/hour-data', [PowerPlantReadingController::class, 'getHourData'])->name('power-plant-readings.getHourData');
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');

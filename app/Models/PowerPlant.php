@@ -52,6 +52,11 @@ class PowerPlant extends Model
         return $this->hasMany(PowerPlant::class, 'parent_id');
     }
 
+    public function thermoEquipments()
+    {
+        return $this->hasMany(PowerPlantThermoEquipment::class);
+    }
+
     // Scope-ууд
 
     /**

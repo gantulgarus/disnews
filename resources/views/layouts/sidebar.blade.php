@@ -176,9 +176,10 @@
                         'electric_daily_regimes',
                         'thermo-daily-regimes.index',
                         'thermo-daily-regimes.report',
-                        'station_thermo.news',
                         'reports.powerPlantReport',
                         'reports.powerPlantRenewableReport',
+                        'power-plant-readings.daily-overview',
+                        'power-plant-readings.index',
                     ];
                     $isRegimeActive = request()->routeIs(...$regimeRoutes);
                 @endphp
@@ -214,10 +215,15 @@
                                         href="{{ route('thermo-daily-regimes.report') }}">
                                         Дулааны горим
                                     </a>
-                                    <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
+                                    {{-- <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
                                         href="{{ route('station_thermo.news') }}">
                                         Дулааны мэдээ
+                                    </a> --}}
+                                    <a class="dropdown-item {{ request()->routeIs('power-plant-readings.daily-overview') ? 'active' : '' }}"
+                                        href="{{ route('power-plant-readings.daily-overview') }}">
+                                        Дулааны мэдээ
                                     </a>
+
                                     {{-- <a class="dropdown-item" href="#">
                                         Импорт, Экспорт
                                     </a> --}}
@@ -230,6 +236,8 @@
                                         ДЦС-ын горим, гүйцэтгэл
                                     </a>
                                 @endif
+
+
                                 @if ($orgId != 5)
                                     <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
                                         href="{{ route('electric_daily_regimes.index') }}">
@@ -239,6 +247,11 @@
                                     <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
                                         href="{{ route('thermo-daily-regimes.index') }}">
                                         Дулааны горим
+                                    </a>
+
+                                    <a class="dropdown-item {{ request()->routeIs('power-plant-readings.index') ? 'active' : '' }}"
+                                        href="{{ route('power-plant-readings.index') }}">
+                                        Дулааны мэдээ
                                     </a>
                                 @endif
 
@@ -283,10 +296,10 @@
 
                                     <a class="dropdown-item {{ request()->routeIs('reports.Regional') ? 'active' : '' }}"
                                         href="{{ route('reports.Regional') }}">
-                                        Скада бүсүүд 
+                                        Скада бүсүүд
                                     </a>
-                                    
-                                    
+
+
                                 </div>
                             </div>
                         </div>
@@ -339,6 +352,11 @@
                                     <a class="dropdown-item {{ request()->routeIs('daily_power_equipments.index') ? 'active' : '' }}"
                                         href="{{ route('daily_power_equipments.index') }}">
                                         Ачааллын тоноглол
+                                    </a>
+
+                                    <a class="dropdown-item {{ request()->routeIs('power-plant-thermo-equipments.index') ? 'active' : '' }}"
+                                        href="{{ route('power-plant-thermo-equipments.index') }}">
+                                        ДУлааны тоноглол
                                     </a>
 
 
