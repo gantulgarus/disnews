@@ -6,34 +6,35 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Огноо</th>
-                    <th>Interv</th>
-                    <th>TIME_DISPLAY</th>
-                    <th>OBEKT</th>
-                    <th>SULJEE</th>
-                    <th>FIDER</th>
-                    <th>LINE_NAME</th>
-                    <th>IMPORT_KWT</th>
-                    <th>EXPORT_KWT</th>
-                    <th>TOOTSOOLUUR_COUNT</th>
+                    <th>Цаг</th>
+                    <th colspan="2">АШ 257</th>
+                    <th colspan="2">АШ 258</th>
+                    <th colspan="2">Тойт 110</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Импорт</th>
+                    <th>Экспорт</th>
+                    <th>Импорт</th>
+                    <th>Экспорт</th>
+                    <th>Импорт</th>
+                    <th>Экспорт</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($data as $row)
                     <tr>
-                        <td>{{ $row->OGNOO }}</td>
-                        <td>{{ $row->TIME_INTERVAL }}</td>
-                        <td>{{ $row->TIME_DISPLAY }}</td>
-                        <td>{{ $row->OBEKT }}</td>
-                        <td>{{ $row->SULJEE }}</td>
-                        <td>{{ $row->FIDER }}</td>
-                        <td>{{ $row->LINE_NAME }}</td>
-                        <td>{{ $row->IMPORT_KWT }}</td>
-                        <td>{{ $row->EXPORT_KWT }}</td>
-                        <td>{{ $row->TOOTSOOLUUR_COUNT }}</td>
+                        <td>{{ $row->hour }}:00</td>
+                        <td>{{ $row->import_257 }}</td>
+                        <td>{{ $row->export_257 }}</td>
+                        <td>{{ $row->import_258 }}</td>
+                        <td>{{ $row->export_258 }}</td>
+                        <td>{{ $row->import_110 }}</td>
+                        <td>{{ $row->export_110 }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+
     </div>
 @endsection

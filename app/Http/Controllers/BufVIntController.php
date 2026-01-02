@@ -13,32 +13,21 @@ class BufVIntController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        $data = BufVInt::select(
-            'DD_MM_YYYY as OGNOO',
-            'N_INTER_RAS as TIME_INTERVAL',
-            DB::raw("CONCAT(
-        LPAD(FLOOR((N_INTER_RAS - 1)/2), 2, '0'), ':',
-        CASE WHEN MOD(N_INTER_RAS,2)=1 THEN '00' ELSE '30' END, '-',
-        LPAD(FLOOR((N_INTER_RAS - 1)/2), 2, '0'), ':',
-        CASE WHEN MOD(N_INTER_RAS,2)=1 THEN '30' ELSE '00' END
-    ) AS TIME_DISPLAY"),
-            'N_OB as OBEKT',
-            'SYB_RNK as SULJEE',
-            'N_FID as FIDER',
-            DB::raw("CASE
-        WHEN N_FID = 227 THEN 'АШ 227'
-        WHEN N_FID = 228 THEN 'АШ 228'
-        WHEN N_FID = 110 THEN 'Тойт 110'
-        ELSE 'Бусад шугам'
-    END AS LINE_NAME"),
-            DB::raw("ROUND(SUM(CASE WHEN N_GR_TY = 2 THEN VAL ELSE 0 END),2) AS IMPORT_KWT"),
-            DB::raw("ROUND(SUM(CASE WHEN N_GR_TY = 1 THEN VAL ELSE 0 END),2) AS EXPORT_KWT"),
-            DB::raw("COUNT(DISTINCT N_SH) AS TOOTSOOLUUR_COUNT")
-        )
-            ->whereRaw('DATE(DD_MM_YYYY) = CURDATE()')
-            ->whereIn('N_FID', [227, 228, 110])
+        $data = DB::table('buf_v_int')
+            ->select(
+                DB::raw('LPAD(FLOOR((N_INTER_RAS - 1)/2), 2, "0") as hour'),
+                'N_INTER_RAS',
+                DB::raw('SUM(CASE WHEN N_FID = 257 AND N_GR_TY = 2 THEN VAL ELSE 0 END) as import_257'),
+                DB::raw('SUM(CASE WHEN N_FID = 257 AND N_GR_TY = 1 THEN VAL ELSE 0 END) as export_257'),
+                DB::raw('SUM(CASE WHEN N_FID = 258 AND N_GR_TY = 2 THEN VAL ELSE 0 END) as import_258'),
+                DB::raw('SUM(CASE WHEN N_FID = 258 AND N_GR_TY = 1 THEN VAL ELSE 0 END) as export_258'),
+                DB::raw('SUM(CASE WHEN N_FID = 110 AND N_GR_TY = 2 THEN VAL ELSE 0 END) as import_110'),
+                DB::raw('SUM(CASE WHEN N_FID = 110 AND N_GR_TY = 1 THEN VAL ELSE 0 END) as export_110')
+            )
+            ->whereIn('N_FID', [257, 258, 110])
             ->whereIn('N_GR_TY', [1, 2])
-            ->groupBy('DD_MM_YYYY', 'N_INTER_RAS', 'N_OB', 'SYB_RNK', 'N_FID')
+            ->whereRaw('DATE(DD_MM_YYYY) = CURDATE()')
+            ->groupBy('N_INTER_RAS')
             ->orderBy('N_INTER_RAS')
             ->get();
 
