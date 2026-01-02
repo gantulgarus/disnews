@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class BufVInt extends Model
 {
+    protected $table = 'buf_v_int';
+
     protected $fillable = [
         'SYB_RNK',
         'N_OB',
