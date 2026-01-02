@@ -224,9 +224,9 @@
                                         Дулааны мэдээ
                                     </a>
 
-                                    {{-- <a class="dropdown-item" href="#">
+                                    <a class="dropdown-item" href="{{ route('bufvint.todayData') }}">
                                         Импорт, Экспорт
-                                    </a> --}}
+                                    </a>
                                     <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
                                         href="{{ route('reports.powerPlantRenewableReport') }}">
                                         СЭХ-ний горим, гүйцэтгэл
