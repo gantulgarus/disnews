@@ -3,38 +3,33 @@
 @section('content')
     <div class="container">
         <h3>Өнөөдрийн өгөгдөл</h3>
-        <table class="table table-bordered">
+        <table border="1" cellpadding="5" cellspacing="0">
             <thead>
                 <tr>
                     <th>Цаг</th>
-                    <th colspan="2">АШ 257</th>
-                    <th colspan="2">АШ 258</th>
-                    <th colspan="2">Тойт 110</th>
-                </tr>
-                <tr>
-                    <th></th>
-                    <th>Импорт</th>
-                    <th>Экспорт</th>
-                    <th>Импорт</th>
-                    <th>Экспорт</th>
-                    <th>Импорт</th>
-                    <th>Экспорт</th>
+                    <th>АШ 257 - Импорт</th>
+                    <th>АШ 257 - Экспорт</th>
+                    <th>АШ 258 - Импорт</th>
+                    <th>АШ 258 - Экспорт</th>
+                    <th>Тойт 110 - Импорт</th>
+                    <th>Тойт 110 - Экспорт</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($data as $row)
+                @foreach ($pivot as $time => $fidData)
                     <tr>
-                        <td>{{ $row->hour }}:00</td>
-                        <td>{{ $row->import_257 }}</td>
-                        <td>{{ $row->export_257 }}</td>
-                        <td>{{ $row->import_258 }}</td>
-                        <td>{{ $row->export_258 }}</td>
-                        <td>{{ $row->import_110 }}</td>
-                        <td>{{ $row->export_110 }}</td>
+                        <td>{{ $time }}</td>
+                        <td>{{ $fidData[257]['IMPORT'] ?? 0 }}</td>
+                        <td>{{ $fidData[257]['EXPORT'] ?? 0 }}</td>
+                        <td>{{ $fidData[258]['IMPORT'] ?? 0 }}</td>
+                        <td>{{ $fidData[258]['EXPORT'] ?? 0 }}</td>
+                        <td>{{ $fidData[110]['IMPORT'] ?? 0 }}</td>
+                        <td>{{ $fidData[110]['EXPORT'] ?? 0 }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+
 
     </div>
 @endsection
