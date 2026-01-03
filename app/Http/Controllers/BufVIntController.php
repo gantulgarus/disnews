@@ -9,8 +9,18 @@ use Illuminate\Support\Facades\DB;
 
 class BufVIntController extends Controller
 {
-    public function todayData()
+    public function todayData(Request $request)
     {
+        // Огноо параметр авах (default: өнөөдөр)
+        $date = $request->input('date', Carbon::today()->toDateString());
+
+        // Огнооны валидаци
+        try {
+            $carbonDate = Carbon::parse($date);
+        } catch (\Exception $e) {
+            $carbonDate = Carbon::today();
+        }
+
         $data = DB::table('buf_v_int')
             ->select(
                 DB::raw('DATE(DD_MM_YYYY) as OGNOO'),
@@ -27,28 +37,15 @@ class BufVIntController extends Controller
             )
             ->whereIn('N_GR_TY', [1, 2])
             ->whereIn('N_FID', [257, 258, 110])
-            ->whereRaw('DATE(DD_MM_YYYY) = CURDATE()')
-            // ДАВХАРДЛЫГ АРИЛГАХ:
-            ->groupBy('N_INTER_RAS', 'N_FID', 'N_GR_TY', DB::raw('DATE(DD_MM_YYYY)'))
+            ->whereRaw('DATE(DD_MM_YYYY) = ?', [$carbonDate->toDateString()])  // ОГНОО FILTER
+            ->groupBy('N_INTER_RAS', 'N_FID', DB::raw('DATE(DD_MM_YYYY)'))
             ->orderBy('N_INTER_RAS')
             ->orderBy('N_FID')
             ->get();
 
-        // GROUP BY-г дахин хийх (N_GR_TY-г нэгтгэх)
-        $grouped = $data->groupBy(function ($item) {
-            return $item->TIME_DISPLAY . '_' . $item->N_FID;
-        })->map(function ($group) {
-            $first = $group->first();
-            return (object)[
-                'TIME_DISPLAY' => $first->TIME_DISPLAY,
-                'N_FID' => $first->N_FID,
-                'IMPORT_KWT' => $group->sum('IMPORT_KWT'),
-                'EXPORT_KWT' => $group->sum('EXPORT_KWT')
-            ];
-        });
-
+        // Pivot хэлбэрт хувиргах
         $pivot = [];
-        foreach ($grouped as $row) {
+        foreach ($data as $row) {
             $time = $row->TIME_DISPLAY;
             $fid = $row->N_FID;
             $pivot[$time][$fid] = [
@@ -57,6 +54,6 @@ class BufVIntController extends Controller
             ];
         }
 
-        return view('bufvint.today', compact('pivot'));
+        return view('bufvint.today', compact('pivot', 'carbonDate'));
     }
 }
