@@ -4,13 +4,16 @@
     <div class="container">
         <h3>Өгөгдлийн харагдац</h3>
 
-        <!-- DEBUG МЭДЭЭЛЭЛ (Түр хугацаанд) -->
         <!-- DEBUG МЭДЭЭЛЭЛ -->
         @if (isset($debug))
-            <div class="alert alert-warning">
+            <div class="alert alert-info">
                 <strong>Debug:</strong>
-                Query rows: {{ $debug['query_count'] }} |
-                Олдсон фидерүүд: {{ implode(', ', $debug['fiders_found']) }}
+                Query: {{ $debug['query_count'] }} мөр |
+                Фидерүүд: {{ implode(', ', $debug['fiders_found']) }}
+                <details>
+                    <summary>Дээж өгөгдөл харах</summary>
+                    <pre>{{ json_encode($debug['sample_data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                </details>
             </div>
         @endif
 
