@@ -5,15 +5,12 @@
         <h3>Өгөгдлийн харагдац</h3>
 
         <!-- DEBUG МЭДЭЭЛЭЛ (Түр хугацаанд) -->
+        <!-- DEBUG МЭДЭЭЛЭЛ -->
         @if (isset($debug))
             <div class="alert alert-warning">
                 <strong>Debug:</strong>
                 Query rows: {{ $debug['query_count'] }} |
-                Pivot keys: {{ $debug['pivot_count'] }}
-                @if ($debug['pivot_count'] > 0)
-                    <br>Sample:
-                    <pre>{{ print_r($debug['sample_pivot'], true) }}</pre>
-                @endif
+                Олдсон фидерүүд: {{ implode(', ', $debug['fiders_found']) }}
             </div>
         @endif
 

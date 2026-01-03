@@ -19,59 +19,63 @@ class BufVIntController extends Controller
             $carbonDate = Carbon::today();
         }
 
-        $data = DB::table('buf_v_int as buf')
-            ->join('gr_gr as gr', function ($join) {
-                $join->on('buf.N_OB', '=', 'gr.N_OB')
-                    ->on('buf.SYB_RNK', '=', 'gr.SYB_RNK')
-                    ->on('buf.N_SH', '=', 'gr.N_SH');  // N_SH том үсэг болгох
-            })
+        $data = DB::table('buf_v_int')
             ->select(
-                DB::raw('DATE(buf.DD_MM_YYYY) as OGNOO'),
-                'buf.N_INTER_RAS',
+                'N_INTER_RAS',
                 DB::raw('CONCAT(
-                LPAD(FLOOR((buf.N_INTER_RAS-1)/2), 2, "0"), ":",
-                CASE WHEN MOD(buf.N_INTER_RAS, 2) = 1 THEN "00" ELSE "30" END, "-",
-                LPAD(FLOOR((buf.N_INTER_RAS-1)/2), 2, "0"), ":",
-                CASE WHEN MOD(buf.N_INTER_RAS, 2) = 1 THEN "30" ELSE "00" END
+                LPAD(FLOOR((N_INTER_RAS-1)/2), 2, "0"), ":",
+                CASE WHEN MOD(N_INTER_RAS, 2) = 1 THEN "00" ELSE "30" END, "-",
+                LPAD(FLOOR((N_INTER_RAS-1)/2), 2, "0"), ":",
+                CASE WHEN MOD(N_INTER_RAS, 2) = 1 THEN "30" ELSE "00" END
             ) as TIME_DISPLAY'),
-                'gr.N_FID',
-                DB::raw('ROUND(SUM(CASE WHEN buf.N_GR_TY = 2 THEN buf.VAL ELSE 0 END), 2) as IMPORT_KWT'),
-                DB::raw('ROUND(SUM(CASE WHEN buf.N_GR_TY = 1 THEN buf.VAL ELSE 0 END), 2) as EXPORT_KWT')
+                'N_FID',
+                DB::raw('ROUND(SUM(CASE WHEN N_GR_TY = 2 THEN VAL ELSE 0 END), 2) as IMPORT_KWT'),
+                DB::raw('ROUND(SUM(CASE WHEN N_GR_TY = 1 THEN VAL ELSE 0 END), 2) as EXPORT_KWT')
             )
-            ->whereIn('buf.N_GR_TY', [1, 2])
-            ->where('gr.ZNAK', '=', 1)
-            ->whereIn('gr.N_FID', [257, 258, 110])
-            ->whereRaw('DATE(buf.DD_MM_YYYY) = ?', [$carbonDate->toDateString()])
-            ->groupBy(
-                DB::raw('DATE(buf.DD_MM_YYYY)'),
-                'buf.N_INTER_RAS',
-                'gr.N_FID'
-            )
-            ->orderBy('buf.N_INTER_RAS')
-            ->orderBy('gr.N_FID')
+            ->whereIn('N_GR_TY', [1, 2])
+            ->whereIn('N_FID', [257, 258, 110])
+            ->whereRaw('DATE(DD_MM_YYYY) = ?', [$carbonDate->toDateString()])
+            ->groupBy('N_INTER_RAS', 'N_FID')
+            ->orderBy('N_INTER_RAS')
+            ->orderBy('N_FID')
             ->get();
 
-        // Pivot array үүсгэх - ЗАСВАРЛАСАН
+        // Бүх цагийн интервал үүсгэх (00:00-00:30 ... 23:30-00:00)
+        $allTimes = [];
+        for ($i = 1; $i <= 48; $i++) {
+            $hour = str_pad(floor(($i - 1) / 2), 2, '0', STR_PAD_LEFT);
+            $startMin = ($i % 2 == 1) ? '00' : '30';
+            $endMin = ($i % 2 == 1) ? '30' : '00';
+            $allTimes[] = "{$hour}:{$startMin}-{$hour}:{$endMin}";
+        }
+
+        // Pivot үүсгэх - бүх цаг, бүх фидертэй
         $pivot = [];
-        foreach ($data as $row) {
-            $time = $row->TIME_DISPLAY;
-            $fid = (int)$row->N_FID;  // Integer болгох
-
-            if (!isset($pivot[$time])) {
-                $pivot[$time] = [];
-            }
-
-            $pivot[$time][$fid] = [
-                'IMPORT' => (float)$row->IMPORT_KWT,
-                'EXPORT' => (float)$row->EXPORT_KWT
+        foreach ($allTimes as $time) {
+            $pivot[$time] = [
+                257 => ['IMPORT' => 0, 'EXPORT' => 0],
+                258 => ['IMPORT' => 0, 'EXPORT' => 0],
+                110 => ['IMPORT' => 0, 'EXPORT' => 0],
             ];
         }
 
-        // DEBUG мэдээлэл нэмэх
+        // Өгөгдлөөр дарж бичих
+        foreach ($data as $row) {
+            $time = $row->TIME_DISPLAY;
+            $fid = (int)$row->N_FID;
+
+            if (isset($pivot[$time][$fid])) {
+                $pivot[$time][$fid] = [
+                    'IMPORT' => (float)$row->IMPORT_KWT,
+                    'EXPORT' => (float)$row->EXPORT_KWT
+                ];
+            }
+        }
+
+        // Debug
         $debug = [
             'query_count' => $data->count(),
-            'pivot_count' => count($pivot),
-            'sample_pivot' => array_slice($pivot, 0, 2, true)
+            'fiders_found' => $data->pluck('N_FID')->unique()->values()->toArray(),
         ];
 
         return view('bufvint.today', compact('pivot', 'carbonDate', 'debug'));
