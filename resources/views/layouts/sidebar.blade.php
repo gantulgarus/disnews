@@ -224,7 +224,7 @@
                                         Дулааны мэдээ
                                     </a>
 
-                                    <a class="dropdown-item" href="{{ route('bufvint.todayData') }}">
+                                    <a class="dropdown-item" href="{{ route('bufvint.today') }}">
                                         Импорт, Экспорт
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
