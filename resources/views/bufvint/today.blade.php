@@ -4,6 +4,19 @@
     <div class="container">
         <h3>Өгөгдлийн харагдац</h3>
 
+        <!-- DEBUG МЭДЭЭЛЭЛ (Түр хугацаанд) -->
+        @if (isset($debug))
+            <div class="alert alert-warning">
+                <strong>Debug:</strong>
+                Query rows: {{ $debug['query_count'] }} |
+                Pivot keys: {{ $debug['pivot_count'] }}
+                @if ($debug['pivot_count'] > 0)
+                    <br>Sample:
+                    <pre>{{ print_r($debug['sample_pivot'], true) }}</pre>
+                @endif
+            </div>
+        @endif
+
         <!-- ОГНООНЫ FILTER FORM -->
         <div class="row mb-3">
             <div class="col-md-12">
@@ -18,7 +31,6 @@
                         <i class="fas fa-search"></i> Хайх
                     </button>
 
-                    <!-- ШУУРХАЙ ТОВЧНУУД -->
                     <button type="button" class="btn btn-secondary mr-2"
                         onclick="document.getElementById('date').value='{{ \Carbon\Carbon::today()->toDateString() }}'; this.form.submit();">
                         Өнөөдөр
@@ -66,12 +78,24 @@
                     @forelse ($pivot as $time => $fidData)
                         <tr>
                             <td><strong>{{ $time }}</strong></td>
-                            <td class="text-right">{{ number_format($fidData[257]['IMPORT'] ?? 0, 2) }}</td>
-                            <td class="text-right">{{ number_format($fidData[257]['EXPORT'] ?? 0, 2) }}</td>
-                            <td class="text-right">{{ number_format($fidData[258]['IMPORT'] ?? 0, 2) }}</td>
-                            <td class="text-right">{{ number_format($fidData[258]['EXPORT'] ?? 0, 2) }}</td>
-                            <td class="text-right">{{ number_format($fidData[110]['IMPORT'] ?? 0, 2) }}</td>
-                            <td class="text-right">{{ number_format($fidData[110]['EXPORT'] ?? 0, 2) }}</td>
+                            <td class="text-right">
+                                {{ number_format($fidData[257]['IMPORT'] ?? 0, 2) }}
+                            </td>
+                            <td class="text-right">
+                                {{ number_format($fidData[257]['EXPORT'] ?? 0, 2) }}
+                            </td>
+                            <td class="text-right">
+                                {{ number_format($fidData[258]['IMPORT'] ?? 0, 2) }}
+                            </td>
+                            <td class="text-right">
+                                {{ number_format($fidData[258]['EXPORT'] ?? 0, 2) }}
+                            </td>
+                            <td class="text-right">
+                                {{ number_format($fidData[110]['IMPORT'] ?? 0, 2) }}
+                            </td>
+                            <td class="text-right">
+                                {{ number_format($fidData[110]['EXPORT'] ?? 0, 2) }}
+                            </td>
                         </tr>
                     @empty
                         <tr>

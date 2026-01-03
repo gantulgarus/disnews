@@ -23,7 +23,7 @@ class BufVIntController extends Controller
             ->join('gr_gr as gr', function ($join) {
                 $join->on('buf.N_OB', '=', 'gr.N_OB')
                     ->on('buf.SYB_RNK', '=', 'gr.SYB_RNK')
-                    ->on('buf.n_sh', '=', 'gr.n_sh');
+                    ->on('buf.N_SH', '=', 'gr.N_SH');  // N_SH том үсэг болгох
             })
             ->select(
                 DB::raw('DATE(buf.DD_MM_YYYY) as OGNOO'),
@@ -51,11 +51,29 @@ class BufVIntController extends Controller
             ->orderBy('gr.N_FID')
             ->get();
 
-        // DEBUG: Query-н үр дүнг харах
-        dd([
-            'data_count' => $data->count(),
-            'first_5_rows' => $data->take(5),
-            'sample_row' => $data->first()
-        ]);
+        // Pivot array үүсгэх - ЗАСВАРЛАСАН
+        $pivot = [];
+        foreach ($data as $row) {
+            $time = $row->TIME_DISPLAY;
+            $fid = (int)$row->N_FID;  // Integer болгох
+
+            if (!isset($pivot[$time])) {
+                $pivot[$time] = [];
+            }
+
+            $pivot[$time][$fid] = [
+                'IMPORT' => (float)$row->IMPORT_KWT,
+                'EXPORT' => (float)$row->EXPORT_KWT
+            ];
+        }
+
+        // DEBUG мэдээлэл нэмэх
+        $debug = [
+            'query_count' => $data->count(),
+            'pivot_count' => count($pivot),
+            'sample_pivot' => array_slice($pivot, 0, 2, true)
+        ];
+
+        return view('bufvint.today', compact('pivot', 'carbonDate', 'debug'));
     }
 }
