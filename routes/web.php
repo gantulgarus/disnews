@@ -224,7 +224,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('power-plant-readings/hour-data', [PowerPlantReadingController::class, 'getHourData'])->name('power-plant-readings.getHourData');
 
-    Route::get('/bufvint/today', [\App\Http\Controllers\BufVIntController::class, 'todayData'])->name('bufvint.todayData');
+    Route::get('/bufvint/today', [\App\Http\Controllers\BufVIntController::class, 'todayData'])->name('bufvint.today');
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
