@@ -19,7 +19,6 @@ class BufVIntController extends Controller
             $carbonDate = Carbon::today();
         }
 
-        // ОДОО GR_GR хүснэгт байгаа тул JOIN хийж болно
         $data = DB::table('buf_v_int as buf')
             ->join('gr_gr as gr', function ($join) {
                 $join->on('buf.N_OB', '=', 'gr.N_OB')
@@ -52,16 +51,11 @@ class BufVIntController extends Controller
             ->orderBy('gr.N_FID')
             ->get();
 
-        $pivot = [];
-        foreach ($data as $row) {
-            $time = $row->TIME_DISPLAY;
-            $fid = $row->N_FID;
-            $pivot[$time][$fid] = [
-                'IMPORT' => $row->IMPORT_KWT,
-                'EXPORT' => $row->EXPORT_KWT
-            ];
-        }
-
-        return view('bufvint.today', compact('pivot', 'carbonDate'));
+        // DEBUG: Query-н үр дүнг харах
+        dd([
+            'data_count' => $data->count(),
+            'first_5_rows' => $data->take(5),
+            'sample_row' => $data->first()
+        ]);
     }
 }
