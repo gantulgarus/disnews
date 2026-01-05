@@ -25,54 +25,50 @@ class BufVIntController extends Controller
         // 1. Монголын өгөгдөл
         $rawPivot = BufFiderDaily::getPivotData($carbonDate);
 
-        // pivot бүтцийг өөрчлөх: УБ цаг болон Москва цагийг хоёуланг нь хадгалах
-        $pivot = [];
-        $timeToDateMap = []; // Москвагийн цаг => огноо
+        // pivot-ийн key-г Москвагийн цагт хөрвүүлж, огноог хадгалах
+        $pivotTemp = [];
+        $timeToDateMap = [];
 
         foreach ($rawPivot as $ubTime => $fidData) {
-            // Монголын цаг → Москвагийн цаг + огноо
             $moscowDateTime = Carbon::createFromFormat('Y-m-d H:i', $carbonDate->toDateString() . ' ' . $ubTime)
                 ->subHours(5);
 
             $moscowTime = $moscowDateTime->format('H:i');
             $moscowDate = $moscowDateTime->toDateString();
 
-            // УБ цаг болон Москва цагийг хоёуланг нь хадгалах
-            $pivot[$moscowTime] = [
+            $pivotTemp[$moscowTime] = [
                 'ub_time' => $ubTime,
                 'moscow_time' => $moscowTime,
+                'moscow_date' => $moscowDate,
                 'data' => $fidData,
             ];
 
             $timeToDateMap[$moscowTime] = $moscowDate;
         }
 
-        // 2. Оросын өгөгдөл - тухайн болон өмнөх өдрийн датаг авах
+        // Москвагийн цагаар эрэмбэлэх
+        ksort($pivotTemp);
+        $pivot = $pivotTemp;
+
+        // 2. Оросын өгөгдөл
         $yesterday = $carbonDate->copy()->subDay()->toDateString();
         $today = $carbonDate->toDateString();
 
-        // ognoo талбар timestamp форматтай учраас DATE() функцээр хөрвүүлэх хэрэгтэй
         $russianDataRaw = RuFiderDaily::whereRaw('DATE(ognoo) IN (?, ?)', [$yesterday, $today])
             ->whereIn('fider', [257, 258, 110])
             ->select('ognoo', 'time_display', 'fider', 'import_kwt', 'export_kwt')
             ->get();
 
-        // Оросын датаг зөв огноотой нь холбож, эхний бүтцийг хадгалах
+        // Оросын датаг зөв огноотой холбох
         $russianData = [];
         foreach ($pivot as $moscowTime => $timeData) {
             $requiredDate = $timeToDateMap[$moscowTime];
 
-            // Энэ цаг + огноонд тохирох оросын датаг хайх
             foreach ([257, 258, 110] as $fider) {
-                // Цагийн олон хувилбарыг шалгах
                 $rows = $russianDataRaw->filter(function ($item) use ($requiredDate, $moscowTime, $fider) {
-                    // ognoo-г огноо руу хөрвүүлэх (timestamp-аас)
                     $itemDate = Carbon::parse($item->ognoo)->format('Y-m-d');
-
-                    // time_display-г HH:MM форматруу хөрвүүлэх
                     $itemTime = substr($item->time_display, 0, 5);
 
-                    // Цагийг нормчлох (жишээ: "5:00" -> "05:00")
                     if (strlen($itemTime) == 4 && strpos($itemTime, ':') == 1) {
                         $itemTime = '0' . $itemTime;
                     }
@@ -89,7 +85,6 @@ class BufVIntController extends Controller
                     $russianData[$moscowTime][$fider] = [];
                 }
 
-                // Олдсон бүх мөрүүдийг нэгтгэх
                 if ($rows->count() > 0) {
                     $totalImport = $rows->sum('import_kwt');
                     $totalExport = $rows->sum('export_kwt');
@@ -99,7 +94,6 @@ class BufVIntController extends Controller
                         'export_kwt' => $totalExport,
                     ];
                 } else {
-                    // Дата олдохгүй бол 0
                     $russianData[$moscowTime][$fider][0] = (object)[
                         'import_kwt' => 0,
                         'export_kwt' => 0,
@@ -136,10 +130,9 @@ class BufVIntController extends Controller
                 ->limit(3)
                 ->get()
                 ->toArray(),
+            'pivot_sample' => array_slice($pivot, 0, 3, true),
+            'time_to_date_map_sample' => array_slice($timeToDateMap, 0, 10, true),
         ];
-
-        // TEMPORARY DEBUG - Энийг устгана
-        // dd($debug);
 
         return view('bufvint.today', compact(
             'pivot',
@@ -155,13 +148,11 @@ class BufVIntController extends Controller
             'xml_file' => 'required|file|mimes:xml',
         ]);
 
-        // ru_xml folder байхгүй бол үүсгэх
         $storagePath = storage_path('app/ru_xml');
         if (!file_exists($storagePath)) {
             mkdir($storagePath, 0755, true);
         }
 
-        // Файл хадгалах
         $path = $request->file('xml_file')->store('ru_xml');
         $fullPath = storage_path('app/private/' . $path);
 
@@ -169,7 +160,6 @@ class BufVIntController extends Controller
             return back()->withErrors('Файл хадгалагдсангүй: ' . $fullPath);
         }
 
-        // Импорт хийх
         RussianXmlImportService::import(
             $fullPath,
             [
