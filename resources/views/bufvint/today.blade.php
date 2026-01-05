@@ -33,11 +33,11 @@
         <div class="alert alert-info">
             <strong>Сонгосон Москвагийн огноо:</strong> {{ $moscowDate->format('Y-m-d (l)') }}
             <br>
-            <small>
+            {{-- <small>
                 Монголын бичлэг: {{ $debug['total_records'] }} |
                 Оросын бичлэг: {{ $debug['russian_records'] }} |
                 Оросын маргаашийн: {{ $debug['russian_tomorrow_records'] }}
-            </small>
+            </small> --}}
         </div>
 
         @if (session('success'))
