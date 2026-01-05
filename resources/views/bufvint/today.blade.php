@@ -9,7 +9,7 @@
             @csrf
             <div class="col-auto">
                 <input type="date" name="date" id="date" class="form-control"
-                    value="{{ $carbonDate->toDateString() }}">
+                    value="{{ $moscowDate->toDateString() }}">
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Хайх</button>

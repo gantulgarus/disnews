@@ -151,7 +151,7 @@ class BufVIntController extends Controller
             'russianData',
             'moscowDate',
             'debug'
-        ));
+        ))->with('carbonDate', $moscowDate); // Backward compatibility
     }
 
     public function importRussianXml(Request $request)
