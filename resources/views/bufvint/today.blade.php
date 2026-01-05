@@ -35,8 +35,26 @@
             <br>
             <small>
                 Монголын бичлэг: {{ $debug['total_records'] }} |
-                Оросын бичлэг: {{ $debug['russian_records'] }}
+                Оросын бичлэг: {{ $debug['russian_records'] }} |
+                Оросын өмнөх өдрийн: {{ $debug['russian_yesterday_records'] }}
             </small>
+        </div>
+
+        <!-- DEBUG МЭДЭЭЛЭЛ -->
+        <div class="alert alert-warning">
+            <strong>🔍 Debug мэдээлэл:</strong>
+            <br><br>
+            <strong>Pivot Москвагийн цагууд (эхний 10):</strong>
+            <pre>{{ print_r($debug['pivot_moscow_times'], true) }}</pre>
+
+            <strong>Оросын өнөөдрийн цагууд (эхний 10):</strong>
+            <pre>{{ print_r($debug['russian_times_today'], true) }}</pre>
+
+            <strong>Оросын өчигдрийн цагууд (эхний 10):</strong>
+            <pre>{{ print_r($debug['russian_times_yesterday'], true) }}</pre>
+
+            <strong>Оросын дата жишээ (эхний 3 мөр):</strong>
+            <pre>{{ print_r($debug['sample_russian_data'], true) }}</pre>
         </div>
 
         @if (session('success'))
@@ -107,16 +125,19 @@
                         ];
                     @endphp
 
-                    @foreach ($pivot as $time => $fidData)
+                    @foreach ($pivot as $moscowTime => $timeData)
                         @php
+                            $ubTime = $timeData['ub_time'];
+                            $fidData = $timeData['data'];
+
                             // Фидэр бүрийн утгыг тооцоолох
                             $values = [];
                             foreach ([257, 258, 110] as $fider) {
                                 $mnImport = $fidData[$fider]['IMPORT'] ?? 0;
                                 $mnExport = $fidData[$fider]['EXPORT'] ?? 0;
 
-                                $ruImport = $russianData[$time][$fider][0]->import_kwt ?? 0;
-                                $ruExport = $russianData[$time][$fider][0]->export_kwt ?? 0;
+                                $ruImport = $russianData[$moscowTime][$fider][0]->import_kwt ?? 0;
+                                $ruExport = $russianData[$moscowTime][$fider][0]->export_kwt ?? 0;
 
                                 $values[$fider] = [
                                     'mn_import' => $mnImport,
@@ -147,11 +168,8 @@
                                 $values[257]['ru_export'] + $values[258]['ru_export'] + $values[110]['ru_export'];
                         @endphp
                         <tr>
-                            @php
-                                $TimeUb = \Carbon\Carbon::createFromFormat('H:i', $time)->addHours(5)->format('H:i');
-                            @endphp
-                            <td><strong>{{ $TimeUb }}</strong></td>
-                            <td><strong>{{ $time }}</strong></td>
+                            <td><strong>{{ $ubTime }}</strong></td>
+                            <td><strong>{{ $moscowTime }}</strong></td>
 
                             @foreach ([257, 258, 110] as $fider)
                                 <!-- Импорт -->
@@ -187,7 +205,7 @@
                         $grandRuExport = $totals['ru_export_257'] + $totals['ru_export_258'] + $totals['ru_export_110'];
                     @endphp
                     <tr>
-                        <td>НИЙТ ДҮН:</td>
+                        <td colspan="2">НИЙТ ДҮН:</td>
 
                         @foreach ([257, 258, 110] as $fider)
                             <td class="text-right">{{ number_format($totals['mn_import_' . $fider], 2) }}</td>

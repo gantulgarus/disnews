@@ -128,7 +128,15 @@ class BufVIntController extends Controller
                 ->take(10)
                 ->toArray(),
             'pivot_moscow_times' => array_slice(array_keys($pivot), 0, 10),
+            'sample_russian_data' => RuFiderDaily::where('ognoo', $today)
+                ->whereIn('fider', [257, 258, 110])
+                ->limit(3)
+                ->get()
+                ->toArray(),
         ];
+
+        // TEMPORARY DEBUG - Энийг устгана
+        // dd($debug);
 
         return view('bufvint.today', compact(
             'pivot',
