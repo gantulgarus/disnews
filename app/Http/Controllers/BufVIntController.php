@@ -17,52 +17,83 @@ class BufVIntController extends Controller
         $date = $request->input('date', Carbon::today()->toDateString());
 
         try {
-            $carbonDate = Carbon::parse($date);
+            $moscowDate = Carbon::parse($date); // Энэ нь МОСКВАГИЙН огноо
         } catch (\Exception $e) {
-            $carbonDate = Carbon::today();
+            $moscowDate = Carbon::today();
         }
 
-        // 1. Монголын өгөгдөл
-        $rawPivot = BufFiderDaily::getPivotData($carbonDate);
+        // Москвагийн тухайн өдрийн 00:00-23:30 харуулах
+        // Үүнд:
+        // - УБ өмнөх өдрийн 05:00-23:30 (Москва 00:00-18:30)
+        // - УБ тухайн өдрийн 00:00-04:30 (Москва 19:00-23:30)
 
-        // pivot-ийн key-г Москвагийн цагт хөрвүүлж, огноог хадгалах
+        $prevDayUB = $moscowDate->copy()->subDay(); // УБ өмнөх өдөр
+        $todayUB = $moscowDate->copy(); // УБ тухайн өдөр
+
+        // 1. Монголын өгөгдөл - хоёр өдрийн дата
+        $rawPivotPrev = BufFiderDaily::getPivotData($prevDayUB);
+        $rawPivotToday = BufFiderDaily::getPivotData($todayUB);
+
+        $rawPivot = array_merge($rawPivotPrev, $rawPivotToday);
+
+        // pivot-ийг Москвагийн цагаар хөрвүүлэх
         $pivotTemp = [];
-        $timeToDateMap = [];
+        $timeToMoscowDateMap = [];
 
-        foreach ($rawPivot as $ubTime => $fidData) {
-            $moscowDateTime = Carbon::createFromFormat('Y-m-d H:i', $carbonDate->toDateString() . ' ' . $ubTime)
-                ->subHours(5);
+        foreach ($rawPivotPrev as $ubTime => $fidData) {
+            $ubDateTime = Carbon::createFromFormat('Y-m-d H:i', $prevDayUB->toDateString() . ' ' . $ubTime);
+            $moscowDateTime = $ubDateTime->copy()->subHours(5);
+
+            // Зөвхөн Москвагийн тухайн өдрийн 00:00-18:30-г авах
+            if ($moscowDateTime->toDateString() === $moscowDate->toDateString()) {
+                $moscowTime = $moscowDateTime->format('H:i');
+
+                $pivotTemp[$moscowTime] = [
+                    'ub_time' => $ubTime,
+                    'ub_date' => $prevDayUB->toDateString(),
+                    'moscow_time' => $moscowTime,
+                    'moscow_date' => $moscowDateTime->toDateString(),
+                    'data' => $fidData,
+                ];
+
+                $timeToMoscowDateMap[$moscowTime] = $moscowDateTime->toDateString();
+            }
+        }
+
+        foreach ($rawPivotToday as $ubTime => $fidData) {
+            $ubDateTime = Carbon::createFromFormat('Y-m-d H:i', $todayUB->toDateString() . ' ' . $ubTime);
+            $moscowDateTime = $ubDateTime->copy()->subHours(5);
 
             $moscowTime = $moscowDateTime->format('H:i');
-            $moscowDate = $moscowDateTime->toDateString();
 
             $pivotTemp[$moscowTime] = [
                 'ub_time' => $ubTime,
+                'ub_date' => $todayUB->toDateString(),
                 'moscow_time' => $moscowTime,
-                'moscow_date' => $moscowDate,
+                'moscow_date' => $moscowDateTime->toDateString(),
                 'data' => $fidData,
             ];
 
-            $timeToDateMap[$moscowTime] = $moscowDate;
+            $timeToMoscowDateMap[$moscowTime] = $moscowDateTime->toDateString();
         }
 
         // Москвагийн цагаар эрэмбэлэх
         ksort($pivotTemp);
         $pivot = $pivotTemp;
 
-        // 2. Оросын өгөгдөл
-        $yesterday = $carbonDate->copy()->subDay()->toDateString();
-        $today = $carbonDate->toDateString();
+        // 2. Оросын өгөгдөл - тухайн өдрийн дата
+        $today = $moscowDate->toDateString();
+        $tomorrow = $moscowDate->copy()->addDay()->toDateString();
 
-        $russianDataRaw = RuFiderDaily::whereRaw('DATE(ognoo) IN (?, ?)', [$yesterday, $today])
+        $russianDataRaw = RuFiderDaily::whereRaw('DATE(ognoo) IN (?, ?)', [$today, $tomorrow])
             ->whereIn('fider', [257, 258, 110])
             ->select('ognoo', 'time_display', 'fider', 'import_kwt', 'export_kwt')
             ->get();
 
-        // Оросын датаг зөв огноотой холбох
+        // Оросын датаг Москвагийн цаг + огноотой холбох
         $russianData = [];
         foreach ($pivot as $moscowTime => $timeData) {
-            $requiredDate = $timeToDateMap[$moscowTime];
+            $requiredDate = $timeToMoscowDateMap[$moscowTime];
 
             foreach ([257, 258, 110] as $fider) {
                 $rows = $russianDataRaw->filter(function ($item) use ($requiredDate, $moscowTime, $fider) {
@@ -104,40 +135,21 @@ class BufVIntController extends Controller
 
         // Debug мэдээлэл
         $debug = [
-            'total_records' => BufFiderDaily::forDate($carbonDate)->count(),
-            'fiders_in_db' => BufFiderDaily::forDate($carbonDate)->distinct('FIDER')->pluck('FIDER')->toArray(),
+            'total_records' => BufFiderDaily::forDate($prevDayUB)->count() + BufFiderDaily::forDate($todayUB)->count(),
             'russian_records' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
                 ->whereIn('fider', [257, 258, 110])
                 ->count(),
-            'russian_yesterday_records' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$yesterday])
+            'russian_tomorrow_records' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$tomorrow])
                 ->whereIn('fider', [257, 258, 110])
                 ->count(),
-            'russian_times_today' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
-                ->whereIn('fider', [257, 258, 110])
-                ->distinct()
-                ->pluck('time_display')
-                ->take(10)
-                ->toArray(),
-            'russian_times_yesterday' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$yesterday])
-                ->whereIn('fider', [257, 258, 110])
-                ->distinct()
-                ->pluck('time_display')
-                ->take(10)
-                ->toArray(),
             'pivot_moscow_times' => array_slice(array_keys($pivot), 0, 10),
-            'sample_russian_data' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
-                ->whereIn('fider', [257, 258, 110])
-                ->limit(3)
-                ->get()
-                ->toArray(),
             'pivot_sample' => array_slice($pivot, 0, 3, true),
-            'time_to_date_map_sample' => array_slice($timeToDateMap, 0, 10, true),
         ];
 
         return view('bufvint.today', compact(
             'pivot',
             'russianData',
-            'carbonDate',
+            'moscowDate',
             'debug'
         ));
     }

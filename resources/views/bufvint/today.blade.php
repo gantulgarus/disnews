@@ -15,12 +15,12 @@
                 <button type="submit" class="btn btn-primary">Хайх</button>
             </div>
             <div class="col-auto">
-                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::today()->toDateString()]) }}"
-                    class="btn btn-secondary">Өнөөдөр</a>
+                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::today()->subHours(5)->toDateString()]) }}"
+                    class="btn btn-secondary">Өнөөдөр (Москва)</a>
             </div>
             <div class="col-auto">
-                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::yesterday()->toDateString()]) }}"
-                    class="btn btn-secondary">Өчигдөр</a>
+                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::yesterday()->subHours(5)->toDateString()]) }}"
+                    class="btn btn-secondary">Өчигдөр (Москва)</a>
             </div>
 
         </form>
@@ -31,12 +31,12 @@
 
         <!-- Сонгосон огноо харуулах -->
         <div class="alert alert-info">
-            <strong>Сонгосон огноо:</strong> {{ $carbonDate->format('Y-m-d (l)') }}
+            <strong>Сонгосон Москвагийн огноо:</strong> {{ $moscowDate->format('Y-m-d (l)') }}
             <br>
             <small>
                 Монголын бичлэг: {{ $debug['total_records'] }} |
                 Оросын бичлэг: {{ $debug['russian_records'] }} |
-                Оросын өмнөх өдрийн: {{ $debug['russian_yesterday_records'] }}
+                Оросын маргаашийн: {{ $debug['russian_tomorrow_records'] }}
             </small>
         </div>
 
