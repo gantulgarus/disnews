@@ -128,7 +128,12 @@
                     @foreach ($pivot as $moscowTime => $timeData)
                         @php
                             $ubTime = $timeData['ub_time'];
+                            $moscowDate = $timeData['moscow_date'];
                             $fidData = $timeData['data'];
+
+                            // Огноо солигдсон эсэхийг тэмдэглэх
+                            $dateChanged = isset($prevMoscowDate) && $prevMoscowDate !== $moscowDate;
+                            $prevMoscowDate = $moscowDate;
 
                             // Фидэр бүрийн утгыг тооцоолох
                             $values = [];
@@ -167,6 +172,15 @@
                             $totalRuExport =
                                 $values[257]['ru_export'] + $values[258]['ru_export'] + $values[110]['ru_export'];
                         @endphp
+
+                        @if ($dateChanged)
+                            <tr class="table-secondary">
+                                <td colspan="22" class="text-center font-weight-bold">
+                                    📅 Москва огноо: {{ $moscowDate }}
+                                </td>
+                            </tr>
+                        @endif
+
                         <tr>
                             <td><strong>{{ $ubTime }}</strong></td>
                             <td><strong>{{ $moscowTime }}</strong></td>
