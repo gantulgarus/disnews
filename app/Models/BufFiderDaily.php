@@ -32,40 +32,28 @@ class BufFiderDaily extends Model
         'TOOTSOOLUUR_COUNT' => 'integer',
     ];
 
-    /**
-     * Тодорхой огнооны өгөгдөл
-     */
     public function scopeForDate($query, $date)
     {
         return $query->where('OGNOO', $date);
     }
 
-    /**
-     * Тодорхой фидер
-     */
     public function scopeForFider($query, $fider)
     {
         return $query->where('FIDER', $fider);
     }
 
-    /**
-     * Олон фидер
-     */
     public function scopeForFiders($query, array $fiders)
     {
         return $query->whereIn('FIDER', $fiders);
     }
 
-    /**
-     * Огнооны интервал
-     */
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('OGNOO', [$startDate, $endDate]);
     }
 
     /**
-     * Pivot формат руу шилжүүлэх
+     * Pivot формат руу шилжүүлэх - ЗАСВАРЛАСАН
      */
     public static function getPivotData($date, $fiders = [257, 258, 110])
     {
@@ -82,13 +70,12 @@ class BufFiderDaily extends Model
             ->orderBy('FIDER')
             ->get();
 
-        // Pivot үүсгэх
+        // Pivot үүсгэх - ЦАГААР НЬ
         $pivot = [];
         for ($i = 1; $i <= 48; $i++) {
             $hour = str_pad(floor(($i - 1) / 2), 2, '0', STR_PAD_LEFT);
-            $startMin = ($i % 2 == 1) ? '00' : '30';
-            $endMin = ($i % 2 == 1) ? '30' : '00';
-            $timeKey = "{$hour}:{$startMin}-{$hour}:{$endMin}";
+            $min = ($i % 2 == 1) ? '00' : '30';
+            $timeKey = "{$hour}:{$min}";  // 00:00, 00:30, 01:00...
 
             $pivot[$timeKey] = [];
             foreach ($fiders as $fid) {
