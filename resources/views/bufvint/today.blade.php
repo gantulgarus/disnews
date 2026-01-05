@@ -22,23 +22,21 @@
                 <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::now()->timezone('Europe/Moscow')->subDay()->toDateString()]) }}"
                     class="btn btn-secondary">Өчигдөр (Москва)</a>
             </div>
-            <div class="col-auto">
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#xmlImportModal">
-                    📥 XML импорт
-                </button>
-            </div>
         </form>
+
+        <!-- XML IMPORT товч -->
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#xmlImportModal">
+            📥 XML импорт
+        </button>
 
         <!-- Сонгосон огноо харуулах -->
         <div class="alert alert-info">
             <strong>Сонгосон Москвагийн огноо:</strong> {{ $moscowDate->format('Y-m-d (l)') }}
             <br>
             <small>
-                УБ өмнөх өдөр: {{ \Carbon\Carbon::parse($debug['prev_day_ub'])->format('Y-m-d') }} |
-                УБ тухайн өдөр: {{ \Carbon\Carbon::parse($debug['today_ub'])->format('Y-m-d') }}
-                <br>
                 Монголын бичлэг: {{ $debug['total_records'] }} |
-                Оросын бичлэг: {{ $debug['russian_records'] }}
+                Оросын бичлэг: {{ $debug['russian_records'] }} |
+                Оросын маргаашийн: {{ $debug['russian_tomorrow_records'] }}
             </small>
         </div>
 
@@ -128,10 +126,8 @@
                                 $mnImport = $fidData[$fider]['IMPORT'] ?? 0;
                                 $mnExport = $fidData[$fider]['EXPORT'] ?? 0;
 
-                                // Оросын дата нь Москвагийн тухайн өдрийнх байна
-                                $ruData = $russianData[$moscowTime][$fider][0] ?? null;
-                                $ruImport = $ruData->import_kwt ?? 0;
-                                $ruExport = $ruData->export_kwt ?? 0;
+                                $ruImport = $russianData[$moscowTime][$fider][0]->import_kwt ?? 0;
+                                $ruExport = $russianData[$moscowTime][$fider][0]->export_kwt ?? 0;
 
                                 $values[$fider] = [
                                     'mn_import' => $mnImport,
@@ -165,22 +161,14 @@
                         @if ($dateChanged)
                             <tr class="table-info">
                                 <td colspan="22" class="text-center font-weight-bold py-3">
-                                    📅 УБ өдөр: {{ $ubDate }} | Москва өдөр: {{ $moscowDateStr }}
-                                    <br>
-                                    <small>
-                                        @if ($moscowDateStr === $moscowDate->toDateString())
-                                            Москвагийн тухайн өдөр
-                                        @else
-                                            Москвагийн өмнөх өдөр
-                                        @endif
-                                    </small>
+                                    📅 УБ: {{ $ubDate }} | Москва: {{ $moscowDateStr }}
                                 </td>
                             </tr>
                         @endif
 
                         <tr>
-                            <td><strong>{{ $ubTime }} ({{ $ubDate }})</strong></td>
-                            <td><strong>{{ $moscowTime }} ({{ $moscowDateStr }})</strong></td>
+                            <td><strong>{{ $ubTime }}</strong></td>
+                            <td><strong>{{ $moscowTime }}</strong></td>
 
                             @foreach ([257, 258, 110] as $fider)
                                 <!-- Импорт -->
@@ -240,6 +228,8 @@
             </table>
         </div>
     </div>
+
+
 
     <!-- XML IMPORT MODAL -->
     <div class="modal fade" id="xmlImportModal" tabindex="-1" aria-hidden="true">
