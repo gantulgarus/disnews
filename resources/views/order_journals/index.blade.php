@@ -71,8 +71,8 @@
 
                                 <td>{{ $journal->order_type }}</td>
                                 <td>{{ $journal->content }}</td>
-                                <td>{{ $journal->planned_start_date }}</td>
-                                <td>{{ $journal->planned_end_date }}</td>
+                                <td>{{ $journal->planned_start_date->format('Y-m-d H:i') }}</td>
+                                <td>{{ $journal->planned_end_date->format('Y-m-d H:i') }}</td>
                                 <td>{{ $journal->approver_name }} <p class="small text-muted mb-0">
                                         {{ $journal->approver_position }}</p>
                                 </td>
@@ -81,7 +81,7 @@
                                     <!-- Харах товч - бүх хэрэглэгчид -->
                                     <a href="{{ route('order-journals.show', $journal->id) }}" class="btn btn-sm btn-info"
                                         title="Дэлгэрэнгүй үзэх">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" stroke-linejoin="round"
                                             class="icon icon-tabler icons-tabler-outline icon-tabler-eye">
@@ -91,6 +91,7 @@
                                                 d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                         </svg>
                                     </a>
+
 
                                     @php
                                         $user = auth()->user();
@@ -119,15 +120,8 @@
                                         </button>
                                     @endif
 
-                                    <!-- Диспетчер: Аваарын захиалгыг батлах (цуцлагдсан, зөвшөөрсөн, батлагдсанаас бусад) -->
-                                    @if (
-                                        $permission === 'DISP' &&
-                                            $journal->order_type === 'Аваарын' &&
-                                            !in_array($journal->status, [
-                                                \App\Models\OrderJournal::STATUS_CANCELLED,
-                                                \App\Models\OrderJournal::STATUS_ACCEPTED,
-                                                \App\Models\OrderJournal::STATUS_APPROVED,
-                                            ]))
+                                    {{-- <!-- Диспетчер: Аваарын захиалгыг батлах (цуцлагдсан, зөвшөөрсөн, батлагдсанаас бусад) -->
+                                    @if ($permission === 'DISP' && $journal->order_type === 'Аваарын' && !in_array($journal->status, [\App\Models\OrderJournal::STATUS_CANCELLED, \App\Models\OrderJournal::STATUS_ACCEPTED, \App\Models\OrderJournal::STATUS_APPROVED]))
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                             data-bs-target="#approveModal{{ $journal->id }}"
                                             title="Аваарын захиалгыг батлах">
@@ -136,13 +130,7 @@
                                     @endif
 
                                     <!-- Диспетчерийн албаны дарга: Цуцлагдсан, зөвшөөрсөн болон батлагдсанаас бусад үед зөвшөөрөх/татгалзах -->
-                                    @if (
-                                        $isDispLead &&
-                                            !in_array($journal->status, [
-                                                \App\Models\OrderJournal::STATUS_CANCELLED,
-                                                \App\Models\OrderJournal::STATUS_ACCEPTED,
-                                                \App\Models\OrderJournal::STATUS_APPROVED,
-                                            ]))
+                                    @if ($isDispLead && !in_array($journal->status, [\App\Models\OrderJournal::STATUS_CANCELLED, \App\Models\OrderJournal::STATUS_ACCEPTED, \App\Models\OrderJournal::STATUS_APPROVED]))
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                             data-bs-target="#approveModal{{ $journal->id }}" title="Зөвшөөрөх/Татгалзах">
                                             <i class="ti ti-check"></i>
@@ -150,17 +138,12 @@
                                     @endif
 
                                     <!-- Ерөнхий диспетчер: Цуцлагдсан болон батлагдсанаас бусад үед батлах -->
-                                    @if (
-                                        $isGenDisp &&
-                                            !in_array($journal->status, [
-                                                \App\Models\OrderJournal::STATUS_CANCELLED,
-                                                \App\Models\OrderJournal::STATUS_APPROVED,
-                                            ]))
+                                    @if ($isGenDisp && !in_array($journal->status, [\App\Models\OrderJournal::STATUS_CANCELLED, \App\Models\OrderJournal::STATUS_APPROVED]))
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                             data-bs-target="#approveModal{{ $journal->id }}" title="Ерөнхий батлах">
                                             <i class="ti ti-check"></i>
                                         </button>
-                                    @endif
+                                    @endif --}}
 
                                     <!-- Засах болон устгах товч: зөвхөн үүсгэгч, зөвхөн Шинэ төлөвт -->
                                     @if ($isCreator && $journal->status === \App\Models\OrderJournal::STATUS_NEW)
@@ -202,8 +185,7 @@
                             </tr>
 
                             <!-- Forward Modal -->
-                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1"
-                                aria-hidden="true">
+                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <form action="{{ route('order-journals.forward', $journal->id) }}"
@@ -239,7 +221,7 @@
                             </div>
 
                             <!-- Approval Modal -->
-                            <div class="modal fade" id="approveModal{{ $journal->id }}" tabindex="-1"
+                            {{-- <div class="modal fade" id="approveModal{{ $journal->id }}" tabindex="-1"
                                 aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -297,7 +279,7 @@
                                         </form>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
                         @endforeach
 
                     </tbody>

@@ -24,7 +24,7 @@ class OrderJournal extends Model
     public static array $STATUS_NAMES = [
         self::STATUS_NEW => 'Шинэ',
         self::STATUS_SENT => 'Илгээсэн',
-        self::STATUS_FORWARDED => 'Хянаж байгаа',
+        self::STATUS_FORWARDED => 'Бусад албаруу илгээсэн',
         self::STATUS_APPROVED => 'Батлагдсан',
         self::STATUS_CANCELLED => 'Цуцлагдсан',
         self::STATUS_SENT_TO_GENERAL => 'Ерөнхий диспетчерт илгээгдсэн',
@@ -47,6 +47,15 @@ class OrderJournal extends Model
         'real_start_date',
         'real_end_date',
         'created_user_id',
+    ];
+
+    protected $casts = [
+        'planned_start_date' => 'datetime',
+        'planned_end_date' => 'datetime',
+        'real_start_date' => 'datetime',
+        'real_end_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected static function booted()

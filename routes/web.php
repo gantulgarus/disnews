@@ -99,6 +99,10 @@ Route::middleware('auth')->group(function () {
     Route::post('order-journals/{orderJournal}/approve', [OrderJournalController::class, 'approve'])
         ->name('order-journals.approve');
 
+    Route::post('/order-journals/{id}/open', [OrderJournalController::class, 'open'])->name('order-journals.open');
+    Route::post('/order-journals/{id}/close', [OrderJournalController::class, 'close'])->name('order-journals.close');
+
+
 
     Route::resource('organizations', OrganizationController::class);
 

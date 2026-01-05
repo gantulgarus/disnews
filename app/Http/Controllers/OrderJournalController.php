@@ -91,7 +91,7 @@ class OrderJournalController extends Controller
             ->with('success', 'Order Journal created successfully.');
     }
 
-    // Бусад алба руу илгээх
+    // Бусад алба руу санал авахаар илгээх
     public function forward(Request $request, OrderJournal $orderJournal)
     {
         $request->validate([
@@ -99,9 +99,34 @@ class OrderJournalController extends Controller
             'approvers.*' => 'exists:users,id',
         ]);
 
-        $orderJournal->status = OrderJournal::STATUS_FORWARDED;
+        $oldStatus = $orderJournal->status;
+        $newStatus = OrderJournal::STATUS_FORWARDED;
+
+        // Илгээгдсэн хэрэглэгчдийн мэдээлэл авах
+        $approverUsers = User::whereIn('id', $request->approvers)
+            ->get()
+            ->map(function ($user) {
+                return $user->name . ' (' . ($user->division?->Div_name ?? 'Алба тодорхойгүй') . ')';
+            })
+            ->toArray();
+
+        $comment = 'Санал авахаар ' . count($request->approvers) . ' хэрэглэгчид рүү илгээв: ' . PHP_EOL;
+        $comment .= implode(', ', $approverUsers);
+
+        // Төлөв солих
+        $orderJournal->status = $newStatus;
         $orderJournal->save();
 
+        // Түүх хадгалах
+        \App\Models\OrderJournalStatusHistory::create([
+            'order_journal_id' => $orderJournal->id,
+            'user_id' => auth()->id(),
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'comment' => $comment,
+        ]);
+
+        // Approvals үүсгэх
         foreach ($request->approvers as $userId) {
             $orderJournal->approvals()->create([
                 'user_id' => $userId,
@@ -336,5 +361,55 @@ class OrderJournalController extends Controller
         $orderJournal->delete();
 
         return redirect()->route('order-journals.index')->with('success', 'Order Journal deleted successfully.');
+    }
+
+    // OrderJournalController.php
+
+    public function open(Request $request, $id)
+    {
+        $journal = OrderJournal::findOrFail($id);
+
+        // Батлагдсан байх ёстой
+        if ($journal->status !== OrderJournal::STATUS_APPROVED) {
+            return back()->with('error', 'Захиалга нээх боломжгүй байна.');
+        }
+
+        $journal->real_start_date = $request->real_start_date;
+        $journal->status = OrderJournal::STATUS_OPEN; // Нээлттэй төлөв
+        $journal->save();
+
+        // Түүх үүсгэх (сонголт)
+        $journal->statusHistories()->create([
+            'user_id' => auth()->id(),
+            'old_status' => OrderJournal::STATUS_APPROVED,
+            'new_status' => OrderJournal::STATUS_OPEN,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Захиалгыг нээлээ.');
+    }
+
+    public function close(Request $request, $id)
+    {
+        $journal = OrderJournal::findOrFail($id);
+
+        // Нээлттэй байх ёстой
+        if ($journal->status !== OrderJournal::STATUS_OPEN) {
+            return back()->with('error', 'Захиалга хаах боломжгүй байна.');
+        }
+
+        $journal->real_end_date = $request->real_end_date;
+        $journal->status = OrderJournal::STATUS_CLOSED; // Хаалттай төлөв
+        $journal->save();
+
+        // Түүх үүсгэх
+        $journal->statusHistories()->create([
+            'user_id' => auth()->id(),
+            'old_status' => OrderJournal::STATUS_OPEN,
+            'new_status' => OrderJournal::STATUS_CLOSED,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Захиалгыг хаалаа.');
     }
 }
