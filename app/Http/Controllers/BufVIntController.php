@@ -61,25 +61,35 @@ class BufVIntController extends Controller
         }
 
         foreach ($rawPivotToday as $ubTime => $fidData) {
-            $ubDateTime = Carbon::createFromFormat('Y-m-d H:i', $todayUB->toDateString() . ' ' . $ubTime);
-            $moscowDateTime = $ubDateTime->copy()->subHours(5);
 
-            $moscowTime = $moscowDateTime->format('H:i');
+            // УБ-гийн цагийг түр холбоно (огноо хамаагүй)
+            $tmpUb = Carbon::createFromFormat('H:i', $ubTime);
 
-            // ЧУХАЛ: УБ тухайн өдрийн 00:00-04:30 нь Москвагийн тухайн өдрийн 19:00-23:30
-            // Тиймээс moscow_date-г тухайн өдөр болгох
-            $moscowDateForThisTime = $moscowDate->toDateString(); // Үргэлж тухайн өдөр
+            // Москвагийн огноо + цаг
+            $moscowDateTime = Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $moscowDate->toDateString() . ' ' . $tmpUb->copy()->subHours(5)->format('H:i')
+            );
 
-            $pivotTemp[$moscowTime] = [
-                'ub_time' => $ubTime,
-                'ub_date' => $todayUB->toDateString(),
-                'moscow_time' => $moscowTime,
-                'moscow_date' => $moscowDateForThisTime,
-                'data' => $fidData,
-            ];
+            // Бодит УБ огноо + цаг (энд л шийдэгдэнэ)
+            $realUbDateTime = $moscowDateTime->copy()->addHours(5);
 
-            $timeToMoscowDateMap[$moscowTime] = $moscowDateForThisTime;
+            if ($moscowDateTime->toDateString() === $moscowDate->toDateString()) {
+
+                $moscowTime = $moscowDateTime->format('H:i');
+
+                $pivotTemp[$moscowTime] = [
+                    'ub_time' => $realUbDateTime->format('H:i'),
+                    'ub_date' => $realUbDateTime->toDateString(), // ✅ ЭНД ЗАСАГДАНА
+                    'moscow_time' => $moscowTime,
+                    'moscow_date' => $moscowDateTime->toDateString(),
+                    'data' => $fidData,
+                ];
+
+                $timeToMoscowDateMap[$moscowTime] = $moscowDateTime->toDateString();
+            }
         }
+
 
         // Москвагийн цагаар эрэмбэлэх
         ksort($pivotTemp);
