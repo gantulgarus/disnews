@@ -22,9 +22,11 @@
                 <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::yesterday()->toDateString()]) }}"
                     class="btn btn-secondary">Өчигдөр</a>
             </div>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#xmlImportModal">
-                📥 XML импорт
-            </button>
+            <div class="col-auto">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#xmlImportModal">
+                    📥 XML импорт
+                </button>
+            </div>
         </form>
 
         <!-- Сонгосон огноо харуулах -->
