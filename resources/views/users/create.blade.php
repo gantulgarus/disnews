@@ -44,6 +44,23 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Албан тушаал</label>
+                        <select name="division_id"
+                            class="form-select form-select-lg @error('division_id') is-invalid @enderror">
+                            <option value="">-- Сонгох --</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}"
+                                    {{ old('division_id') == $division->id ? 'selected' : '' }}>
+                                    {{ $division->Div_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('division_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Нэр --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Нэр</label>

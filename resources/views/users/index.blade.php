@@ -24,6 +24,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Байгууллага</th>
+                            <th>Албан тушаал</th>
                             <th>Нэр</th>
                             <th>Хэрэглэгчийн код</th>
                             <th>Имэйл</th>
@@ -37,6 +38,7 @@
                         @foreach ($users as $user)
                             <tr>
                                 <td>{{ $user->organization?->name }}</td>
+                                <td>{{ $user->division?->Div_name }}</td>
                                 <td class="fw-semibold">{{ $user->name }}</td>
                                 <td>{{ $user->usercode }}</td>
                                 <td>{{ $user->email }}</td>

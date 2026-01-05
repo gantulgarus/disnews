@@ -5,9 +5,36 @@
         <h2 class="mb-4">Захиалгын Журнал</h2>
         <a href="{{ route('order-journals.create') }}" class="btn btn-primary mb-3">Шинэ захиалга үүсгэх</a>
 
+        <!-- Хайлтын форм -->
+        <form method="GET" action="{{ route('order-journals.index') }}" class="row g-2 mb-3">
+            <div class="col-md-3">
+                <input type="text" name="order_number" class="form-control" placeholder="Захиалгын дугаар"
+                    value="{{ request('order_number') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="organization_name" class="form-control" placeholder="Байгууллага нэр"
+                    value="{{ request('organization_name') }}">
+            </div>
+            {{-- <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">Төлөв сонгох</option>
+                    @foreach (\App\Models\OrderJournal::$STATUS_NAMES as $key => $name)
+                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
+                            {{ $name }}</option>
+                    @endforeach
+                </select>
+            </div> --}}
+            <div class="col-md-3 d-flex">
+                <button type="submit" class="btn btn-primary me-2">Хайх</button>
+                <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Цэвэрлэх</a>
+            </div>
+        </form>
+
+
+
         <div class="card">
             <div class="table-responsive">
-                <table class="table card-table table-vcenter text-nowrap">
+                <table class="table card-table table-vcenter">
                     <thead>
                         <tr>
                             <th>Дугаар</th>
@@ -41,11 +68,14 @@
                                     </span>
                                 </td>
                                 <td>{{ $journal->organization->name }}</td>
+
                                 <td>{{ $journal->order_type }}</td>
                                 <td>{{ $journal->content }}</td>
                                 <td>{{ $journal->planned_start_date }}</td>
                                 <td>{{ $journal->planned_end_date }}</td>
-                                <td>{{ $journal->approver_name }}</td>
+                                <td>{{ $journal->approver_name }} <p class="small text-muted mb-0">
+                                        {{ $journal->approver_position }}</p>
+                                </td>
                                 <td class="text-end">
 
                                     <!-- Харах товч - бүх хэрэглэгчид -->
@@ -73,7 +103,7 @@
                                         $isGenDisp = $permission === 'GEN_DISP';
                                     @endphp
 
-                                    <!-- ДҮТ-н хэрэглэгчид: Илгээх товч (зөвхөн Шинэ төлөвт, DISP_LEAD болон GEN_DISP биш бол) -->
+                                    <!-- ДҮТ-н дис: Санал авахаар илгээх товч (зөвхөн Шинэ төлөвт, DISP_LEAD болон GEN_DISP биш бол) -->
                                     @if ($isDUT && !$isDispLead && !$isGenDisp && $journal->status === \App\Models\OrderJournal::STATUS_NEW)
                                         <button class="btn btn-sm btn-success" data-bs-toggle="modal"
                                             data-bs-target="#forwardModal{{ $journal->id }}" title="Санал авахаар илгээх">
@@ -172,10 +202,12 @@
                             </tr>
 
                             <!-- Forward Modal -->
-                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1"
+                                aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form action="{{ route('order-journals.forward', $journal->id) }}" method="POST">
+                                        <form action="{{ route('order-journals.forward', $journal->id) }}"
+                                            method="POST">
                                             @csrf
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Захиалгыг илгээх / санал авах</h5>
@@ -188,6 +220,7 @@
                                                     @foreach ($users as $user)
                                                         <option value="{{ $user->id }}">{{ $user->name }}
                                                             ({{ $user->organization->name }})
+                                                            | {{ $user->division?->Div_name }}
                                                         </option>
                                                     @endforeach
                                                 </select>

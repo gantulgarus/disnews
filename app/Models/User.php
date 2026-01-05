@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'organization_id',
+        'division_id',
         'div_code',
         'permission_level_id',
         'usercode',
@@ -59,14 +60,14 @@ class User extends Authenticatable
         )->whereNull('power_plants.parent_id'); // Зөвхөн үндсэн станцууд
     }
 
-    public function division()
-    {
-        return $this->belongsTo(Division::class, 'div_code', 'Div_code');
-    }
-
     public function permissionLevel()
     {
         return $this->belongsTo(PermissionLevel::class, 'permission_level_id');
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class, 'division_id');
     }
 
     /**

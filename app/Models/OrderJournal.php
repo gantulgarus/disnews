@@ -25,7 +25,7 @@ class OrderJournal extends Model
         self::STATUS_NEW => 'Шинэ',
         self::STATUS_SENT => 'Илгээсэн',
         self::STATUS_FORWARDED => 'Бусад алба руу илгээсэн',
-        self::STATUS_APPROVED => 'Баталгаажсан',
+        self::STATUS_APPROVED => 'Батлагдсан',
         self::STATUS_CANCELLED => 'Цуцлагдсан',
         self::STATUS_SENT_TO_GENERAL => 'Ерөнхий диспетчерт илгээгдсэн',
         self::STATUS_ACCEPTED => 'Зөвшөөрсөн',

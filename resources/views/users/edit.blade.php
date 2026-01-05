@@ -39,6 +39,19 @@
                         </select>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Албан тушаал</label>
+                        <select name="division_id" class="form-select form-select-lg">
+                            <option value="">-- Сонгох --</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}"
+                                    {{ $user->division_id == $division->id ? 'selected' : '' }}>
+                                    {{ $division->Div_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     {{-- Нэр --}}
                     <div class="mb-3">
                         <label class="form-label">Нэр</label>

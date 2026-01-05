@@ -19,15 +19,29 @@ class OrderJournalController extends Controller
         $user = Auth::user();
 
         // Query эхлүүлэх
-        $query = OrderJournal::query()->latest();
+        $query = OrderJournal::with('organization')->latest();
 
-        // Хэрэглэгч админ эсэхийг шалгах
-        if ($user->organization_id != 5) {
-            // Админ биш бол зөвхөн өөрийн байгууллагын захиалгууд
+        // ДҮТ хэрэглэгч биш бол зөвхөн өөрийн байгууллагын захиалгууд
+        $userOrgCode = (string) ($user->organization?->org_code ?? '');
+        if ($userOrgCode !== '102') {
             $query->where('organization_id', $user->organization_id);
         }
+        // order_number filter
+        if ($orderNumber = request('order_number')) {
+            $query->where('order_number', 'like', "%{$orderNumber}%");
+        }
 
-        // Pagination + withQueryString, хайлт зэрэг хадгалах боломжтой
+        // organization_name filter
+        if ($orgName = request('organization_name')) {
+            $query->whereHas('organization', function ($q) use ($orgName) {
+                $q->where('name', 'like', "%{$orgName}%");
+            });
+        }
+
+        if (!is_null(request('status')) && request('status') !== '') {
+            $query->where('status', request('status'));
+        }
+
         $journals = $query->paginate(25)->withQueryString();
 
         // Өөрийн байгууллагын хэрэглэгчид авах
@@ -35,6 +49,7 @@ class OrderJournalController extends Controller
 
         return view('order_journals.index', compact('journals', 'users'));
     }
+
 
     /**
      * Show the form for creating a new resource.
