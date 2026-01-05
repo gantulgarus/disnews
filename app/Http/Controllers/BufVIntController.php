@@ -66,15 +66,19 @@ class BufVIntController extends Controller
 
             $moscowTime = $moscowDateTime->format('H:i');
 
+            // ЧУХАЛ: УБ тухайн өдрийн 00:00-04:30 нь Москвагийн тухайн өдрийн 19:00-23:30
+            // Тиймээс moscow_date-г тухайн өдөр болгох
+            $moscowDateForThisTime = $moscowDate->toDateString(); // Үргэлж тухайн өдөр
+
             $pivotTemp[$moscowTime] = [
                 'ub_time' => $ubTime,
                 'ub_date' => $todayUB->toDateString(),
                 'moscow_time' => $moscowTime,
-                'moscow_date' => $moscowDateTime->toDateString(),
+                'moscow_date' => $moscowDateForThisTime,
                 'data' => $fidData,
             ];
 
-            $timeToMoscowDateMap[$moscowTime] = $moscowDateTime->toDateString();
+            $timeToMoscowDateMap[$moscowTime] = $moscowDateForThisTime;
         }
 
         // Москвагийн цагаар эрэмбэлэх
