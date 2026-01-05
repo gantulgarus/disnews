@@ -160,7 +160,7 @@
 
                         @if ($dateChanged)
                             <tr class="table-info">
-                                <td colspan="22" class="text-center font-weight-bold py-3">
+                                <td colspan="24" class="text-center font-weight-bold py-3">
                                     📅 УБ: {{ $ubDate }} | Москва: {{ $moscowDateStr }}
                                 </td>
                             </tr>
