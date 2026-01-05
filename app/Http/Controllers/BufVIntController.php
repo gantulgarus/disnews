@@ -25,7 +25,7 @@ class BufVIntController extends Controller
         // 1. Монголын өгөгдөл
         $rawPivot = BufFiderDaily::getPivotData($carbonDate);
 
-        // pivot-ийн key-г Москвагийн цагт хөрвүүлж, шаардлагатай огнооны дата татах
+        // pivot бүтцийг өөрчлөх: УБ цаг болон Москва цагийг хоёуланг нь хадгалах
         $pivot = [];
         $timeToDateMap = []; // Москвагийн цаг => огноо
 
@@ -37,7 +37,13 @@ class BufVIntController extends Controller
             $moscowTime = $moscowDateTime->format('H:i');
             $moscowDate = $moscowDateTime->toDateString();
 
-            $pivot[$moscowTime] = $fidData;
+            // УБ цаг болон Москва цагийг хоёуланг нь хадгалах
+            $pivot[$moscowTime] = [
+                'ub_time' => $ubTime,
+                'moscow_time' => $moscowTime,
+                'data' => $fidData,
+            ];
+
             $timeToDateMap[$moscowTime] = $moscowDate;
         }
 
@@ -59,7 +65,7 @@ class BufVIntController extends Controller
 
         // Оросын датаг зөв огноотой нь холбож, эхний бүтцийг хадгалах
         $russianData = [];
-        foreach ($pivot as $moscowTime => $fidData) {
+        foreach ($pivot as $moscowTime => $timeData) {
             $requiredDate = $timeToDateMap[$moscowTime];
 
             // Энэ цаг + огноонд тохирох оросын датаг хайх
