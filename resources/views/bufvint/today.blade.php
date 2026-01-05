@@ -50,7 +50,7 @@
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
                     <tr>
-                        <th rowspan="3">Цаг</th>
+                        <th rowspan="2" colspan="2">Цаг</th>
                         @foreach ([257, 258, 110] as $fider)
                             <th colspan="6" class="text-center">
                                 {{ $fider == 110 ? 'Тойт ' . $fider : 'АШ ' . $fider }}
@@ -67,6 +67,8 @@
                         <th colspan="2" class="text-center">Экспорт</th>
                     </tr>
                     <tr>
+                        <th>УБ</th>
+                        <th>Москва</th>
                         @foreach ([257, 258, 110] as $fider)
                             <th>Монгол</th>
                             <th>Орос</th>
@@ -145,6 +147,10 @@
                                 $values[257]['ru_export'] + $values[258]['ru_export'] + $values[110]['ru_export'];
                         @endphp
                         <tr>
+                            @php
+                                $TimeUb = \Carbon\Carbon::createFromFormat('H:i', $time)->addHours(5)->format('H:i');
+                            @endphp
+                            <td><strong>{{ $TimeUb }}</strong></td>
                             <td><strong>{{ $time }}</strong></td>
 
                             @foreach ([257, 258, 110] as $fider)

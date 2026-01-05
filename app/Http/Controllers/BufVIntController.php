@@ -23,7 +23,18 @@ class BufVIntController extends Controller
         }
 
         // 1. Монголын өгөгдөл
-        $pivot = BufFiderDaily::getPivotData($carbonDate);
+        $rawPivot = BufFiderDaily::getPivotData($carbonDate);
+
+        // pivot-ийн key-г Москвагийн цагт хөрвүүлэх
+        $pivot = [];
+        foreach ($rawPivot as $ubTime => $fidData) {
+            // Монголын цаг → Москвагийн цаг
+            $moscowTime = \Carbon\Carbon::createFromFormat('H:i', $ubTime)
+                ->subHours(5)
+                ->format('H:i');
+
+            $pivot[$moscowTime] = $fidData;
+        }
 
         // 2. Оросын өгөгдөл
         $russianData = RuFiderDaily::where('ognoo', $carbonDate->toDateString())
