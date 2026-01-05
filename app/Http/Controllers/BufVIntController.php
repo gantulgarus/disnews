@@ -51,16 +51,10 @@ class BufVIntController extends Controller
         $yesterday = $carbonDate->copy()->subDay()->toDateString();
         $today = $carbonDate->toDateString();
 
+        // Оросын бүх датаг татах (group by хийхгүй)
         $russianDataRaw = RuFiderDaily::whereIn('ognoo', [$yesterday, $today])
             ->whereIn('fider', [257, 258, 110])
-            ->selectRaw('
-                ognoo,
-                time_display,
-                fider,
-                SUM(import_kwt) as import_kwt,
-                SUM(export_kwt) as export_kwt
-            ')
-            ->groupBy('ognoo', 'time_display', 'fider')
+            ->select('ognoo', 'time_display', 'fider', 'import_kwt', 'export_kwt')
             ->get();
 
         // Оросын датаг зөв огноотой нь холбож, эхний бүтцийг хадгалах
@@ -70,9 +64,18 @@ class BufVIntController extends Controller
 
             // Энэ цаг + огноонд тохирох оросын датаг хайх
             foreach ([257, 258, 110] as $fider) {
-                $row = $russianDataRaw->first(function ($item) use ($requiredDate, $moscowTime, $fider) {
+                // Цагийн олон хувилбарыг шалгах: "00:00", "00:00:00", "0:00" гэх мэт
+                $rows = $russianDataRaw->filter(function ($item) use ($requiredDate, $moscowTime, $fider) {
+                    // time_display-г HH:MM форматруу хөрвүүлэх
+                    $itemTime = substr($item->time_display, 0, 5); // "HH:MM" эсвэл "H:MM"
+
+                    // Цагийг нормчлох (жишээ: "5:00" -> "05:00")
+                    if (strlen($itemTime) == 4 && strpos($itemTime, ':') == 1) {
+                        $itemTime = '0' . $itemTime;
+                    }
+
                     return $item->ognoo === $requiredDate
-                        && $item->time_display === $moscowTime
+                        && $itemTime === $moscowTime
                         && $item->fider == $fider;
                 });
 
@@ -83,11 +86,22 @@ class BufVIntController extends Controller
                     $russianData[$moscowTime][$fider] = [];
                 }
 
-                // Эхний бүтцийг хадгалах: $russianData[$time][$fider][0]
-                $russianData[$moscowTime][$fider][0] = $row ?: (object)[
-                    'import_kwt' => 0,
-                    'export_kwt' => 0,
-                ];
+                // Олдсон бүх мөрүүдийг нэгтгэх
+                if ($rows->count() > 0) {
+                    $totalImport = $rows->sum('import_kwt');
+                    $totalExport = $rows->sum('export_kwt');
+
+                    $russianData[$moscowTime][$fider][0] = (object)[
+                        'import_kwt' => $totalImport,
+                        'export_kwt' => $totalExport,
+                    ];
+                } else {
+                    // Дата олдохгүй бол 0
+                    $russianData[$moscowTime][$fider][0] = (object)[
+                        'import_kwt' => 0,
+                        'export_kwt' => 0,
+                    ];
+                }
             }
         }
 
@@ -101,6 +115,19 @@ class BufVIntController extends Controller
             'russian_yesterday_records' => RuFiderDaily::where('ognoo', $yesterday)
                 ->whereIn('fider', [257, 258, 110])
                 ->count(),
+            'russian_times_today' => RuFiderDaily::where('ognoo', $today)
+                ->whereIn('fider', [257, 258, 110])
+                ->distinct()
+                ->pluck('time_display')
+                ->take(10)
+                ->toArray(),
+            'russian_times_yesterday' => RuFiderDaily::where('ognoo', $yesterday)
+                ->whereIn('fider', [257, 258, 110])
+                ->distinct()
+                ->pluck('time_display')
+                ->take(10)
+                ->toArray(),
+            'pivot_moscow_times' => array_slice(array_keys($pivot), 0, 10),
         ];
 
         return view('bufvint.today', compact(
