@@ -51,8 +51,8 @@ class BufVIntController extends Controller
         $yesterday = $carbonDate->copy()->subDay()->toDateString();
         $today = $carbonDate->toDateString();
 
-        // Оросын бүх датаг татах (group by хийхгүй)
-        $russianDataRaw = RuFiderDaily::whereIn('ognoo', [$yesterday, $today])
+        // ognoo талбар timestamp форматтай учраас DATE() функцээр хөрвүүлэх хэрэгтэй
+        $russianDataRaw = RuFiderDaily::whereRaw('DATE(ognoo) IN (?, ?)', [$yesterday, $today])
             ->whereIn('fider', [257, 258, 110])
             ->select('ognoo', 'time_display', 'fider', 'import_kwt', 'export_kwt')
             ->get();
@@ -64,17 +64,20 @@ class BufVIntController extends Controller
 
             // Энэ цаг + огноонд тохирох оросын датаг хайх
             foreach ([257, 258, 110] as $fider) {
-                // Цагийн олон хувилбарыг шалгах: "00:00", "00:00:00", "0:00" гэх мэт
+                // Цагийн олон хувилбарыг шалгах
                 $rows = $russianDataRaw->filter(function ($item) use ($requiredDate, $moscowTime, $fider) {
+                    // ognoo-г огноо руу хөрвүүлэх (timestamp-аас)
+                    $itemDate = Carbon::parse($item->ognoo)->format('Y-m-d');
+
                     // time_display-г HH:MM форматруу хөрвүүлэх
-                    $itemTime = substr($item->time_display, 0, 5); // "HH:MM" эсвэл "H:MM"
+                    $itemTime = substr($item->time_display, 0, 5);
 
                     // Цагийг нормчлох (жишээ: "5:00" -> "05:00")
                     if (strlen($itemTime) == 4 && strpos($itemTime, ':') == 1) {
                         $itemTime = '0' . $itemTime;
                     }
 
-                    return $item->ognoo === $requiredDate
+                    return $itemDate === $requiredDate
                         && $itemTime === $moscowTime
                         && $item->fider == $fider;
                 });
@@ -109,26 +112,26 @@ class BufVIntController extends Controller
         $debug = [
             'total_records' => BufFiderDaily::forDate($carbonDate)->count(),
             'fiders_in_db' => BufFiderDaily::forDate($carbonDate)->distinct('FIDER')->pluck('FIDER')->toArray(),
-            'russian_records' => RuFiderDaily::where('ognoo', $today)
+            'russian_records' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
                 ->whereIn('fider', [257, 258, 110])
                 ->count(),
-            'russian_yesterday_records' => RuFiderDaily::where('ognoo', $yesterday)
+            'russian_yesterday_records' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$yesterday])
                 ->whereIn('fider', [257, 258, 110])
                 ->count(),
-            'russian_times_today' => RuFiderDaily::where('ognoo', $today)
+            'russian_times_today' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
                 ->whereIn('fider', [257, 258, 110])
                 ->distinct()
                 ->pluck('time_display')
                 ->take(10)
                 ->toArray(),
-            'russian_times_yesterday' => RuFiderDaily::where('ognoo', $yesterday)
+            'russian_times_yesterday' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$yesterday])
                 ->whereIn('fider', [257, 258, 110])
                 ->distinct()
                 ->pluck('time_display')
                 ->take(10)
                 ->toArray(),
             'pivot_moscow_times' => array_slice(array_keys($pivot), 0, 10),
-            'sample_russian_data' => RuFiderDaily::where('ognoo', $today)
+            'sample_russian_data' => RuFiderDaily::whereRaw('DATE(ognoo) = ?', [$today])
                 ->whereIn('fider', [257, 258, 110])
                 ->limit(3)
                 ->get()
