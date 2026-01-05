@@ -15,15 +15,15 @@
                 <button type="submit" class="btn btn-primary">Хайх</button>
             </div>
             <div class="col-auto">
-                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::today()->subHours(5)->toDateString()]) }}"
+                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::now()->timezone('Europe/Moscow')->toDateString()]) }}"
                     class="btn btn-secondary">Өнөөдөр (Москва)</a>
             </div>
             <div class="col-auto">
-                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::yesterday()->subHours(5)->toDateString()]) }}"
+                <a href="{{ route('bufvint.today', ['date' => Carbon\Carbon::now()->timezone('Europe/Moscow')->subDay()->toDateString()]) }}"
                     class="btn btn-secondary">Өчигдөр (Москва)</a>
             </div>
-
         </form>
+
         <!-- XML IMPORT товч -->
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#xmlImportModal">
             📥 XML импорт
@@ -38,23 +38,6 @@
                 Оросын бичлэг: {{ $debug['russian_records'] }} |
                 Оросын маргаашийн: {{ $debug['russian_tomorrow_records'] }}
             </small>
-        </div>
-
-        <!-- DEBUG МЭДЭЭЛЭЛ -->
-        <div class="alert alert-warning">
-            <strong>🔍 Debug мэдээлэл:</strong>
-            <br><br>
-            <strong>Pivot Москвагийн цагууд (эхний 10):</strong>
-            <pre>{{ print_r($debug['pivot_moscow_times'], true) }}</pre>
-
-            <strong>Оросын өнөөдрийн цагууд (эхний 10):</strong>
-            <pre>{{ print_r($debug['russian_times_today'], true) }}</pre>
-
-            <strong>Оросын өчигдрийн цагууд (эхний 10):</strong>
-            <pre>{{ print_r($debug['russian_times_yesterday'], true) }}</pre>
-
-            <strong>Оросын дата жишээ (эхний 3 мөр):</strong>
-            <pre>{{ print_r($debug['sample_russian_data'], true) }}</pre>
         </div>
 
         @if (session('success'))
@@ -123,18 +106,19 @@
                             'ru_export_110' => 0,
                             'diff_export_110' => 0,
                         ];
-                        $prevMoscowDate = null; // Өмнөх огноог хадгалах
+                        $prevMoscowDate = null;
                     @endphp
 
                     @foreach ($pivot as $moscowTime => $timeData)
                         @php
                             $ubTime = $timeData['ub_time'];
-                            $moscowDate = $timeData['moscow_date'] ?? null;
+                            $ubDate = $timeData['ub_date'];
+                            $moscowDateStr = $timeData['moscow_date'];
                             $fidData = $timeData['data'];
 
-                            // Огноо солигдсон эсэхийг тэмдэглэх (эхний мөр дээр ч харуулах)
-                            $dateChanged = $prevMoscowDate === null || $prevMoscowDate !== $moscowDate;
-                            $prevMoscowDate = $moscowDate;
+                            // Огноо солигдсон эсэхийг тэмдэглэх
+                            $dateChanged = $prevMoscowDate === null || $prevMoscowDate !== $moscowDateStr;
+                            $prevMoscowDate = $moscowDateStr;
 
                             // Фидэр бүрийн утгыг тооцоолох
                             $values = [];
@@ -175,9 +159,9 @@
                         @endphp
 
                         @if ($dateChanged)
-                            <tr class="table-secondary">
-                                <td colspan="22" class="text-center font-weight-bold">
-                                    📅 Москва огноо: {{ $moscowDate }}
+                            <tr class="table-info">
+                                <td colspan="22" class="text-center font-weight-bold py-3">
+                                    📅 Москва: {{ $moscowDateStr }} | УБ: {{ $ubDate }}
                                 </td>
                             </tr>
                         @endif
