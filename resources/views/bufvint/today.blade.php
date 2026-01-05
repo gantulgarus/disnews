@@ -4,16 +4,12 @@
     <div class="container">
         <h3>Өгөгдлийн харагдац</h3>
 
-        <!-- DEBUG МЭДЭЭЛЭЛ -->
+        <!-- DEBUG МЭДЭЭЛЭЛ - ЗАСВАРЛАСАН -->
         @if (isset($debug))
             <div class="alert alert-info">
                 <strong>Debug:</strong>
-                Query: {{ $debug['query_count'] }} мөр |
-                Фидерүүд: {{ implode(', ', $debug['fiders_found']) }}
-                <details>
-                    <summary>Дээж өгөгдөл харах</summary>
-                    <pre>{{ json_encode($debug['sample_data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                </details>
+                Нийт бичлэг: {{ $debug['total_records'] ?? 0 }} |
+                Фидерүүд: {{ implode(', ', $debug['fiders_in_db'] ?? []) }}
             </div>
         @endif
 
