@@ -24,7 +24,7 @@ class OrderJournal extends Model
     public static array $STATUS_NAMES = [
         self::STATUS_NEW => 'Шинэ',
         self::STATUS_SENT => 'Илгээсэн',
-        self::STATUS_FORWARDED => 'Бусад алба руу илгээсэн',
+        self::STATUS_FORWARDED => 'Хянаж байгаа',
         self::STATUS_APPROVED => 'Батлагдсан',
         self::STATUS_CANCELLED => 'Цуцлагдсан',
         self::STATUS_SENT_TO_GENERAL => 'Ерөнхий диспетчерт илгээгдсэн',

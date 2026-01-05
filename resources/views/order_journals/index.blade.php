@@ -37,7 +37,7 @@
                 <table class="table card-table table-vcenter">
                     <thead>
                         <tr>
-                            <th>Дугаар</th>
+                            <th>Захиалгын дугаар</th>
                             <th>Төлөв</th>
                             <th>Байгууллага</th>
                             <th>Төрөл</th>

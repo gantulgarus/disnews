@@ -15,7 +15,8 @@
             <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Захиалгын мэдээлэл</h5>
+                        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Захиалгын мэдээлэл
+                            {{ auth()->user()->organization->org_code }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
