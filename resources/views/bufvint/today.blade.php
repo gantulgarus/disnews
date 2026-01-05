@@ -6,9 +6,6 @@
 
         <!-- ОГНООНЫ FILTER FORM -->
         <div class="row mb-3">
-            <div class="col-auto">
-                <label class="col-form-label">Огноо:</label>
-            </div>
 
             <div class="col-auto">
                 <input type="date" name="date" id="date" class="form-control"
