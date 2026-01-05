@@ -48,7 +48,7 @@
                         <th colspan="2" class="text-center">НИЙТ</th> {{-- ШИНЭ --}}
                     </tr>
                     <tr>
-                        <th></th>
+                        <th>УБ</th>
                         <th>Импорт (кВт)</th>
                         <th>Экспорт (кВт)</th>
                         <th>Импорт (кВт)</th>
