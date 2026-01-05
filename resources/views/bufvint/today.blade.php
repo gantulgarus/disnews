@@ -2,48 +2,37 @@
 
 @section('content')
     <div class="container">
-        <h3>Өгөгдлийн харагдац</h3>
-
-        <!-- DEBUG МЭДЭЭЛЭЛ - ЗАСВАРЛАСАН -->
-        @if (isset($debug))
-            <div class="alert alert-info">
-                <strong>Debug:</strong>
-                Нийт бичлэг: {{ $debug['total_records'] ?? 0 }} |
-                Фидерүүд: {{ implode(', ', $debug['fiders_in_db'] ?? []) }}
-            </div>
-        @endif
+        <h3>Импорт/Экспорт Гүйцэтгэл</h3>
 
         <!-- ОГНООНЫ FILTER FORM -->
         <div class="row mb-3">
-            <div class="col-md-12">
-                <form method="GET" action="{{ route('bufvint.today') }}" class="form-inline">
-                    <div class="form-group mr-2">
-                        <label for="date" class="mr-2">Огноо сонгох:</label>
-                        <input type="date" name="date" id="date" class="form-control"
-                            value="{{ $carbonDate->toDateString() }}" max="{{ \Carbon\Carbon::today()->toDateString() }}">
-                    </div>
+            <div class="col-auto">
+                <label class="col-form-label">Огноо:</label>
+            </div>
 
-                    <button type="submit" class="btn btn-primary mr-2">
-                        <i class="fas fa-search"></i> Хайх
-                    </button>
+            <div class="col-auto">
+                <input type="date" name="date" id="date" class="form-control"
+                    value="{{ $carbonDate->toDateString() }}">
+            </div>
 
-                    <button type="button" class="btn btn-secondary mr-2"
-                        onclick="document.getElementById('date').value='{{ \Carbon\Carbon::today()->toDateString() }}'; this.form.submit();">
-                        Өнөөдөр
-                    </button>
+            <div class="col-auto">
+                <button class="btn btn-primary">Хайх</button>
+            </div>
 
-                    <button type="button" class="btn btn-secondary mr-2"
-                        onclick="document.getElementById('date').value='{{ \Carbon\Carbon::yesterday()->toDateString() }}'; this.form.submit();">
-                        Өчигдөр
-                    </button>
+            <div class="col-auto">
+                <button type="button" class="btn btn-secondary">Өнөөдөр</button>
+            </div>
 
-                    <button type="button" class="btn btn-secondary"
-                        onclick="document.getElementById('date').value='{{ \Carbon\Carbon::today()->subDays(7)->toDateString() }}'; this.form.submit();">
-                        7 хоногийн өмнө
-                    </button>
-                </form>
+            <div class="col-auto">
+                <button type="button" class="btn btn-secondary">Өчигдөр</button>
+            </div>
+
+            <div class="col-auto">
+                <button type="button" class="btn btn-secondary">7 хоног</button>
             </div>
         </div>
+
+
 
         <!-- Сонгосон огноо харуулах -->
         <div class="alert alert-info">
