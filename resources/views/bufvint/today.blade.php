@@ -123,16 +123,17 @@
                             'ru_export_110' => 0,
                             'diff_export_110' => 0,
                         ];
+                        $prevMoscowDate = null; // Өмнөх огноог хадгалах
                     @endphp
 
                     @foreach ($pivot as $moscowTime => $timeData)
                         @php
                             $ubTime = $timeData['ub_time'];
-                            $moscowDate = $timeData['moscow_date'];
+                            $moscowDate = $timeData['moscow_date'] ?? null;
                             $fidData = $timeData['data'];
 
-                            // Огноо солигдсон эсэхийг тэмдэглэх
-                            $dateChanged = isset($prevMoscowDate) && $prevMoscowDate !== $moscowDate;
+                            // Огноо солигдсон эсэхийг тэмдэглэх (эхний мөр дээр ч харуулах)
+                            $dateChanged = $prevMoscowDate === null || $prevMoscowDate !== $moscowDate;
                             $prevMoscowDate = $moscowDate;
 
                             // Фидэр бүрийн утгыг тооцоолох
