@@ -20,6 +20,7 @@ class OrderJournal extends Model
     const STATUS_OPEN = 7;
     const STATUS_CLOSED = 8;
     const STATUS_POSTPONED = 9;
+    const STATUS_IN_REVIEW = 10;
 
     public static array $STATUS_NAMES = [
         self::STATUS_NEW => 'Шинэ',
@@ -32,6 +33,7 @@ class OrderJournal extends Model
         self::STATUS_OPEN => 'Нээлттэй',
         self::STATUS_CLOSED => 'Хаалттай',
         self::STATUS_POSTPONED => 'Хойшлогдсон',
+        self::STATUS_IN_REVIEW => 'Хянагдаж байгаа',
     ];
 
     protected $fillable = [
@@ -47,6 +49,7 @@ class OrderJournal extends Model
         'real_start_date',
         'real_end_date',
         'created_user_id',
+        'dut_dispatcher_id'
     ];
 
     protected $casts = [
@@ -83,6 +86,11 @@ class OrderJournal extends Model
     public function createdUser()
     {
         return $this->belongsTo(User::class, 'created_user_id');
+    }
+
+    public function dutDispatcher()
+    {
+        return $this->belongsTo(User::class, 'dut_dispatcher_id');
     }
 
     public function organization()

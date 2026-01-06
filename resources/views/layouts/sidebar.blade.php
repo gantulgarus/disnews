@@ -98,14 +98,12 @@
                                         href="{{ route('reports.localDailyReport') }}">
                                         Орон нутаг мэдээ
                                     </a>
-                                    <a class="dropdown-item {{ request()->routeIs('zenon.hourly-power') ? 'active' : '' }}"
-                                        href="{{ route('zenon.hourly-power') }}">
-                                        Скада
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('zenon.peak-hour-power') ? 'active' : '' }}"
-                                        href="{{ route('zenon.peak-hour-power') }}">
-                                        Скада Их ачаалал
-                                    </a>
+                                @endif
+                                <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
+                                    href="{{ route('order-journals.index') }}">
+                                    Захиалгын журнал
+                                </a>
+                                @if ($orgId == 5)
                                     <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
                                         href="{{ route('tnews.index') }}">
                                         Тасралтын мэдээ
@@ -114,10 +112,7 @@
                                         href="{{ route('power-distribution-works.index') }}">
                                         Захиалгат ажил
                                     </a>
-                                    <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
-                                        href="{{ route('sms.index') }}">
-                                        СМС илгээх
-                                    </a>
+
                                     <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.report') ? 'active' : '' }}"
                                         href="{{ route('daily-balance-journals.report') }}">
                                         Тооцооны журнал
@@ -126,11 +121,20 @@
                                         href="{{ route('daily_power_hour_reports.report') }}">
                                         Ачааллын график
                                     </a>
+                                    <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
+                                        href="{{ route('sms.index') }}">
+                                        СМС илгээх
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('zenon.hourly-power') ? 'active' : '' }}"
+                                        href="{{ route('zenon.hourly-power') }}">
+                                        Скада
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('zenon.peak-hour-power') ? 'active' : '' }}"
+                                        href="{{ route('zenon.peak-hour-power') }}">
+                                        Скада Их ачаалал
+                                    </a>
                                 @endif
-                                <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
-                                    href="{{ route('order-journals.index') }}">
-                                    Захиалгын журнал
-                                </a>
+
                                 @if ($orgId != 5)
                                     <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
                                         href="{{ route('daily-balance-journals.index') }}">

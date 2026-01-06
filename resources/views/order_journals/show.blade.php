@@ -18,11 +18,30 @@
                 \App\Models\OrderJournal::STATUS_CLOSED, // Хаалттай
             ]);
 
+        // Диспетчерийн албаны дарга зөвшөөрсөн товч дарсан эсэх
+        $dispLeadDecided = $orderJournal->statusHistories
+            ->where('user_id', auth()->id())
+            ->whereIn('new_status', [
+                \App\Models\OrderJournal::STATUS_ACCEPTED,
+                \App\Models\OrderJournal::STATUS_CANCELLED,
+            ])
+            ->isNotEmpty();
+
+        // Ерөнхий диспетчер баталсан товч дарсан эсэх
+        $genDispDecided = $orderJournal->statusHistories
+            ->where('user_id', auth()->id())
+            ->whereIn('new_status', [
+                \App\Models\OrderJournal::STATUS_APPROVED, // Баталсан
+                \App\Models\OrderJournal::STATUS_CANCELLED, // Цуцалсан
+            ])
+            ->isNotEmpty();
+
         // Нээх товч харуулах эсэх
-        $canOpen = $orderJournal->status === \App\Models\OrderJournal::STATUS_APPROVED && $userOrgCode === 102;
+        $canOpen =
+            $orderJournal->status === \App\Models\OrderJournal::STATUS_APPROVED && $userOrgCode === 102 && $isDisp;
 
         // Хаах товч харуулах эсэх
-        $canClose = $orderJournal->status === \App\Models\OrderJournal::STATUS_OPEN && $userOrgCode === 102;
+        $canClose = $orderJournal->status === \App\Models\OrderJournal::STATUS_OPEN && $userOrgCode === 102 && $isDisp;
 
         // Үйлдлийн текстийг төлөвөөс хамаарч тодорхойлох
         function getActionText($history)
@@ -92,7 +111,7 @@
                             {{-- Байгууллага --}}
                             <div class="col-12">
                                 <label class="text-muted small mb-1">Байгууллага</label>
-                                <p class="mb-0">{{ $orderJournal->organization->name }}</p>
+                                <p class="mb-0 fw-bold">{{ $orderJournal->organization->name }}</p>
                             </div>
 
                             {{-- Захиалгын төрөл --}}
@@ -116,8 +135,8 @@
                                     <i class="ti ti-tools me-1"></i> Засварын ажлын агуулга
                                 </label>
 
-                                <div class="p-3 bg-light border rounded">
-                                    <p class="mb-0 fw-semibold">
+                                <div class="p-2 bg-light border rounded">
+                                    <p class="mb-0">
                                         {{ $orderJournal->content }}
                                     </p>
                                 </div>
@@ -130,7 +149,7 @@
                                     <i class="ti ti-calendar-check me-1"></i>
                                     Эхлэх хугацаа
                                 </label>
-                                <p class="mb-0">{{ $orderJournal->planned_start_date->format('Y-m-d H:i') }}</p>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->planned_start_date->format('Y-m-d H:i') }}</p>
                             </div>
 
                             <div class="col-md-6">
@@ -138,7 +157,7 @@
                                     <i class="ti ti-calendar-x me-1"></i>
                                     Дуусах хугацаа
                                 </label>
-                                <p class="mb-0">{{ $orderJournal->planned_end_date->format('Y-m-d H:i') }}</p>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->planned_end_date->format('Y-m-d H:i') }}</p>
                             </div>
 
 
@@ -146,29 +165,29 @@
                             {{-- Баталсан хүн --}}
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Баталсан</label>
-                                <p class="mb-0">{{ $orderJournal->approver_name }}</p>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->approver_name }}</p>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Албан тушаал</label>
-                                <p class="mb-0">{{ $orderJournal->approver_position }}</p>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->approver_position }}</p>
                             </div>
 
                             {{-- Дамжуулсан ДҮТ-н диспетчер --}}
 
-                            {{-- <div class="col-md-12">
-                                <label class="text-muted small mb-1">ДҮТ-н диспетчер</label>
-                                <p class="mb-0">
-                                    {{ $orderJournal->forwardedDutDispatcher?->name ?? 'Тодорхойгүй' }}
+                            <div class="col-md-12">
+                                <label class="text-muted small mb-1">Дамжуулсан ДҮТ-н диспетчер</label>
+                                <p class="mb-0 fw-semibold">
+                                    {{ $orderJournal->dutDispatcher?->name ?? 'Тодорхойгүй' }}
                                 </p>
-                            </div> --}}
+                            </div>
 
                             {{-- Бодит хугацаа --}}
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">
                                     <i class="ti ti-play me-1"></i> Бодит эхэлсэн цаг
                                 </label>
-                                <p class="mb-0">
+                                <p class="mb-0 fw-semibold">
                                     {{ $orderJournal->real_start_date?->format('Y-m-d H:i') ?? 'Тодорхойгүй' }}
                                 </p>
                             </div>
@@ -177,7 +196,7 @@
                                 <label class="text-muted small mb-1">
                                     <i class="ti ti-square-rounded-check me-1"></i> Бодит дууссан цаг
                                 </label>
-                                <p class="mb-0">
+                                <p class="mb-0 fw-semibold">
                                     {{ $orderJournal->real_end_date?->format('Y-m-d H:i') ?? 'Тодорхойгүй' }}
                                 </p>
                             </div>
@@ -230,6 +249,7 @@
                                                 2 => 'bg-warning',
                                                 3 => 'bg-success',
                                                 4 => 'bg-danger',
+                                                6 => 'bg-primary',
                                                 default => 'bg-secondary',
                                             };
                                         @endphp
@@ -242,9 +262,6 @@
                                                         {{ $history->user->name }}
                                                         ({{ $history->user->division?->Div_name ?? '' }})
                                                     </h6>
-                                                    <small class="text-muted fst-italic">
-                                                        {{ getActionText($history) }}
-                                                    </small>
                                                 </div>
                                                 <small class="text-muted">
                                                     <i
@@ -254,25 +271,8 @@
 
                                             {{-- Статус солигдсон --}}
                                             <div class="mb-2 d-flex align-items-center">
-                                                <span class="text-white badge bg-secondary me-2">
-                                                    {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->old_status] ?? '-' }}
-                                                </span>
 
-                                                <span class="d-flex align-items-center mx-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="icon icon-tabler icon-tabler-arrow-narrow-right">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                                        <line x1="15" y1="16" x2="19"
-                                                            y2="12" />
-                                                        <line x1="15" y1="8" x2="19"
-                                                            y2="12" />
-                                                    </svg>
-                                                </span>
-
-                                                <span class="text-white badge {{ $markerClass }} ms-2">
+                                                <span class="text-white badge {{ $markerClass }}">
                                                     {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->new_status] ?? '-' }}
                                                 </span>
                                             </div>
@@ -321,9 +321,11 @@
             {{-- Баруун багана: Санал өгөх --}}
             @if ($userOrgCode === 102)
                 <div class="col-lg-5">
+
+                    {{-- Батлах, зөвшөөрөх товч --}}
                     @if ($showApproveButtons)
                         <div class="d-grid">
-                            @if ($isDisp && $orderJournal->order_type === 'Аваарын' && $canApprove)
+                            @if ($isDisp && $orderJournal->order_type === 'Аваарын')
                                 <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
@@ -331,16 +333,16 @@
                                 </button>
                             @endif
 
-                            @if ($isDispLead && $canApprove)
-                                <button class="btn btn-primary btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
+                            @if ($isDispLead && !$dispLeadDecided)
+                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
                                     Зөвшөөрөх / Татгалзах
                                 </button>
                             @endif
 
-                            @if ($isGenDisp && $canApprove)
-                                <button class="btn btn-warning btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
+                            @if ($isGenDisp && !$genDispDecided)
+                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>Батлах
                                 </button>
@@ -366,9 +368,7 @@
                         @endif
                     </div>
 
-
-
-
+                    {{-- Санал өгөх хэсэг --}}
                     <div class="card shadow-sm">
                         <div class="card-header bg-success text-white">
                             <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Санал</h5>
@@ -382,6 +382,8 @@
                                         <div>
                                             <h6 class="mb-1">
                                                 <i class="bi bi-person-circle me-1"></i>{{ $approval->user->name }}
+                                                ({{ $approval->user->division?->Div_name }})
+                                                {{ $approval->updated_at->format('Y-m-d H:i') }}
                                             </h6>
                                             <small class="text-muted">
                                                 @if (!is_null($approval->approved))
@@ -394,10 +396,6 @@
                                                             <i class="bi bi-x-lg me-1"></i>Татгалзсан
                                                         </span>
                                                     @endif
-                                                    <small class="d-block mt-1 text-muted">
-                                                        <i
-                                                            class="bi bi-calendar3 me-1"></i>{{ $approval->updated_at->format('Y-m-d H:i') }}
-                                                    </small>
                                                 @else
                                                     <span class="badge bg-secondary text-white">
                                                         <i class="bi bi-clock me-1"></i>Санал өгөөгүй
@@ -410,7 +408,7 @@
                                     {{-- Санал өгөх форм - зөвхөн санал өгөөгүй, өөрийн approval бол --}}
                                     @if (is_null($approval->approved) && auth()->id() === $approval->user_id)
                                         <form action="{{ route('order-journals.approveOpinion', $approval->id) }}"
-                                            method="POST" class="mt-3">
+                                            method="POST" enctype="multipart/form-data" class="mt-3">
                                             @csrf
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Санал</label>
@@ -431,9 +429,18 @@
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Тайлбар (заавал биш)</label>
+                                                <label class="form-label">Тайлбар</label>
                                                 <textarea name="comment" class="form-control" rows="3" placeholder="Тайлбараа энд бичнэ үү..."></textarea>
                                             </div>
+                                            {{-- 📎 Файл хавсаргах --}}
+                                            <div class="mb-3">
+                                                <label class="form-label">
+                                                    <i class="bi bi-paperclip me-1"></i>Файл хавсаргах
+                                                </label>
+                                                <input type="file" name="attachment" class="form-control">
+                                                <small class="text-muted">PDF, Word, Excel, Image (≤10MB)</small>
+                                            </div>
+
                                             <button type="submit" class="btn btn-primary w-100">
                                                 <i class="bi bi-send me-2"></i>Санал илгээх
                                             </button>
@@ -449,6 +456,45 @@
                                             <p class="mb-0 small">{{ $approval->comment }}</p>
                                         </div>
                                     @endif
+                                    {{-- Хавсралт файл --}}
+                                    @if ($approval->attachment)
+                                        <div class="mt-3">
+                                            <h6 class="mb-2">Хавсралт файл</h6>
+
+                                            @php
+                                                $fileName = basename($approval->attachment);
+                                                $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                                                $displayName =
+                                                    strlen($fileName) > 25
+                                                        ? substr($fileName, 0, 22) . '...'
+                                                        : $fileName;
+
+                                                // Font Awesome icon-г өргөтгөлийн дагуу сонгоно
+                                                $faIcon = match ($ext) {
+                                                    'pdf' => 'fa-file-pdf text-danger',
+                                                    'doc', 'docx' => 'fa-file-word text-primary',
+                                                    'xls', 'xlsx' => 'fa-file-excel text-success',
+                                                    'png', 'jpg', 'jpeg', 'gif' => 'fa-file-image text-warning',
+                                                    'zip', 'rar' => 'fa-file-archive text-muted',
+                                                    'txt' => 'fa-file-alt text-secondary',
+                                                    default => 'fa-file text-secondary',
+                                                };
+                                            @endphp
+
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="fas {{ $faIcon }} fa-lg"></i>
+                                                <a href="{{ asset('storage/' . $approval->attachment) }}" target="_blank"
+                                                    class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                    {{ $displayName }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+
+
+
+
+
                                 </div>
                             @empty
                                 <div class="alert alert-info mb-0">
@@ -461,6 +507,7 @@
             @endif
         </div>
 
+        {{-- Ерөнхий диспетчер батлах --}}
         <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -513,6 +560,7 @@
             </div>
         </div>
 
+        {{-- Диспетчер захиалга нээх --}}
         <div class="modal fade" id="openOrderModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -534,13 +582,15 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Буцах</button>
-                            <button type="submit" class="btn btn-primary">Нээх</button>
+                            <button type="submit" class="btn btn-primary"
+                                onclick="return confirm('Та энэ захиалгыг нээхэд итгэлтэй байна уу?')">Нээх</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
+        {{-- Диспетчер захиалга хаах --}}
         <div class="modal fade" id="closeOrderModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -562,7 +612,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Буцах</button>
-                            <button type="submit" class="btn btn-success">Хаах</button>
+                            <button type="submit" class="btn btn-success"
+                                onclick="return confirm('Та энэ захиалгыг хаахад итгэлтэй байна уу?')">Хаах</button>
                         </div>
                     </form>
                 </div>

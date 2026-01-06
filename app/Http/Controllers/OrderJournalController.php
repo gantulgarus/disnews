@@ -28,18 +28,31 @@ class OrderJournalController extends Controller
         }
         // order_number filter
         if ($orderNumber = request('order_number')) {
-            $query->where('order_number', 'like', "%{$orderNumber}%");
+            $query->where('order_number', $orderNumber);
         }
 
         // organization_name filter
         if ($orgName = request('organization_name')) {
             $query->whereHas('organization', function ($q) use ($orgName) {
-                $q->where('name', 'like', "%{$orgName}%");
+                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($orgName) . '%']);
             });
         }
 
+        // status filter
+        $allowedStatuses = [
+            OrderJournal::STATUS_NEW,
+            OrderJournal::STATUS_APPROVED,
+            OrderJournal::STATUS_CANCELLED,
+            OrderJournal::STATUS_OPEN,
+            OrderJournal::STATUS_CLOSED,
+            OrderJournal::STATUS_POSTPONED,
+            OrderJournal::STATUS_IN_REVIEW,
+        ];
         if (!is_null(request('status')) && request('status') !== '') {
-            $query->where('status', request('status'));
+            $status = (int) request('status');
+            if (in_array($status, $allowedStatuses)) {
+                $query->where('status', $status);
+            }
         }
 
         $journals = $query->paginate(25)->withQueryString();
@@ -90,218 +103,6 @@ class OrderJournalController extends Controller
         return redirect()->route('order-journals.index')
             ->with('success', 'Order Journal created successfully.');
     }
-
-    // Бусад алба руу санал авахаар илгээх
-    public function forward(Request $request, OrderJournal $orderJournal)
-    {
-        $request->validate([
-            'approvers' => 'required|array',
-            'approvers.*' => 'exists:users,id',
-        ]);
-
-        $oldStatus = $orderJournal->status;
-        $newStatus = OrderJournal::STATUS_FORWARDED;
-
-        // Илгээгдсэн хэрэглэгчдийн мэдээлэл авах
-        $approverUsers = User::whereIn('id', $request->approvers)
-            ->get()
-            ->map(function ($user) {
-                return $user->name . ' (' . ($user->division?->Div_name ?? 'Алба тодорхойгүй') . ')';
-            })
-            ->toArray();
-
-        $comment = 'Санал авахаар ' . count($request->approvers) . ' хэрэглэгчид рүү илгээв: ' . PHP_EOL;
-        $comment .= implode(', ', $approverUsers);
-
-        // Төлөв солих
-        $orderJournal->status = $newStatus;
-        $orderJournal->save();
-
-        // Түүх хадгалах
-        \App\Models\OrderJournalStatusHistory::create([
-            'order_journal_id' => $orderJournal->id,
-            'user_id' => auth()->id(),
-            'old_status' => $oldStatus,
-            'new_status' => $newStatus,
-            'comment' => $comment,
-        ]);
-
-        // Approvals үүсгэх
-        foreach ($request->approvers as $userId) {
-            $orderJournal->approvals()->create([
-                'user_id' => $userId,
-                'approved' => null,
-            ]);
-        }
-
-        return redirect()->route('order-journals.show', $orderJournal)
-            ->with('success', 'Захиалгыг forward хийлээ, санал авах хүсэлт илгээгдлээ.');
-    }
-
-    // Санал өгөх
-    // public function approve(Request $request, OrderJournalApproval $approval)
-    // {
-    //     $request->validate([
-    //         'approved' => 'required|boolean',
-    //         'comment' => 'nullable|string|max:1000',
-    //     ]);
-
-    //     $approval->update([
-    //         'approved' => $request->approved,
-    //         'comment' => $request->comment,
-    //     ]);
-
-    //     $orderJournal = $approval->orderJournal;
-
-    //     if ($orderJournal->approvals()->where('approved', false)->count() > 0) {
-    //         $orderJournal->status = OrderJournal::STATUS_CANCELLED;
-    //     } elseif ($orderJournal->approvals()->whereNull('approved')->count() === 0) {
-    //         $orderJournal->status = OrderJournal::STATUS_APPROVED;
-    //     }
-
-    //     $orderJournal->save();
-
-    //     return redirect()->back()->with('success', 'Таны санал амжилттай хадгалагдлаа.');
-    // }
-
-    // Санал өгөх (approval дээр санал өгөх)
-    public function approveOpinion(Request $request, OrderJournalApproval $approval)
-    {
-        // Зөвхөн өөрийн санал өгөх эрхтэй
-        if ($approval->user_id !== auth()->id()) {
-            return redirect()->back()->with('error', 'Та энэ саналыг өгөх эрхгүй байна.');
-        }
-
-        // Аль хэдийн санал өгсөн бол дахин өгөх боломжгүй
-        if (!is_null($approval->approved)) {
-            return redirect()->back()->with('error', 'Та аль хэдийн санал өгсөн байна.');
-        }
-
-        $request->validate([
-            'approved' => 'required|boolean',
-            'comment' => 'nullable|string|max:1000',
-        ]);
-
-        // Санал өгөх
-        $approval->update([
-            'approved' => $request->approved,
-            'comment' => $request->comment,
-        ]);
-
-        $message = $request->approved ? 'Таны зөвшөөрсөн санал амжилттай хадгалагдлаа.' : 'Таны татгалзсан санал амжилттай хадгалагдлаа.';
-
-        return redirect()->back()->with('success', $message);
-    }
-
-    public function approve(Request $request, OrderJournal $orderJournal)
-    {
-        $user = auth()->user();
-        $oldStatus = $orderJournal->status; // Хуучин төлөв хадгалах
-
-        $request->validate([
-            'approved' => 'nullable|boolean',
-            'comment' => 'nullable|string|max:1000',
-            'action' => 'nullable|string|in:approve,reject',
-        ]);
-
-        // Default approval үүсгэх буюу update
-        $approval = $orderJournal->approvals()->updateOrCreate(
-            [
-                'order_journal_id' => $orderJournal->id,
-                'user_id' => $user->id,
-            ],
-            [
-                'approved' => null,
-                'comment' => $request->comment,
-            ]
-        );
-
-        // Диспетчер - аваарын захиалгыг зөвшөөрөх эсвэл татгалзах
-        if ($user->permissionLevel?->code === 'DISP' && $orderJournal->order_type === 'Аваарын') {
-            $approved = $request->input('action') === 'approve';
-            $newStatus = $approved ? OrderJournal::STATUS_APPROVED : OrderJournal::STATUS_CANCELLED;
-
-            $approval->update([
-                'approved' => $approved,
-                'comment' => $request->comment,
-            ]);
-
-            // Төлөв солих
-            $orderJournal->status = $newStatus;
-            $orderJournal->save();
-
-            // Түүх хадгалах
-            \App\Models\OrderJournalStatusHistory::create([
-                'order_journal_id' => $orderJournal->id,
-                'user_id' => $user->id,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus,
-                'comment' => $request->comment,
-            ]);
-
-            $message = $approved ? 'Аваарын захиалга амжилттай батлагдлаа.' : 'Аваарын захиалга татгалзагдлаа.';
-            return redirect()->back()->with('success', $message);
-        }
-
-        // Диспетчерийн албаны дарга - зөвшөөрөх эсвэл татгалзах
-        elseif ($user->permissionLevel?->code === 'DISP_LEAD') {
-            $approved = $request->input('action') === 'approve';
-            $newStatus = $approved ? OrderJournal::STATUS_ACCEPTED : OrderJournal::STATUS_CANCELLED;
-
-            $approval->update([
-                'approved' => $approved,
-                'comment' => $request->comment,
-            ]);
-
-            // Төлөв солих
-            $orderJournal->status = $newStatus;
-            $orderJournal->save();
-
-            // Түүх хадгалах
-            \App\Models\OrderJournalStatusHistory::create([
-                'order_journal_id' => $orderJournal->id,
-                'user_id' => $user->id,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus,
-                'comment' => $request->comment,
-            ]);
-
-            $message = $approved ? 'Захиалга зөвшөөрөгдлөө.' : 'Захиалга татгалзагдлаа.';
-            return redirect()->back()->with('success', $message);
-        }
-
-        // Ерөнхий диспетчер - батлах эсвэл цуцлах
-        elseif ($user->permissionLevel?->code === 'GEN_DISP') {
-            $approved = $request->input('action') === 'approve';
-            $newStatus = $approved ? OrderJournal::STATUS_APPROVED : OrderJournal::STATUS_CANCELLED;
-
-            $approval->update([
-                'approved' => $approved,
-                'comment' => $request->comment,
-            ]);
-
-            // Төлөв солих
-            $orderJournal->status = $newStatus;
-            $orderJournal->save();
-
-            // Түүх хадгалах
-            \App\Models\OrderJournalStatusHistory::create([
-                'order_journal_id' => $orderJournal->id,
-                'user_id' => $user->id,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus,
-                'comment' => $request->comment,
-            ]);
-
-            $message = $approved ? 'Захиалга ерөнхий диспетчерээр батлагдлаа.' : 'Захиалга ерөнхий диспетчерээр цуцлагдлаа.';
-            return redirect()->back()->with('success', $message);
-        }
-
-        return redirect()->back()->with('error', 'Батлах эрх байхгүй байна.');
-    }
-
-
-
 
     /**
      * Display the specified resource.
@@ -363,8 +164,169 @@ class OrderJournalController extends Controller
         return redirect()->route('order-journals.index')->with('success', 'Order Journal deleted successfully.');
     }
 
-    // OrderJournalController.php
+    // Бусад алба руу санал авахаар илгээх
+    public function forward(Request $request, OrderJournal $orderJournal)
+    {
+        $request->validate([
+            'approvers' => 'required|array',
+            'approvers.*' => 'exists:users,id',
+        ]);
 
+        $oldStatus = $orderJournal->status;
+        $newStatus = OrderJournal::STATUS_FORWARDED;
+
+        // Илгээгдсэн хэрэглэгчдийн мэдээлэл авах
+        $approverUsers = User::whereIn('id', $request->approvers)
+            ->get()
+            ->map(function ($user) {
+                return $user->name . ' (' . ($user->division?->Div_name ?? 'Алба тодорхойгүй') . ')';
+            })
+            ->toArray();
+
+        $comment = $request->comment . ' ' . count($request->approvers) . ' хэрэглэгчид рүү санал авахаар илгээв: ' . PHP_EOL;
+        $comment .= implode(', ', $approverUsers);
+
+        // Захиалгыг Хянагдаж байгаа төлөвт оруулах
+        $orderJournal->status = OrderJournal::STATUS_IN_REVIEW;
+        $orderJournal->dut_dispatcher_id = auth()->id();
+        $orderJournal->save();
+
+        // Түүх хадгалах
+        \App\Models\OrderJournalStatusHistory::create([
+            'order_journal_id' => $orderJournal->id,
+            'user_id' => auth()->id(),
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'comment' => $comment,
+        ]);
+
+        // Approvals үүсгэх
+        foreach ($request->approvers as $userId) {
+            $orderJournal->approvals()->create([
+                'user_id' => $userId,
+                'approved' => null,
+            ]);
+        }
+
+        return redirect()->route('order-journals.show', $orderJournal)
+            ->with('success', 'Захиалгыг forward хийлээ, санал авах хүсэлт илгээгдлээ.');
+    }
+
+    // Санал өгөх (approval дээр санал өгөх)
+    public function approveOpinion(Request $request, OrderJournalApproval $approval)
+    {
+        // Зөвхөн өөрийн санал өгөх эрхтэй
+        if ($approval->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Та энэ саналыг өгөх эрхгүй байна.');
+        }
+
+        // Аль хэдийн санал өгсөн бол дахин өгөх боломжгүй
+        if (!is_null($approval->approved)) {
+            return redirect()->back()->with('error', 'Та аль хэдийн санал өгсөн байна.');
+        }
+
+        $request->validate([
+            'approved' => 'required|boolean',
+            'comment' => 'nullable|string|max:1000',
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg',
+        ]);
+
+        $data = [
+            'approved' => $request->approved,
+            'comment' => $request->comment,
+        ];
+
+        // 📎 Файл байвал хадгалах
+        if ($request->hasFile('attachment')) {
+            $data['attachment'] = $request->file('attachment')
+                ->store('order-journal-approvals', 'public');
+        }
+
+        $approval->update($data);
+
+        $message = $request->approved ? 'Таны зөвшөөрсөн санал амжилттай хадгалагдлаа.' : 'Таны татгалзсан санал амжилттай хадгалагдлаа.';
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    // Захиалгыг батлах/цацлах
+    public function approve(Request $request, OrderJournal $orderJournal)
+    {
+        $user = auth()->user();
+        $oldStatus = $orderJournal->status; // Хуучин төлөв хадгалах
+
+        $request->validate([
+            'approved' => 'nullable|boolean',
+            'comment' => 'nullable|string|max:1000',
+            'action' => 'nullable|string|in:approve,reject',
+        ]);
+
+        // Диспетчер - аваарын захиалгыг батлах эсвэл цуцлах
+        if ($user->permissionLevel?->code === 'DISP' && $orderJournal->order_type === 'Аваарын') {
+            $approved = $request->input('action') === 'approve';
+            $newStatus = $approved ? OrderJournal::STATUS_APPROVED : OrderJournal::STATUS_CANCELLED;
+
+            // Төлөв солих
+            $orderJournal->status = $newStatus;
+            $orderJournal->dut_dispatcher_id = $user->id;
+            $orderJournal->save();
+
+            // Түүх хадгалах
+            \App\Models\OrderJournalStatusHistory::create([
+                'order_journal_id' => $orderJournal->id,
+                'user_id' => $user->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'comment' => $request->comment,
+            ]);
+
+            $message = $approved ? 'Аваарын захиалга амжилттай батлагдлаа.' : 'Аваарын захиалга цуцлагдсан.';
+            return redirect()->back()->with('success', $message);
+        }
+
+        // Диспетчерийн албаны дарга - зөвшөөрөх эсвэл татгалзах
+        elseif ($user->permissionLevel?->code === 'DISP_LEAD') {
+            $approved = $request->input('action') === 'approve';
+            $newStatus = $approved ? OrderJournal::STATUS_ACCEPTED : OrderJournal::STATUS_CANCELLED;
+
+            // Түүх хадгалах
+            \App\Models\OrderJournalStatusHistory::create([
+                'order_journal_id' => $orderJournal->id,
+                'user_id' => $user->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'comment' => $request->comment,
+            ]);
+
+            $message = $approved ? 'Захиалга зөвшөөрөгдлөө.' : 'Захиалга татгалзагдлаа.';
+            return redirect()->back()->with('success', $message);
+        }
+
+        // Ерөнхий диспетчер - батлах эсвэл цуцлах
+        elseif ($user->permissionLevel?->code === 'GEN_DISP') {
+            $approved = $request->input('action') === 'approve';
+            $newStatus = $approved ? OrderJournal::STATUS_APPROVED : OrderJournal::STATUS_CANCELLED;
+
+            // Төлөв солих
+            $orderJournal->update(['status' => $newStatus]);
+
+            // Түүх хадгалах
+            \App\Models\OrderJournalStatusHistory::create([
+                'order_journal_id' => $orderJournal->id,
+                'user_id' => $user->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'comment' => $request->comment,
+            ]);
+
+            $message = $approved ? 'Захиалга ерөнхий диспетчерээр батлагдлаа.' : 'Захиалга ерөнхий диспетчерээр цуцлагдлаа.';
+            return redirect()->back()->with('success', $message);
+        }
+
+        return redirect()->back()->with('error', 'Батлах эрх байхгүй байна.');
+    }
+
+    // Батлагдсан захиалгыг нээх
     public function open(Request $request, $id)
     {
         $journal = OrderJournal::findOrFail($id);
@@ -389,6 +351,7 @@ class OrderJournalController extends Controller
         return back()->with('success', 'Захиалгыг нээлээ.');
     }
 
+    // Нээлттэй захиалгыг хаах
     public function close(Request $request, $id)
     {
         $journal = OrderJournal::findOrFail($id);

@@ -9,7 +9,7 @@ class OrderJournalApproval extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['order_journal_id', 'user_id', 'approved', 'comment'];
+    protected $fillable = ['order_journal_id', 'user_id', 'approved', 'comment', 'attachment'];
 
     public function orderJournal()
     {

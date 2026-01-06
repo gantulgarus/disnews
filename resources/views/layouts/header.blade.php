@@ -3,8 +3,9 @@
 
         <!-- Зүүн тал: Системийн нэр -->
         <a class="navbar-brand" href="#">
-            <span class="fw-bold fs-3">{{ config('app.name') }}</span>
+            <span class="fw-bold fs-3 text-secondary text-uppercase">{{ config('app.name') }}</span>
         </a>
+
 
         <!-- Баруун тал: weather + notification + user menu -->
         <div class="navbar-nav flex-row align-items-center">
