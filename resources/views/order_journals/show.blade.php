@@ -82,7 +82,7 @@
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Захиалгын дугаар</label>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary text-white fs-5 px-3 py-2">
+                                    <span class="badge bg-blue-lt text-blue-lt-fg fs-5 px-3 py-2">
                                         {{ $orderJournal->order_number }}
                                     </span>
                                 </div>
@@ -94,15 +94,16 @@
                                 <div>
                                     @php
                                         $statusClass = match ($orderJournal->status) {
-                                            0 => 'bg-secondary',
-                                            1 => 'bg-info',
-                                            2 => 'bg-warning',
-                                            3 => 'bg-success',
-                                            4 => 'bg-danger',
-                                            default => 'bg-primary',
+                                            0 => 'bg-gray text-black',
+                                            3 => 'bg-green text-white',
+                                            4 => 'bg-red text-white',
+                                            7 => 'bg-lime text-white',
+                                            8 => 'bg-dark text-white',
+                                            10 => 'bg-yellow text-white',
+                                            default => 'bg-secondary text-white',
                                         };
                                     @endphp
-                                    <span class="badge {{ $statusClass }} fs-6 text-white">
+                                    <span class="badge {{ $statusClass }} fs-6">
                                         {{ \App\Models\OrderJournal::$STATUS_NAMES[$orderJournal->status] ?? 'Тодорхойгүй' }}
                                     </span>
                                 </div>
@@ -118,7 +119,10 @@
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Захиалгын төрөл</label>
                                 @php
-                                    $typeClass = $orderJournal->order_type === 'Аваар' ? 'bg-danger' : 'bg-info';
+                                    $typeClass =
+                                        $orderJournal->order_type === 'Аваарын'
+                                            ? 'bg-red-lt text-red-lt-fg'
+                                            : 'bg-green-lt text-green-lt-fg';
                                 @endphp
 
                                 <div>
@@ -206,32 +210,56 @@
                 </div>
 
                 @if ($userOrgCode === 102)
-                    {{-- Захиалгын түүх --}}
+                    {{-- Захиалгын түүх - Tabler Timeline ашиглах --}}
                     <div class="card shadow-sm">
                         <div class="card-header bg-info text-white">
                             <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Захиалгын түүх</h5>
                         </div>
                         <div class="card-body">
-                            <div class="timeline">
+                            <ul class="timeline">
                                 {{-- Захиалга үүссэн --}}
-                                <div class="timeline-item">
-                                    <div class="timeline-marker bg-primary"></div>
-                                    <div class="timeline-content">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <h6 class="mb-1">Захиалга үүсгэсэн</h6>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-person me-1"></i>{{ $orderJournal->createdUser->name }}
-                                                </small>
-                                            </div>
-                                            <small class="text-muted">
-                                                <i
-                                                    class="bi bi-calendar3 me-1"></i>{{ $orderJournal->created_at->format('Y-m-d H:i') }}
-                                            </small>
-                                        </div>
-                                        <span class="badge bg-secondary text-white">Шинэ</span>
+                                <li class="timeline-event">
+                                    <div class="timeline-event-icon bg-secondary text-white">
+                                        <i class="ti ti-plus"></i>
                                     </div>
-                                </div>
+                                    <div class="card timeline-event-card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h4 class="mb-0 fw-bold">Захиалга үүсгэсэн</h4>
+                                                <span class="badge bg-secondary text-white">Шинэ</span>
+                                            </div>
+
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-md-8">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="ti ti-building text-muted me-2" style="width: 20px;"></i>
+                                                        <span
+                                                            class="fw-semibold">{{ $orderJournal->createdUser->organization->name ?? 'Байхгүй' }}</span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="ti ti-briefcase text-muted me-2" style="width: 20px;"></i>
+                                                        <span>{{ $orderJournal->createdUser->division?->Div_name ?? 'Байхгүй' }}</span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ti ti-user text-muted me-2" style="width: 20px;"></i>
+                                                        <span
+                                                            class="fw-semibold">{{ $orderJournal->createdUser->name }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-end">
+                                                    <div class="text-muted mb-1">
+                                                        <i class="ti ti-calendar me-1"></i>
+                                                        {{ $orderJournal->created_at->format('Y-m-d') }}
+                                                    </div>
+                                                    <div class="text-muted">
+                                                        <i class="ti ti-clock me-1"></i>
+                                                        {{ $orderJournal->created_at->format('H:i') }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
 
                                 {{-- Төлөв солигдсон түүх --}}
                                 @php
@@ -242,76 +270,132 @@
                                 @endphp
 
                                 @foreach ($statusHistory as $history)
-                                    <div class="timeline-item">
+                                    <li class="timeline-event">
                                         @php
-                                            $markerClass = match ($history->new_status) {
-                                                1 => 'bg-info',
-                                                2 => 'bg-warning',
+                                            $iconBgClass = match ($history->new_status) {
+                                                2 => 'bg-info',
                                                 3 => 'bg-success',
                                                 4 => 'bg-danger',
                                                 6 => 'bg-primary',
+                                                7 => 'bg-lime',
+                                                8 => 'bg-dark',
+                                                10 => 'bg-yellow',
                                                 default => 'bg-secondary',
                                             };
+
+                                            $icon = match ($history->new_status) {
+                                                2 => 'ti-send',
+                                                3 => 'ti-circle-check',
+                                                4 => 'ti-x',
+                                                6 => 'ti-square-rounded-check',
+                                                7 => 'ti-lock-open',
+                                                8 => 'ti-lock-bolt',
+                                                10 => 'ti-analyze',
+                                                default => 'ti-arrows-exchange',
+                                            };
+
+                                            $actionText = match ($history->new_status) {
+                                                2 => 'Захиалга санал авахаар илгээв',
+                                                3 => 'Захиалга батлав',
+                                                4 => 'Захиалга цуцалсан',
+                                                6 => 'Захиалга зөвшөөрсөн',
+                                                7 => 'Захиалга нээв',
+                                                8 => 'Захиалга хаав',
+                                                10 => 'Захиалга хянагдаж байна',
+                                                default => 'Захиалгын төлөв өөрчилөв',
+                                            };
                                         @endphp
-                                        <div class="timeline-marker {{ $markerClass }}"></div>
-                                        <div class="timeline-content">
-                                            {{-- Хүний мэдээлэл --}}
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="mb-1">
-                                                        {{ $history->user->name }}
-                                                        ({{ $history->user->division?->Div_name ?? '' }})
-                                                    </h6>
-                                                </div>
-                                                <small class="text-muted">
-                                                    <i
-                                                        class="bi bi-calendar3 me-1"></i>{{ $history->created_at->format('Y-m-d H:i') }}
-                                                </small>
-                                            </div>
 
-                                            {{-- Статус солигдсон --}}
-                                            <div class="mb-2 d-flex align-items-center">
-
-                                                <span class="text-white badge {{ $markerClass }}">
-                                                    {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->new_status] ?? '-' }}
-                                                </span>
-                                            </div>
-
-                                            {{-- Тайлбар --}}
-                                            @if ($history->comment)
-                                                <div class="mt-2 p-2 bg-light rounded border">
-                                                    <small class="text-muted d-block mb-1">
-                                                        <i class="bi bi-chat-left-text me-1"></i>Тайлбар:
-                                                    </small>
-                                                    <p class="mb-0 small">{{ $history->comment }}</p>
-                                                </div>
-                                            @endif
+                                        <div class="timeline-event-icon {{ $iconBgClass }} text-white">
+                                            <i class="ti {{ $icon }}"></i>
                                         </div>
-                                    </div>
+
+                                        <div class="card timeline-event-card">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                                    <h4 class="mb-0 fw-bold">{{ $actionText }}</h4>
+                                                    <span class="badge {{ $iconBgClass }} text-white">
+                                                        {{ \App\Models\OrderJournal::$STATUS_NAMES[$history->new_status] ?? '-' }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="row g-2 mb-2">
+                                                    <div class="col-md-8">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="ti ti-building text-muted me-2"
+                                                                style="width: 20px;"></i>
+                                                            <span>{{ $history->user->division?->Div_name ?? 'Байхгүй' }}</span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="ti ti-user text-muted me-2"
+                                                                style="width: 20px;"></i>
+                                                            <span class="fw-semibold">{{ $history->user->name }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <div class="text-muted mb-1">
+                                                            <i class="ti ti-calendar me-1"></i>
+                                                            {{ $history->created_at->format('Y-m-d') }}
+                                                        </div>
+                                                        <div class="text-muted">
+                                                            <i class="ti ti-clock me-1"></i>
+                                                            {{ $history->created_at->format('H:i') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Тайлбар --}}
+                                                @if ($history->comment)
+                                                    <div class="alert alert-light mb-0 mt-2">
+                                                        <div class="d-flex">
+                                                            <div class="me-2">
+                                                                <i class="ti ti-message-circle text-muted"></i>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <small
+                                                                    class="text-muted d-block mb-1 fw-bold">Тайлбар:</small>
+                                                                <div class="text-secondary">{{ $history->comment }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </li>
                                 @endforeach
 
-
                                 {{-- Одоогийн төлөв --}}
-                                <div class="timeline-item">
+                                <li class="timeline-event">
                                     @php
-                                        $currentMarkerClass = match ($orderJournal->status) {
+                                        $currentIconBgClass = match ($orderJournal->status) {
                                             0 => 'bg-secondary',
                                             1 => 'bg-info',
                                             2 => 'bg-warning',
                                             3 => 'bg-success',
                                             4 => 'bg-danger',
+                                            5 => 'bg-primary',
+                                            6 => 'bg-dark',
                                             default => 'bg-primary',
                                         };
                                     @endphp
-                                    <div class="timeline-marker {{ $currentMarkerClass }} pulse"></div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-1">Одоогийн төлөв</h6>
-                                        <span class="badge {{ $currentMarkerClass }} fs-6 text-white">
-                                            {{ \App\Models\OrderJournal::$STATUS_NAMES[$orderJournal->status] ?? 'Тодорхойгүй' }}
-                                        </span>
+
+                                    <div
+                                        class="timeline-event-icon {{ $currentIconBgClass }} timeline-event-icon-pulse text-white">
+                                        <i class="ti ti-clock"></i>
                                     </div>
-                                </div>
-                            </div>
+
+                                    <div class="card timeline-event-card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h4 class="mb-0 fw-bold">Одоогийн төлөв</h4>
+                                                <span class="badge {{ $currentIconBgClass }} text-white fs-5">
+                                                    {{ \App\Models\OrderJournal::$STATUS_NAMES[$orderJournal->status] ?? 'Тодорхойгүй' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 @endif
@@ -326,7 +410,7 @@
                     @if ($showApproveButtons)
                         <div class="d-grid">
                             @if ($isDisp && $orderJournal->order_type === 'Аваарын')
-                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
+                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg mb-3" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
                                     Аваарын захиалга батлах
@@ -334,7 +418,7 @@
                             @endif
 
                             @if ($isDispLead && !$dispLeadDecided)
-                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
+                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg mb-3" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
                                     Зөвшөөрөх / Татгалзах
@@ -342,7 +426,7 @@
                             @endif
 
                             @if ($isGenDisp && !$genDispDecided)
-                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg" data-bs-toggle="modal"
+                                <button class="btn btn-danger btn-lg w-100 btn-w-100-lg mb-3" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>Батлах
                                 </button>
@@ -350,10 +434,10 @@
                         </div>
                     @endif
 
-                    <div class="mb-3 d-grid">
+                    <div class="d-grid">
                         {{-- Нээх товч --}}
                         @if ($canOpen)
-                            <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal"
+                            <button class="btn btn-primary btn-lg w-100 mb-3" data-bs-toggle="modal"
                                 data-bs-target="#openOrderModal">
                                 <i class="ti ti-play me-2"></i>Захиалга нээх
                             </button>
@@ -361,7 +445,7 @@
 
                         {{-- Хаах товч --}}
                         @if ($canClose)
-                            <button class="btn btn-success btn-lg w-100" data-bs-toggle="modal"
+                            <button class="btn btn-success btn-lg w-100 mb-3" data-bs-toggle="modal"
                                 data-bs-target="#closeOrderModal">
                                 <i class="ti ti-square-rounded-check me-2"></i>Захиалга хаах
                             </button>
@@ -648,72 +732,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Timeline стайл */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0.5rem;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, #0d6efd, #20c997);
-        }
-
-        .timeline-item {
-            position: relative;
-            padding-bottom: 2rem;
-        }
-
-        .timeline-item:last-child {
-            padding-bottom: 0;
-        }
-
-        .timeline-marker {
-            position: absolute;
-            left: -1.5rem;
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px currentColor;
-        }
-
-        .timeline-marker.pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
-            }
-        }
-
-        .timeline-content {
-            background: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .timeline-content h6 {
-            color: #495057;
-            font-weight: 600;
-        }
-
         .bg-success-subtle {
             background-color: #d1e7dd !important;
         }
@@ -727,6 +745,45 @@
             /* Өндрийг нэмэгдүүлж болно */
             font-size: 1.25rem;
             /* Текстийн хэмжээг хадгалах */
+        }
+
+        .timeline-event-icon {
+            width: 2rem !important;
+            height: 2rem !important;
+            font-size: 1rem !important;
+        }
+
+        .timeline-event-icon i {
+            font-size: 1rem !important;
+        }
+
+        .timeline-event-icon-pulse {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--tblr-primary-rgb), 0.5);
+            }
+
+            100% {
+                box-shadow: 0 0 0 15px rgba(var(--tblr-primary-rgb), 0);
+            }
+        }
+
+        .timeline-event-card {
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .timeline-event-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .timeline-event h4 {
+            font-size: 1rem;
+            font-weight: 600;
         }
     </style>
 @endsection

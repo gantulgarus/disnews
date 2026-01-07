@@ -55,6 +55,10 @@ class OrderJournalController extends Controller
             }
         }
 
+        if ($order_type = request('order_type')) {
+            $query->where('order_type', $order_type);
+        }
+
         $journals = $query->paginate(25)->withQueryString();
 
         // Өөрийн байгууллагын хэрэглэгчид авах
@@ -72,7 +76,7 @@ class OrderJournalController extends Controller
         $user = Auth::user();
 
         // Хэрэв хэрэглэгч админ бол бүх байгууллагыг харуулна
-        if ($user->permissionLevel?->code === 'ADM') {
+        if ($user->organization->org_code === 102) {
             $organizations = Organization::all();
         } else {
             // Админ биш бол зөвхөн хэрэглэгчийн байгууллага
@@ -120,12 +124,14 @@ class OrderJournalController extends Controller
         $user = Auth::user();
 
         // Хэрэв хэрэглэгч админ бол бүх байгууллагыг харуулна
-        if ($user->permissionLevel?->code === 'ADM') {
-            $organizations = Organization::all();
-        } else {
-            // Админ биш бол зөвхөн хэрэглэгчийн байгууллага
-            $organizations = Organization::where('id', $user->organization_id)->get();
-        }
+        // if ($user->permissionLevel?->code === 'ADM') {
+        //     $organizations = Organization::all();
+        // } else {
+        //     // Админ биш бол зөвхөн хэрэглэгчийн байгууллага
+        //     $organizations = Organization::where('id', $user->organization_id)->get();
+        // }
+
+        $organizations = Organization::all();
 
         return view('order_journals.edit', compact('orderJournal', 'organizations'));
     }
@@ -138,8 +144,6 @@ class OrderJournalController extends Controller
         $input = $request->all();
 
         $request->validate([
-            'order_number' => 'required|string|max:255',
-            'status' => 'required|integer',
             'organization_id' => 'required|exists:organizations,id',
             'order_type' => 'required|string|max:255',
             'content' => 'required|string',

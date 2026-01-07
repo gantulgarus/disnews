@@ -7,15 +7,15 @@
 
         <!-- Хайлтын форм -->
         <form method="GET" action="{{ route('order-journals.index') }}" class="row g-2 mb-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <input type="text" name="order_number" class="form-control" placeholder="Захиалгын дугаар"
                     value="{{ request('order_number') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <input type="text" name="organization_name" class="form-control" placeholder="Байгууллага нэр"
                     value="{{ request('organization_name') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select name="status" class="form-select">
                     <option value="">Төлөв сонгох</option>
                     @php
@@ -41,6 +41,15 @@
                 </select>
             </div>
 
+            <!-- Order Type -->
+            <div class="col-md-2">
+                <select name="order_type" class="form-select">
+                    <option value="">Төрөл сонгох</option>
+                    <option value="Энгийн" {{ request('order_type') === 'Энгийн' ? 'selected' : '' }}>Энгийн</option>
+                    <option value="Аваарын" {{ request('order_type') === 'Аваарын' ? 'selected' : '' }}>Аваарын</option>
+                </select>
+            </div>
+
             <div class="col-md-3 d-flex">
                 <button type="submit" class="btn btn-primary me-2">Хайх</button>
                 <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Цэвэрлэх</a>
@@ -54,7 +63,7 @@
                 <table class="table table-bordered table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th rowspan="2" class="text-wrap">Захиалгын дугаар</th>
+                            <th rowspan="2" class="text-wrap text-center">Захиалгын дугаар</th>
                             <th rowspan="2">Төлөв</th>
                             <th rowspan="2">Байгууллага</th>
                             <th rowspan="2">Төрөл</th>
@@ -74,16 +83,17 @@
                     <tbody>
                         @foreach ($journals as $journal)
                             <tr @if ($journal->approvals->where('user_id', auth()->id())->whereNull('approved')->count()) class="table-warning" @endif>
-                                <td>{{ $journal->order_number }}</td>
+                                <td class="text-center">{{ $journal->order_number }}</td>
                                 <td>
                                     @php
                                         $statusClass = match ($journal->status) {
                                             0 => 'badge bg-gray text-black',
-                                            1 => 'badge bg-gray text-white',
-                                            2 => 'badge bg-yellow text-dark',
                                             3 => 'badge bg-green text-white',
                                             4 => 'badge bg-red text-white',
-                                            default => 'badge bg-blue text-white',
+                                            7 => 'badge bg-lime text-white',
+                                            8 => 'badge bg-dark text-white',
+                                            10 => 'badge bg-yellow text-white',
+                                            default => 'badge bg-secondary text-white',
                                         };
                                     @endphp
                                     <span class="{{ $statusClass }}">
@@ -92,7 +102,19 @@
                                 </td>
                                 <td>{{ $journal->organization->name }}</td>
 
-                                <td>{{ $journal->order_type }}</td>
+                                <td>
+                                    @php
+                                        $typeBadge = match ($journal->order_type) {
+                                            'Энгийн' => ['bg-green-lt', 'text-green-lt-fg', 'Энгийн'],
+                                            'Аваарын' => ['bg-red-lt', 'text-red-lt-fg', 'Аваарын'],
+                                            default => ['bg-secondary', 'text-secondary-fg', $journal->order_type],
+                                        };
+                                    @endphp
+
+                                    <span class="badge {{ $typeBadge[0] }} {{ $typeBadge[1] }}">
+                                        {{ $typeBadge[2] }}
+                                    </span>
+                                </td>
                                 <td>{{ $journal->content }}</td>
                                 <td>{{ $journal->planned_start_date->format('Y-m-d H:i') }}</td>
                                 <td>{{ $journal->planned_end_date->format('Y-m-d H:i') }}</td>
@@ -106,7 +128,7 @@
                                     <div class="d-flex justify-content-center gap-2">
                                         <!-- Харах товч - бүх хэрэглэгчид -->
                                         <a href="{{ route('order-journals.show', $journal->id) }}"
-                                            class="btn btn-sm btn-info" title="Дэлгэрэнгүй үзэх">
+                                            class="btn btn-primary btn-icon" aria-label="Button" title="Дэлгэрэнгүй үзэх">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round"
@@ -117,6 +139,7 @@
                                                     d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                             </svg>
                                         </a>
+
 
 
                                         @php
@@ -133,8 +156,8 @@
 
                                         <!-- ДҮТ-н дис: Санал авахаар илгээх товч (зөвхөн Шинэ төлөвт, DISP_LEAD болон GEN_DISP биш бол) -->
                                         @if ($isDUT && !$isDispLead && !$isGenDisp && $journal->status === \App\Models\OrderJournal::STATUS_NEW)
-                                            <button class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                                data-bs-target="#forwardModal{{ $journal->id }}"
+                                            <button class="btn btn-primary btn-icon" aria-label="Button"
+                                                data-bs-toggle="modal" data-bs-target="#forwardModal{{ $journal->id }}"
                                                 title="Санал авахаар илгээх">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -151,8 +174,7 @@
                                         <!-- Засах болон устгах товч: зөвхөн үүсгэгч, зөвхөн Шинэ төлөвт -->
                                         @if (($isCreator && $journal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDutDispatcher)
                                             <a href="{{ route('order-journals.edit', $journal->id) }}"
-                                                class="btn btn-sm btn-warning d-flex align-items-center justify-content-center"
-                                                title="Засах">
+                                                class="btn btn-yellow btn-icon" aria-label="Button" title="Засах">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -169,8 +191,7 @@
                                                 method="POST" style="display:inline-block;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button
-                                                    class="btn btn-sm btn-danger d-flex align-items-center justify-content-center"
+                                                <button class="btn btn-red btn-icon" aria-label="Button"
                                                     onclick="return confirm('Устгах уу?')" title="Устгах">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -205,11 +226,12 @@
                                             </div>
                                             <div class="modal-body">
                                                 <label>Санал өгөх хэрэглэгчид сонгох</label>
-                                                <select name="approvers[]" class="form-select mb-2" multiple required>
+                                                <select name="approvers[]" class="form-select mb-2 select2-approvers"
+                                                    multiple required>
                                                     @foreach ($users as $user)
-                                                        <option value="{{ $user->id }}">{{ $user->name }}
-                                                            ({{ $user->organization->name }})
-                                                            | {{ $user->division?->Div_name }}
+                                                        <option value="{{ $user->id }}">
+                                                            {{ $user->name }} — {{ $user->organization->name }} |
+                                                            {{ $user->division?->Div_name }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -233,4 +255,25 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            $('.select2-approvers').each(function() {
+                let modal = $(this).closest('.modal');
+
+                $(this).select2({
+                    placeholder: "Хэрэглэгч хайх...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: modal
+                });
+            });
+
+            $('.modal').on('hidden.bs.modal', function() {
+                $(this).find('.select2-approvers').val(null).trigger('change');
+            });
+
+
+        });
+    </script>
 @endsection
