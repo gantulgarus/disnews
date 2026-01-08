@@ -49,7 +49,8 @@ class OrderJournal extends Model
         'real_start_date',
         'real_end_date',
         'created_user_id',
-        'dut_dispatcher_id'
+        'dut_dispatcher_id',
+        'tze_dis_name'
     ];
 
     protected $casts = [

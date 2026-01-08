@@ -167,14 +167,19 @@
 
 
                             {{-- Баталсан хүн --}}
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="text-muted small mb-1">Баталсан</label>
                                 <p class="mb-0 fw-semibold">{{ $orderJournal->approver_name }}</p>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="text-muted small mb-1">Албан тушаал</label>
                                 <p class="mb-0 fw-semibold">{{ $orderJournal->approver_position }}</p>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="text-muted small mb-1">Бүртгэсэн диспетчер</label>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->tze_dis_name }}</p>
                             </div>
 
                             {{-- Дамжуулсан ДҮТ-н диспетчер --}}

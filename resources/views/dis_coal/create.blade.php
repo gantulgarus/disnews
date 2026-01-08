@@ -39,7 +39,6 @@
                         </label>
                         <select name="power_plant_id" class="form-select @error('power_plant_id') is-invalid @enderror"
                             required>
-                            <option value="">-- Станц сонгох --</option>
                             @foreach ($powerPlants as $plant)
                                 <option value="{{ $plant->id }}"
                                     {{ old('power_plant_id') == $plant->id ? 'selected' : '' }}>
@@ -82,22 +81,20 @@
                 {{-- Нүүрсний мэдээ --}}
                 <h5 class="text-primary mb-3">Нүүрсний мэдээ</h5>
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Орлого</label>
-                        <input type="number" name="COAL_INCOME" class="form-control" value="{{ old('COAL_INCOME') }}">
+                        <input type="number" step="0.01" name="COAL_INCOME" class="form-control"
+                            value="{{ old('COAL_INCOME') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Зарлага</label>
-                        <input type="number" name="COAL_OUTCOME" class="form-control" value="{{ old('COAL_OUTCOME') }}">
+                        <input type="number" step="0.01" name="COAL_OUTCOME" class="form-control"
+                            value="{{ old('COAL_OUTCOME') }}">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Вагоны тоо</label>
-                        <input type="number" step="0.01" name="COAL_TRAIN_QUANTITY" class="form-control"
-                            value="{{ old('COAL_TRAIN_QUANTITY') }}">
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Үлдэгдэл</label>
-                        <input type="number" name="COAL_REMAIN" class="form-control" value="{{ old('COAL_REMAIN') }}">
+                        <input type="number" step="0.01" name="COAL_REMAIN" class="form-control"
+                            value="{{ old('COAL_REMAIN') }}">
                     </div>
                 </div>
 
@@ -106,22 +103,20 @@
                 {{-- Мазут --}}
                 <h5 class="text-primary mb-3">Мазутын мэдээ</h5>
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Орлого</label>
-                        <input type="number" name="MAZUT_INCOME" class="form-control" value="{{ old('MAZUT_INCOME') }}">
+                        <input type="number" step="0.01" name="MAZUT_INCOME" class="form-control"
+                            value="{{ old('MAZUT_INCOME') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Зарлага</label>
-                        <input type="number" name="MAZUT_OUTCOME" class="form-control" value="{{ old('MAZUT_OUTCOME') }}">
+                        <input type="number" step="0.01" name="MAZUT_OUTCOME" class="form-control"
+                            value="{{ old('MAZUT_OUTCOME') }}">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Тоо</label>
-                        <input type="number" name="MAZUT_TRAIN_QUANTITY" class="form-control"
-                            value="{{ old('MAZUT_TRAIN_QUANTITY') }}">
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Үлдэгдэл</label>
-                        <input type="number" name="MAZUT_REMAIN" class="form-control" value="{{ old('MAZUT_REMAIN') }}">
+                        <input type="number" step="0.01" name="MAZUT_REMAIN" class="form-control"
+                            value="{{ old('MAZUT_REMAIN') }}">
                     </div>
                 </div>
 

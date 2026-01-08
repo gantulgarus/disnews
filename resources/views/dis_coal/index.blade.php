@@ -25,12 +25,13 @@
                 <h4 class="card-title mb-2 mb-md-0">Түлшний мэдээ</h4>
 
                 <form method="GET" action="{{ route('dis_coal.index') }}" class="row g-2 align-items-end mb-0">
-                    <div class="col-12 col-md-auto">
-                        <input type="date" name="date" value="{{ $date }}" class="form-control">
-                    </div>
 
-                    {{-- ДҮТ --}}
+                    {{-- ДҮТ хэрэглэгч --}}
                     @if ($userOrgId == 5)
+                        <div class="col-12 col-md-auto">
+                            <input type="date" name="date" value="{{ $date }}" class="form-control">
+                        </div>
+
                         <div class="col-12 col-md-auto">
                             <select name="power_plant_id" class="form-select">
                                 <option value="">Бүгд станц</option>
@@ -42,21 +43,28 @@
                                 @endforeach
                             </select>
                         </div>
+                    @else
+                        {{-- Станцын хэрэглэгч --}}
+                        <div class="col-12 col-md-auto">
+                            <input type="month" name="month" value="{{ $month }}" class="form-control">
+                        </div>
                     @endif
 
                     <div class="col-12 col-md-auto">
-                        <button type="submit" class="btn btn-primary w-100">
-                            Хайх
-                        </button>
+                        <button type="submit" class="btn btn-primary w-100">Хайх</button>
                     </div>
                 </form>
+
             </div>
 
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
+                    <table class="table table-bordered table-sm table-striped">
                         <thead class="text-center">
                             <tr>
+                                @if ($userOrgId != 5)
+                                    <th rowspan="2">Огноо</th>
+                                @endif
                                 <th rowspan="2">Станц</th>
                                 <th colspan="3">Вагон буулгалт</th>
                                 <th colspan="6">Нүүрс /тонн/</th>
@@ -92,6 +100,11 @@
                         <tbody>
                             @foreach ($disCoals as $disCoal)
                                 <tr>
+                                    @if ($userOrgId != 5)
+                                        <td class="text-center">
+                                            {{ \Carbon\Carbon::parse($disCoal->date)->format('Y-m-d') }}
+                                        </td>
+                                    @endif
                                     <td class="text-center" style="font-size:12px; white-space:nowrap;">
                                         {{ $disCoal->powerPlant?->name }}
                                     </td>
@@ -119,19 +132,26 @@
                                     <td class="text-center">{{ $disCoal->OTHER_MINIG_COAL_SUPPLY }}</td>
 
                                     <td class="text-center">
-                                        <a href="{{ route('dis_coal.edit', $disCoal->id) }}"
-                                            class="btn btn-warning btn-sm">
-                                            <i class="ti ti-edit"></i>
-                                        </a>
+                                        @php
+                                            $isDut = auth()->user()->organization_id == 5;
+                                            $isToday = $disCoal->date == now()->toDateString();
+                                        @endphp
 
-                                        <form action="{{ route('dis_coal.destroy', $disCoal->id) }}" method="POST"
-                                            class="d-inline" onsubmit="return confirm('Устгах уу?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
+                                        @if ($isDut || $isToday)
+                                            <a href="{{ route('dis_coal.edit', $disCoal->id) }}"
+                                                class="btn btn-warning btn-sm">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+
+                                            <form action="{{ route('dis_coal.destroy', $disCoal->id) }}" method="POST"
+                                                class="d-inline" onsubmit="return confirm('Устгах уу?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -140,6 +160,10 @@
 
                         <tfoot class="table-info">
                             <tr>
+                                @if ($userOrgId != 5)
+                                    <td class="text-center">
+                                    </td>
+                                @endif
                                 <td class="text-center"><strong>Нийт:</strong></td>
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('CAME_TRAIN') }}</strong></td>

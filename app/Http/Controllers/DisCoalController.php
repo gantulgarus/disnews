@@ -13,53 +13,71 @@ class DisCoalController extends Controller
     public function index(Request $request)
     {
         if (!auth()->user()->hasPermission('dis_coal.view')) {
-            abort(403);
+            return redirect()->back()->with('error', 'Танд харах эрх байхгүй байна');
         }
 
-        $userOrgId = auth()->user()->organization_id;
-
-        // Хэрэглэгч огноо өгөөгүй бол default-оор өнөөдрийн огноо
-        $date = $request->filled('date') ? $request->date : now()->toDateString();
+        $user = auth()->user();
+        $userOrgId = $user->organization_id;
 
         $query = DisCoal::query();
 
-        // Огноогоор фильтр
-        $query->whereDate('date', $date);
+        /* =========================
+       ДҮТ (ӨДӨРӨӨР)
+    ========================= */
+        if ($userOrgId == 5) {
 
-        if ($userOrgId != 5) {
-            // ДҮТ биш бол зөвхөн өөрийн байгууллагын ДЦС-ууд
-            $query->whereHas('powerPlant', function ($q) use ($userOrgId) {
-                $q->where('organization_id', $userOrgId);
-            });
-        } else {
-            // ДҮТ бол power_plant_id-р фильтр хийх боломжтой
+            $date = $request->filled('date')
+                ? $request->date
+                : now()->toDateString();
+
+            $query->whereDate('date', $date);
+
             if ($request->filled('power_plant_id')) {
                 $query->where('power_plant_id', $request->power_plant_id);
             }
-        }
 
-        $disCoals = $query->latest()->get();
+            $month = null;
 
-        // ДЦС төрлийн станцын жагсаалт (select-д харуулах)
-        $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
-        if ($powerPlantType) {
-            if ($userOrgId == 5) {
-                $powerPlants = PowerPlant::where('power_plant_type_id', $powerPlantType->id)
-                    ->whereNull('parent_id')
-                    ->orderBy('order')
-                    ->get();
-            } else {
-                $powerPlants = PowerPlant::where('organization_id', $userOrgId)
-                    ->where('power_plant_type_id', $powerPlantType->id)
-                    ->whereNull('parent_id')
-                    ->get();
-            }
+            /* =========================
+       СТАНЦ (САРААР)
+    ========================= */
         } else {
-            $powerPlants = collect();
+
+            $month = $request->filled('month')
+                ? $request->month
+                : now()->format('Y-m');
+
+            $query->whereYear('date', substr($month, 0, 4))
+                ->whereMonth('date', substr($month, 5, 2));
+
+            // зөвхөн өөрийн байгууллагын станц
+            $query->whereHas('powerPlant', function ($q) use ($userOrgId) {
+                $q->where('organization_id', $userOrgId);
+            });
+
+            $date = null;
         }
 
-        return view('dis_coal.index', compact('disCoals', 'powerPlants', 'userOrgId', 'date'));
+        $disCoals = $query->orderBy('date', 'asc')->get();
+
+        // ДЦС жагсаалт (ДҮТ-д л хэрэгтэй)
+        $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
+        $powerPlants = $userOrgId == 5 && $powerPlantType
+            ? PowerPlant::where('power_plant_type_id', $powerPlantType->id)
+            ->whereNull('parent_id')
+            ->orderBy('order')
+            ->get()
+            : collect();
+
+        return view('dis_coal.index', compact(
+            'disCoals',
+            'powerPlants',
+            'userOrgId',
+            'date',
+            'month'
+        ));
     }
+
 
 
 
@@ -93,22 +111,28 @@ class DisCoalController extends Controller
             'date' => 'required|date',
             'power_plant_id' => 'required|exists:power_plants,id',
 
+            // Вагон
             'CAME_TRAIN' => 'nullable|integer',
             'UNLOADING_TRAIN' => 'nullable|integer',
             'ULDSEIN_TRAIN' => 'nullable|integer',
-            'COAL_INCOME' => 'nullable|integer',
-            'COAL_OUTCOME' => 'nullable|integer',
-            'COAL_TRAIN_QUANTITY' => 'nullable|numeric',
-            'COAL_REMAIN' => 'nullable|integer',
-            'COAL_REMAIN_BYWINTERDAY' => 'nullable|integer',
-            'MAZUT_INCOME' => 'nullable|integer',
-            'MAZUT_OUTCOME' => 'nullable|integer',
-            'MAZUT_TRAIN_QUANTITY' => 'nullable|integer',
-            'MAZUT_REMAIN' => 'nullable|integer',
+
+            // Нүүрс (тонн) → numeric
+            'COAL_INCOME' => 'nullable|numeric|min:0',
+            'COAL_OUTCOME' => 'nullable|numeric|min:0',
+            'COAL_REMAIN' => 'nullable|numeric|min:0',
+
+            // Мазут (тонн)
+            'MAZUT_INCOME' => 'nullable|numeric|min:0',
+            'MAZUT_OUTCOME' => 'nullable|numeric|min:0',
+            'MAZUT_REMAIN' => 'nullable|numeric|min:0',
+
+            // Нийлүүлэлт (вагон)
             'BAGANUUR_MINING_COAL_D' => 'nullable|integer',
             'SHARINGOL_MINING_COAL_D' => 'nullable|integer',
             'SHIVEEOVOO_MINING_COAL' => 'nullable|integer',
             'OTHER_MINIG_COAL_SUPPLY' => 'nullable|integer',
+
+            // Ажилтан
             'FUEL_SENDING_EMPL' => 'nullable|integer',
             'FUEL_RECEIVER_EMPL' => 'nullable|integer',
         ]);
@@ -121,6 +145,11 @@ class DisCoalController extends Controller
         // COAL_REMAIN_BYDAY
         $input['COAL_REMAIN_BYDAY'] = (!empty($input['COAL_OUTCOME']) && $input['COAL_OUTCOME'] > 0)
             ? round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2)
+            : 0;
+
+        // COAL_TRAIN_QUANTITY
+        $input['COAL_TRAIN_QUANTITY'] = !empty($input['COAL_OUTCOME'])
+            ? round($input['COAL_OUTCOME'] / 65, 2) // нэг вагонд дунджаар 65тн нүүрс адага
             : 0;
 
         // COAL_REMAIN_BYWINTERDAY - станц тус бүрийн тогтмол ашиглан
@@ -136,11 +165,22 @@ class DisCoalController extends Controller
 
     public function edit(string $id)
     {
+        $user = auth()->user();
+        $disCoal = DisCoal::findOrFail($id);
+
+        // Станцын хэрэглэгч + өнгөрсөн өдөр бол хориглоно
+        if (
+            $user->organization_id != 5 &&
+            $disCoal->date < now()->toDateString()
+        ) {
+            return redirect()
+                ->route('dis_coal.index')
+                ->with('error', 'Өнгөрсөн өдрийн мэдээг засах боломжгүй');
+        }
+
         if (!auth()->user()->hasPermission('dis_coal.edit')) {
             return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
         }
-
-        $disCoal = DisCoal::findOrFail($id);
 
         $orgId = auth()->user()->organization_id;
         $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
@@ -175,6 +215,11 @@ class DisCoalController extends Controller
             ? round($input['COAL_REMAIN'] / $input['COAL_OUTCOME'], 2)
             : 0;
 
+        // COAL_TRAIN_QUANTITY
+        $input['COAL_TRAIN_QUANTITY'] = !empty($input['COAL_OUTCOME'])
+            ? round($input['COAL_OUTCOME'] / 65, 2) // нэг вагонд дунджаар 65тн нүүрс адага
+            : 0;
+
         $coalConstant = $powerPlant->coal_constant ?? 1;
         $input['COAL_REMAIN_BYWINTERDAY'] = !empty($input['COAL_REMAIN'])
             ? round($input['COAL_REMAIN'] / $coalConstant, 2)
@@ -188,6 +233,18 @@ class DisCoalController extends Controller
 
     public function destroy(string $id)
     {
+        $user = auth()->user();
+        $disCoal = DisCoal::findOrFail($id);
+
+        if (
+            $user->organization_id != 5 &&
+            $disCoal->date < now()->toDateString()
+        ) {
+            return redirect()
+                ->route('dis_coal.index')
+                ->with('error', 'Өнгөрсөн өдрийн мэдээг устгах боломжгүй');
+        }
+
         if (!auth()->user()->hasPermission('dis_coal.delete')) {
             return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
         }

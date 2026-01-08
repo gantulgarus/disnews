@@ -62,6 +62,11 @@
                     value="{{ $orderJournal->approver_position }}">
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Бүртгэсэн диспетчер</label>
+                <input type="text" name="tze_dis_name" class="form-control" value="{{ $orderJournal->tze_dis_name }}">
+            </div>
+
             {{-- Action --}}
             <button type="submit" class="btn btn-success">Засварлах</button>
             <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Буцах</a>

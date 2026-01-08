@@ -51,6 +51,11 @@
                 <input type="text" name="approver_position" class="form-control">
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Бүртгэсэн диспетчер</label>
+                <input type="text" name="tze_dis_name" class="form-control">
+            </div>
+
             <button type="submit" class="btn btn-primary">Хадгалах</button>
             <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Буцах</a>
         </form>

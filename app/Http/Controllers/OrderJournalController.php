@@ -109,6 +109,7 @@ class OrderJournalController extends Controller
             'planned_end_date' => 'required|date',
             'approver_name' => 'nullable|string|max:255',
             'approver_position' => 'nullable|string|max:255',
+            'tze_dis_name' => 'nullable|string|max:255',
         ]);
 
         OrderJournal::create($request->all());
@@ -156,6 +157,7 @@ class OrderJournalController extends Controller
             'planned_end_date' => 'required|date',
             'approver_name' => 'nullable|string|max:255',
             'approver_position' => 'nullable|string|max:255',
+            'tze_dis_name' => 'nullable|string|max:255',
         ]);
 
         $orderJournal->update($input);
