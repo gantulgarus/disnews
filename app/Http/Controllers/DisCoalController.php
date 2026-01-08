@@ -19,7 +19,7 @@ class DisCoalController extends Controller
         $user = auth()->user();
         $userOrgId = $user->organization_id;
 
-        $query = DisCoal::query();
+        $query = DisCoal::query()->with('powerPlant');
 
         /* =========================
        ДҮТ (ӨДӨРӨӨР)
@@ -35,6 +35,11 @@ class DisCoalController extends Controller
             if ($request->filled('power_plant_id')) {
                 $query->where('power_plant_id', $request->power_plant_id);
             }
+
+            // PowerPlant table-тай join хийж, order баганаар эрэмбэлэх
+            $query->leftJoin('power_plants', 'dis_coals.power_plant_id', '=', 'power_plants.id')
+                ->orderBy('power_plants.`Order`', 'asc')
+                ->select('dis_coals.*'); // essential, эсвэл бүх багануудыг select хийх
 
             $month = null;
 
@@ -55,10 +60,12 @@ class DisCoalController extends Controller
                 $q->where('organization_id', $userOrgId);
             });
 
+            $query->orderBy('date', 'asc');
+
             $date = null;
         }
 
-        $disCoals = $query->orderBy('date', 'asc')->get();
+        $disCoals = $query->get();
 
         // ДЦС жагсаалт (ДҮТ-д л хэрэгтэй)
         $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
