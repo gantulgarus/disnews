@@ -12,4 +12,9 @@ class PermissionLevel extends Model
     {
         return $this->hasMany(User::class, 'permission_level_id');
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_level_permissions');
+    }
 }

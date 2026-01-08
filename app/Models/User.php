@@ -60,6 +60,11 @@ class User extends Authenticatable
         )->whereNull('power_plants.parent_id'); // Зөвхөн үндсэн станцууд
     }
 
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions');
+    }
+
     public function permissionLevel()
     {
         return $this->belongsTo(PermissionLevel::class, 'permission_level_id');
@@ -91,5 +96,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        // 1. User-д шууд олгосон эрх
+        if ($this->permissions->contains('name', $permission)) {
+            return true;
+        }
+
+        // 2. Permission level-ээс авсан эрх
+        return $this->permissionLevel?->permissions
+            ->contains('name', $permission) ?? false;
     }
 }

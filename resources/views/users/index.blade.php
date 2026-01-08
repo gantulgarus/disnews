@@ -57,8 +57,13 @@
                                     </a>
 
                                     {{-- Нууц үг солих товч --}}
-                                    <a href="{{ route('users.edit-password', $user) }}" class="btn btn-sm btn-warning">
+                                    <a href="{{ route('users.edit-password', $user) }}" class="btn btn-sm btn-primary">
                                         <i class="ti ti-lock"></i> Нууц үг
+                                    </a>
+
+                                    {{-- Хэрэглэгчийн эрх тохируулах --}}
+                                    <a href="{{ route('users.edit-permissions', $user) }}" class="btn btn-sm btn-info">
+                                        <i class="ti ti-shield-lock"></i> Эрх
                                     </a>
 
                                     {{-- Устгах --}}

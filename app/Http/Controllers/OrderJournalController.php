@@ -16,6 +16,11 @@ class OrderJournalController extends Controller
      */
     public function index()
     {
+        // check permission
+        if (!auth()->user()->hasPermission('order_journals.view')) {
+            abort(403);
+        }
+
         $user = Auth::user();
 
         // Query эхлүүлэх

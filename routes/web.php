@@ -6,12 +6,14 @@ use App\Http\Controllers\SmsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TnewsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BufVIntController;
 use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PowerPlantController;
 use App\Http\Controllers\OrderJournalController;
 use App\Http\Controllers\OrganizationController;
@@ -23,7 +25,6 @@ use App\Http\Controllers\PowerPlantReadingController;
 use App\Http\Controllers\StationThermoDataController;
 use App\Http\Controllers\ThermoDailyRegimeController;
 use App\Http\Controllers\AltaiRegionCapacityController;
-use App\Http\Controllers\BufVIntController;
 use App\Http\Controllers\DailyBalanceBatteryController;
 use App\Http\Controllers\DailyBalanceJournalController;
 use App\Http\Controllers\DailyPowerEquipmentController;
@@ -232,6 +233,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/bufvint/today', [\App\Http\Controllers\BufVIntController::class, 'todayData'])->name('bufvint.today');
     Route::post('/ru-xml/import', [BufVIntController::class, 'importRussianXml'])
         ->name('ru-xml.import');
+
+    Route::prefix('users')->name('users.')->middleware('auth')->group(function () {
+        Route::get('{user}/permissions', [UserController::class, 'editPermissions'])->name('edit-permissions');
+        Route::post('{user}/permissions', [UserController::class, 'updatePermissions'])->name('update-permissions');
+    });
+
+    Route::prefix('permissions')->name('permissions.')->middleware('auth')->group(function () {
+        Route::get('/', [PermissionController::class, 'index'])->name('index');
+        Route::get('/create', [PermissionController::class, 'create'])->name('create');
+        Route::post('/', [PermissionController::class, 'store'])->name('store');
+    });
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');

@@ -66,112 +66,115 @@
                 @endphp
 
 
+                @if (auth()->user()->hasPermission('operations.view'))
+                    <li class="nav-item dropdown {{ $isOperationActive ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="false" role="button" aria-expanded="false">
+                            <span
+                                class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                                    <path d="M12 12l8 -4.5" />
+                                    <path d="M12 12l0 9" />
+                                    <path d="M12 12l-8 -4.5" />
+                                    <path d="M16 5.25l-8 4.5" />
+                                </svg>
+                            </span>
+                            <span class="nav-link-title">Шуурхай ажиллагаа</span>
+                        </a>
 
-                <li class="nav-item dropdown {{ $isOperationActive ? 'active' : '' }}">
-                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
-                        data-bs-auto-close="false" role="button" aria-expanded="false">
-                        <span
-                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
-                                <path d="M12 12l8 -4.5" />
-                                <path d="M12 12l0 9" />
-                                <path d="M12 12l-8 -4.5" />
-                                <path d="M16 5.25l-8 4.5" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Шуурхай ажиллагаа</span>
-                    </a>
+                        <div class="dropdown-menu {{ $isOperationActive ? 'show' : '' }}">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    @if ($orgId == 5)
+                                        <a class="dropdown-item {{ request()->routeIs('reports.dailyReport') ? 'active' : '' }}"
+                                            href="{{ route('reports.dailyReport') }}">
+                                            Хоногийн мэдээ
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('reports.localDailyReport') ? 'active' : '' }}"
+                                            href="{{ route('reports.localDailyReport') }}">
+                                            Орон нутаг мэдээ
+                                        </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('order_journals.view'))
+                                        <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
+                                            href="{{ route('order-journals.index') }}">
+                                            Захиалгын журнал
+                                        </a>
+                                    @endif
+                                    @if ($orgId == 5)
+                                        <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
+                                            href="{{ route('tnews.index') }}">
+                                            Тасралтын мэдээ
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
+                                            href="{{ route('power-distribution-works.index') }}">
+                                            Захиалгат ажил
+                                        </a>
 
-                    <div class="dropdown-menu {{ $isOperationActive ? 'show' : '' }}">
-                        <div class="dropdown-menu-columns">
-                            <div class="dropdown-menu-column">
-                                @if ($orgId == 5)
-                                    <a class="dropdown-item {{ request()->routeIs('reports.dailyReport') ? 'active' : '' }}"
-                                        href="{{ route('reports.dailyReport') }}">
-                                        Хоногийн мэдээ
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('reports.localDailyReport') ? 'active' : '' }}"
-                                        href="{{ route('reports.localDailyReport') }}">
-                                        Орон нутаг мэдээ
-                                    </a>
-                                @endif
-                                <a class="dropdown-item {{ request()->routeIs('order-journals.index') ? 'active' : '' }}"
-                                    href="{{ route('order-journals.index') }}">
-                                    Захиалгын журнал
-                                </a>
-                                @if ($orgId == 5)
-                                    <a class="dropdown-item {{ request()->routeIs('tnews.index') ? 'active' : '' }}"
-                                        href="{{ route('tnews.index') }}">
-                                        Тасралтын мэдээ
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('power-distribution-works.index') ? 'active' : '' }}"
-                                        href="{{ route('power-distribution-works.index') }}">
-                                        Захиалгат ажил
+                                        <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.report') ? 'active' : '' }}"
+                                            href="{{ route('daily-balance-journals.report') }}">
+                                            Тооцооны журнал
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.report') ? 'active' : '' }}"
+                                            href="{{ route('daily_power_hour_reports.report') }}">
+                                            Ачааллын график
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
+                                            href="{{ route('sms.index') }}">
+                                            СМС илгээх
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('zenon.hourly-power') ? 'active' : '' }}"
+                                            href="{{ route('zenon.hourly-power') }}">
+                                            Скада
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('zenon.peak-hour-power') ? 'active' : '' }}"
+                                            href="{{ route('zenon.peak-hour-power') }}">
+                                            Скада Их ачаалал
+                                        </a>
+                                    @endif
+
+                                    @if ($orgId != 5)
+                                        <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
+                                            href="{{ route('daily-balance-journals.index') }}">
+                                            Тооцооны журнал
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
+                                            href="{{ route('daily_power_hour_reports.index') }}">
+                                            Ачааллын график
+                                        </a>
+                                    @endif
+
+                                    @if ($orgTypeId != null && $orgTypeId == 3)
+                                        <a class="dropdown-item {{ request()->routeIs('daily-balance-batteries.index') ? 'active' : '' }}"
+                                            href="{{ route('daily-balance-batteries.index') }}">
+                                            Тооцооны журнал БХ
+                                        </a>
+                                    @endif
+                                    @if ($orgId == 27)
+                                        <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
+                                            href="{{ route('daily-balance-import-exports.index') }}">
+                                            Тооцооны журнал Импорт/Экспорт
+                                        </a>
+                                    @endif
+
+                                    <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
+                                        href="{{ route('telephone_messages.index') }}">
+                                        Телефон мэдээ
                                     </a>
 
-                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.report') ? 'active' : '' }}"
-                                        href="{{ route('daily-balance-journals.report') }}">
-                                        Тооцооны журнал
+                                    <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
+                                        href="{{ route('dis_coal.index') }}">
+                                        Түлшний мэдээ
                                     </a>
-                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.report') ? 'active' : '' }}"
-                                        href="{{ route('daily_power_hour_reports.report') }}">
-                                        Ачааллын график
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('sms.index') ? 'active' : '' }}"
-                                        href="{{ route('sms.index') }}">
-                                        СМС илгээх
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('zenon.hourly-power') ? 'active' : '' }}"
-                                        href="{{ route('zenon.hourly-power') }}">
-                                        Скада
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('zenon.peak-hour-power') ? 'active' : '' }}"
-                                        href="{{ route('zenon.peak-hour-power') }}">
-                                        Скада Их ачаалал
-                                    </a>
-                                @endif
-
-                                @if ($orgId != 5)
-                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
-                                        href="{{ route('daily-balance-journals.index') }}">
-                                        Тооцооны журнал
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
-                                        href="{{ route('daily_power_hour_reports.index') }}">
-                                        Ачааллын график
-                                    </a>
-                                @endif
-
-                                @if ($orgTypeId != null && $orgTypeId == 3)
-                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-batteries.index') ? 'active' : '' }}"
-                                        href="{{ route('daily-balance-batteries.index') }}">
-                                        Тооцооны журнал БХ
-                                    </a>
-                                @endif
-                                @if ($orgId == 27)
-                                    <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
-                                        href="{{ route('daily-balance-import-exports.index') }}">
-                                        Тооцооны журнал Импорт/Экспорт
-                                    </a>
-                                @endif
-
-                                <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
-                                    href="{{ route('telephone_messages.index') }}">
-                                    Телефон мэдээ
-                                </a>
-
-                                <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
-                                    href="{{ route('dis_coal.index') }}">
-                                    Түлшний мэдээ
-                                </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                @endif
 
                 @php
                     $regimeRoutes = [
@@ -382,6 +385,11 @@
                                     <a class="dropdown-item {{ request()->routeIs('users.index') ? 'active' : '' }}"
                                         href="{{ route('users.index') }}">
                                         Хэрэглэгч
+                                    </a>
+
+                                    <a class="dropdown-item {{ request()->routeIs('permissions.index') ? 'active' : '' }}"
+                                        href="{{ route('permissions.index') }}">
+                                        Эрхийн тохиргоо
                                     </a>
 
                                 </div>

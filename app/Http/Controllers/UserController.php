@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Division;
+use App\Models\Permission;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Models\PermissionLevel;
@@ -168,5 +169,39 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'Нууц үг амжилттай солигдлоо.');
+    }
+
+    // хандах эрхийн тохиргоо
+    public function editPermissions(User $user)
+    {
+        // Админ эсэхийг шалгах
+        // if (!auth()->user()->hasPermission('users.edit-permissions')) {
+        //     abort(403);
+        // }
+
+        // Бүх боломжит permission-үүд
+        $permissions = Permission::all()->groupBy('group');
+
+        // Хэрэглэгчийн одоо байгаа permission-үүд
+        $userPermissions = $user->permissions->pluck('id')->toArray();
+
+        return view('users.permissions', compact('user', 'permissions', 'userPermissions'));
+    }
+
+    public function updatePermissions(Request $request, User $user)
+    {
+        // if (!auth()->user()->hasPermission('users.edit-permissions')) {
+        //     abort(403);
+        // }
+
+        $validated = $request->validate([
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
+        // Sync permission-үүд
+        $user->permissions()->sync($validated['permissions'] ?? []);
+
+        return redirect()->route('users.index')->with('success', 'Хэрэглэгчийн эрх амжилттай шинэчлэгдлээ.');
     }
 }
