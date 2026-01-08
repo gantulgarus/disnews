@@ -43,18 +43,18 @@
         // Хаах товч харуулах эсэх
         $canClose = $orderJournal->status === \App\Models\OrderJournal::STATUS_OPEN && $userOrgCode === 102 && $isDisp;
 
-        // Үйлдлийн текстийг төлөвөөс хамаарч тодорхойлох
-        function getActionText($history)
-        {
-            return match ($history->new_status) {
-                \App\Models\OrderJournal::STATUS_FORWARDED => 'Захиалга бусад албанд илгээв',
-                \App\Models\OrderJournal::STATUS_ACCEPTED => 'Захиалга зөвшөөрөв',
-                \App\Models\OrderJournal::STATUS_APPROVED => 'Захиалга батлав',
-                \App\Models\OrderJournal::STATUS_OPEN => 'Захиалга нээв',
-                \App\Models\OrderJournal::STATUS_CLOSED => 'Захиалга хаав',
-                default => 'Захиалгын төлөв өөрчилөв',
-            };
-        }
+        // Засах, устгах боломжтой эсэх
+        $isCreator = $orderJournal->created_user_id === $user->id;
+        $canEditOrDelete = ($isCreator && $orderJournal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDisp;
+
+        // Санал авахаар илгээх/засах товч харуулах эсэх
+        $excludedStatuses = [
+            \App\Models\OrderJournal::STATUS_APPROVED, // Батлагдсан
+            \App\Models\OrderJournal::STATUS_OPEN, // Нээлттэй
+            \App\Models\OrderJournal::STATUS_CLOSED, // Хаалттай
+        ];
+
+        $canForward = $isDisp && !$isDispLead && !$isGenDisp && !in_array($orderJournal->status, $excludedStatuses);
     @endphp
 
     <div class="container-fluid py-4">
@@ -67,14 +67,40 @@
             </a>
         </div>
 
-
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
         <div class="row g-4">
             {{-- Зүүн багана: Захиалгын мэдээлэл --}}
             <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Захиалгын дэлгэрэнгүй мэдээлэл</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="ti ti-file-text me-2"></i>Захиалгын дэлгэрэнгүй мэдээлэл
+                        </h5>
+
+                        <div class="d-flex gap-2">
+
+                            {{-- Санал авахаар бусад алба руу илгээх --}}
+                            @if ($canForward)
+                                <button class="btn btn-cyan btn-icon" data-bs-toggle="modal"
+                                    data-bs-target="#forwardModal{{ $orderJournal->id }}" title="Санал авахаар илгээх">
+                                    <i class="ti ti-send"></i>
+                                </button>
+                            @endif
+
+                            {{-- Засах --}}
+                            @if ($canEditOrDelete)
+                                <a href="{{ route('order-journals.edit', $orderJournal->id) }}"
+                                    class="btn btn-yellow btn-icon" title="Засах">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
@@ -110,7 +136,7 @@
                             </div>
 
                             {{-- Байгууллага --}}
-                            <div class="col-12">
+                            <div class="col-6">
                                 <label class="text-muted small mb-1">Байгууллага</label>
                                 <p class="mb-0 fw-bold">{{ $orderJournal->organization->name }}</p>
                             </div>
@@ -153,7 +179,8 @@
                                     <i class="ti ti-calendar-check me-1"></i>
                                     Эхлэх хугацаа
                                 </label>
-                                <p class="mb-0 fw-semibold">{{ $orderJournal->planned_start_date->format('Y-m-d H:i') }}</p>
+                                <p class="mb-0 fw-semibold">{{ $orderJournal->planned_start_date->format('Y-m-d H:i') }}
+                                </p>
                             </div>
 
                             <div class="col-md-6">
@@ -167,17 +194,20 @@
 
 
                             {{-- Баталсан хүн --}}
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="text-muted small mb-1">Баталсан</label>
-                                <p class="mb-0 fw-semibold">{{ $orderJournal->approver_name }}</p>
+                                <p class="mb-0"><span class="fw-semibold">{{ $orderJournal->approver_name }} </span>-
+                                    <span class="fs-5">{{ $orderJournal->approver_position }}</span>
+                                </p>
+
                             </div>
 
-                            <div class="col-md-4">
+                            {{-- <div class="col-md-4">
                                 <label class="text-muted small mb-1">Албан тушаал</label>
                                 <p class="mb-0 fw-semibold">{{ $orderJournal->approver_position }}</p>
-                            </div>
+                            </div> --}}
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="text-muted small mb-1">Бүртгэсэн диспетчер</label>
                                 <p class="mb-0 fw-semibold">{{ $orderJournal->tze_dis_name }}</p>
                             </div>
@@ -243,12 +273,11 @@
                                                     </div>
                                                     <div class="d-flex align-items-center mb-2">
                                                         <i class="ti ti-briefcase text-muted me-2" style="width: 20px;"></i>
-                                                        <span>{{ $orderJournal->createdUser->division?->Div_name ?? 'Байхгүй' }}</span>
+                                                        <span>Диспетчер</span>
                                                     </div>
                                                     <div class="d-flex align-items-center">
                                                         <i class="ti ti-user text-muted me-2" style="width: 20px;"></i>
-                                                        <span
-                                                            class="fw-semibold">{{ $orderJournal->createdUser->name }}</span>
+                                                        <span class="fw-semibold">{{ $orderJournal->tze_dis_name }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 text-end">
@@ -414,7 +443,10 @@
                     {{-- Батлах, зөвшөөрөх товч --}}
                     @if ($showApproveButtons)
                         <div class="d-grid">
-                            @if ($isDisp && $orderJournal->order_type === 'Аваарын')
+                            @if (
+                                $isDisp &&
+                                    $orderJournal->order_type === 'Аваарын' &&
+                                    $orderJournal->status !== \App\Models\OrderJournal::STATUS_APPROVED)
                                 <button class="btn btn-danger btn-lg w-100 btn-w-100-lg mb-3" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
@@ -422,7 +454,7 @@
                                 </button>
                             @endif
 
-                            @if ($isDispLead && !$dispLeadDecided)
+                            @if ($isDispLead && !$dispLeadDecided && $orderJournal->status !== \App\Models\OrderJournal::STATUS_APPROVED)
                                 <button class="btn btn-danger btn-lg w-100 btn-w-100-lg mb-3" data-bs-toggle="modal"
                                     data-bs-target="#approveModal">
                                     <i class="ti ti-check fs-1 me-2 text-white"></i>
@@ -470,9 +502,29 @@
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
                                             <h6 class="mb-1">
-                                                <i class="bi bi-person-circle me-1"></i>{{ $approval->user->name }}
-                                                ({{ $approval->user->division?->Div_name }})
-                                                {{ $approval->updated_at->format('Y-m-d H:i') }}
+                                                <div class="d-flex align-items-center mb-2">
+                                                    {{-- Хэрэглэгчийн icon --}}
+
+
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1 d-flex align-items-center">
+                                                            <i
+                                                                class="ti ti-user me-2 text-secondary"></i>{{ $approval->user->name }}
+                                                            {{-- Албан тушаал icon --}}
+                                                            @if ($approval->user->division?->Div_name)
+                                                                <i class="ti ti-briefcase ms-2 me-1 text-secondary"></i>
+                                                                <span
+                                                                    class="text-secondary small">{{ $approval->user->division->Div_name }}</span>
+                                                            @endif
+                                                        </h6>
+                                                        {{-- Огноо icon --}}
+                                                        <div class="text-muted small d-flex align-items-center">
+                                                            <i class="ti ti-calendar-event me-1"></i>
+                                                            {{ $approval->updated_at->format('Y-m-d H:i') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                             </h6>
                                             <small class="text-muted">
                                                 @if (!is_null($approval->approved))
@@ -596,6 +648,21 @@
             @endif
         </div>
 
+        {{-- Устгах --}}
+        @if ($canEditOrDelete)
+            <div>
+                <form action="{{ route('order-journals.destroy', $orderJournal->id) }}" method="POST"
+                    onsubmit="return confirm('Та устгахдаа итгэлтэй байна уу?')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-outline-danger mt-3" title="Устгах">
+                        <i class="ti ti-trash-x fs-5 me-1"></i>
+                        Захиалгыг устгах
+                    </button>
+                </form>
+            </div>
+        @endif
+
         {{-- Ерөнхий диспетчер батлах --}}
         <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -662,7 +729,12 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Бодит эхэлсэн цаг</label>
-                                <input type="datetime-local" name="real_start_date" class="form-control" required>
+                                <div class="input-icon">
+                                    <span class="input-icon-addon">
+                                        <i class="ti ti-calendar-time"></i>
+                                    </span>
+                                    <input type="text" name="real_start_date" class="form-control datetime" required>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Тайлбар (заавал биш)</label>
@@ -692,17 +764,61 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">Бодит дууссан цаг</label>
-                                <input type="datetime-local" name="real_end_date" class="form-control" required>
+                                <div class="input-icon">
+                                    <span class="input-icon-addon">
+                                        <i class="ti ti-calendar-time"></i>
+                                    </span>
+                                    <input type="text" name="real_end_date" class="form-control datetime"
+                                        placeholder="Огноо, цаг сонгох" required>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Тайлбар (заавал биш)</label>
-                                <textarea name="comment" class="form-control" rows="3"></textarea>
+                                <textarea name="comment" class="form-control" rows="3" placeholder="Нэмэлт тайлбар оруулах..."></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Буцах</button>
                             <button type="submit" class="btn btn-success"
                                 onclick="return confirm('Та энэ захиалгыг хаахад итгэлтэй байна уу?')">Хаах</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Санал авахаар бусад алба руу илгээх / засварлах --}}
+        <div class="modal fade" id="forwardModal{{ $orderJournal->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('order-journals.updateApprovers', $orderJournal->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="modal-header">
+                            <h5 class="modal-title">Санал өгөх хэрэглэгчдийг шинэчлэх</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label>Санал өгөх хэрэглэгчид</label>
+                            <select name="approvers[]" class="form-select select2-approvers" multiple required>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ $orderJournal->approvals->contains('user_id', $user->id) ? 'selected' : '' }}>
+                                        {{ $user->name }} — {{ $user->organization->name }} |
+                                        {{ $user->division?->Div_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <label class="mt-2">Тайлбар</label>
+                            <textarea name="comment" class="form-control" rows="3">{{ old('comment', $orderJournal->forward_comment ?? '') }}</textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-primary">Хадгалах</button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Буцах</button>
                         </div>
                     </form>
                 </div>
@@ -791,4 +907,29 @@
             font-weight: 600;
         }
     </style>
+@endsection
+
+@section('scripts')
+    <script>
+        // Document бэлэн болтол хүлээх
+        document.addEventListener('DOMContentLoaded', function() {
+            // Огноо + цаг
+            initFlatpickr(".datetime");
+
+            $('.select2-approvers').each(function() {
+                let modal = $(this).closest('.modal');
+
+                $(this).select2({
+                    placeholder: "Хэрэглэгч хайх...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: modal
+                });
+            });
+
+            $('.modal').on('hidden.bs.modal', function() {
+                $(this).find('.select2-approvers').val(null).trigger('change');
+            });
+        });
+    </script>
 @endsection

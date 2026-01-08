@@ -67,7 +67,14 @@ class OrderJournalController extends Controller
         $journals = $query->paginate(25)->withQueryString();
 
         // Өөрийн байгууллагын хэрэглэгчид авах
-        $users = User::where('organization_id', $user->organization_id)->get();
+        $excludedPermissions = ['DISP_LEAD', 'GEN_DISP', 'DISP'];
+
+        $users = User::where('organization_id', $user->organization_id)
+            ->whereHas('permissionLevel', function ($query) use ($excludedPermissions) {
+                $query->whereNotIn('code', $excludedPermissions);
+            })
+            ->get();
+
 
         return view('order_journals.index', compact('journals', 'users'));
     }
@@ -115,7 +122,7 @@ class OrderJournalController extends Controller
         OrderJournal::create($request->all());
 
         return redirect()->route('order-journals.index')
-            ->with('success', 'Order Journal created successfully.');
+            ->with('success', 'Захиалгын журнал амжилттай үүслээ.');
     }
 
     /**
@@ -123,7 +130,16 @@ class OrderJournalController extends Controller
      */
     public function show(OrderJournal $orderJournal)
     {
-        return view('order_journals.show', compact('orderJournal'));
+        $user = Auth::user();
+        $excludedPermissions = ['DISP_LEAD', 'GEN_DISP', 'DISP'];
+
+        $users = User::where('organization_id', $user->organization_id)
+            ->whereHas('permissionLevel', function ($query) use ($excludedPermissions) {
+                $query->whereNotIn('code', $excludedPermissions);
+            })
+            ->get();
+
+        return view('order_journals.show', compact('orderJournal', 'users'));
     }
 
     /**
@@ -162,7 +178,7 @@ class OrderJournalController extends Controller
 
         $orderJournal->update($input);
 
-        return redirect()->route('order-journals.index')->with('success', 'Order Journal updated successfully.');
+        return redirect()->route('order-journals.index')->with('success', 'Захиалгын журнал амжилттай шинэчлэгдлээ.');
     }
 
     /**
@@ -176,7 +192,7 @@ class OrderJournalController extends Controller
 
         $orderJournal->delete();
 
-        return redirect()->route('order-journals.index')->with('success', 'Order Journal deleted successfully.');
+        return redirect()->route('order-journals.index')->with('success', 'Захиалгын журнал амжилттай устгагдлаа.');
     }
 
     // Бусад алба руу санал авахаар илгээх
@@ -226,6 +242,37 @@ class OrderJournalController extends Controller
         return redirect()->route('order-journals.show', $orderJournal)
             ->with('success', 'Захиалгыг forward хийлээ, санал авах хүсэлт илгээгдлээ.');
     }
+
+    // Санал өгөх хэрэглэгчид шинэчлэх
+    public function updateApprovers(Request $request, OrderJournal $orderJournal)
+    {
+        $request->validate([
+            'approvers' => 'required|array',
+            'approvers.*' => 'exists:users,id',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $newApprovers = $request->approvers;
+
+        // 1️⃣ Одоогийн approval-уудыг шинэчилнэ
+        $orderJournal->approvals()->whereNotIn('user_id', $newApprovers)->delete();
+
+        foreach ($newApprovers as $userId) {
+            $orderJournal->approvals()->updateOrCreate(
+                ['user_id' => $userId],
+                ['approved' => null] // Санал өгөөгүй гэж тохируулна
+            );
+        }
+
+        // 2️⃣ Forward тайлбар хадгалах
+        if ($request->comment) {
+            $orderJournal->forward_comment = $request->comment;
+            $orderJournal->save();
+        }
+
+        return redirect()->back()->with('success', 'Санал өгөх хэрэглэгчид шинэчлэгдлээ.');
+    }
+
 
     // Санал өгөх (approval дээр санал өгөх)
     public function approveOpinion(Request $request, OrderJournalApproval $approval)

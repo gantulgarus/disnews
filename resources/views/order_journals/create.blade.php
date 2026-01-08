@@ -33,11 +33,23 @@
             <div class="mb-3 row">
                 <div class="col">
                     <label class="form-label">Эхлэх хугацаа</label>
-                    <input type="datetime-local" name="planned_start_date" class="form-control">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+                        <input type="text" name="planned_start_date" class="form-control datetime"
+                            placeholder="Огноо сонгох">
+                    </div>
                 </div>
                 <div class="col">
                     <label class="form-label">Дуусах хугацаа</label>
-                    <input type="datetime-local" name="planned_end_date" class="form-control">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+                        <input type="text" name="planned_end_date" class="form-control datetime"
+                            placeholder="Огноо сонгох">
+                    </div>
                 </div>
             </div>
 
@@ -60,4 +72,14 @@
             <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Буцах</a>
         </form>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        // Document бэлэн болтол хүлээх
+        document.addEventListener('DOMContentLoaded', function() {
+            // Огноо + цаг
+            initFlatpickr(".datetime");
+        });
+    </script>
 @endsection

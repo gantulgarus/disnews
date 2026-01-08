@@ -73,7 +73,7 @@ class OrderJournal extends Model
                 $journal->created_user_id = auth()->id();
 
                 // Админ биш бол зөвхөн өөрийн байгууллага
-                if (auth()->user()->permissionLevel?->code !== 'ADM') {
+                if (auth()->user()->permissionLevel?->code !== 'DISP') {
                     $journal->organization_id = auth()->user()->organization_id;
                 }
             }

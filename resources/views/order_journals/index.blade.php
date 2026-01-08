@@ -96,7 +96,11 @@
                     </thead>
                     <tbody>
                         @foreach ($journals as $journal)
-                            <tr @if ($journal->approvals->where('user_id', auth()->id())->whereNull('approved')->count()) class="table-warning" @endif>
+                            <tr @class([
+                                'table-warning' => $journal->approvals->where('user_id', auth()->id())->whereNull('approved')->count(),
+                                'table-secondary text-muted' =>
+                                    $journal->status === \App\Models\OrderJournal::STATUS_CLOSED,
+                            ])>
                                 <td class="text-center">{{ $journal->order_number }}</td>
                                 <td>
                                     @php
@@ -159,7 +163,7 @@
                                         @php
                                             $user = auth()->user();
                                             $permission = $user->permissionLevel?->code;
-                                            $isCreator = $journal->user_id === $user->id;
+                                            $isCreator = $journal->created_user_id === $user->id;
                                             $isDUT = $user->organization_id == 5; // ДҮТ байгууллага
                                             $isDutDispatcher = $user->permissionLevel?->code === 'DISP';
 
@@ -170,8 +174,8 @@
 
                                         <!-- ДҮТ-н дис: Санал авахаар илгээх товч (зөвхөн Шинэ төлөвт, DISP_LEAD болон GEN_DISP биш бол) -->
                                         @if ($isDUT && !$isDispLead && !$isGenDisp && $journal->status === \App\Models\OrderJournal::STATUS_NEW)
-                                            <button class="btn btn-primary btn-icon" aria-label="Button"
-                                                data-bs-toggle="modal" data-bs-target="#forwardModal{{ $journal->id }}"
+                                            <button class="btn btn-cyan btn-icon" aria-label="Button" data-bs-toggle="modal"
+                                                data-bs-target="#forwardModal{{ $journal->id }}"
                                                 title="Санал авахаар илгээх">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -186,7 +190,7 @@
                                         @endif
 
                                         <!-- Засах болон устгах товч: зөвхөн үүсгэгч, зөвхөн Шинэ төлөвт -->
-                                        @if (($isCreator && $journal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDutDispatcher)
+                                        {{-- @if (($isCreator && $journal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDutDispatcher)
                                             <a href="{{ route('order-journals.edit', $journal->id) }}"
                                                 class="btn btn-yellow btn-icon" aria-label="Button" title="Засах">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -220,7 +224,7 @@
                                                     </svg>
                                                 </button>
                                             </form>
-                                        @endif
+                                        @endif --}}
                                     </div>
                                 </td>
                             </tr>
