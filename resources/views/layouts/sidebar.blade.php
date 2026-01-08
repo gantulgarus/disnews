@@ -166,10 +166,12 @@
                                         Телефон мэдээ
                                     </a>
 
-                                    <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
-                                        href="{{ route('dis_coal.index') }}">
-                                        Түлшний мэдээ
-                                    </a>
+                                    @if (auth()->user()->hasPermission('dis_coal.view'))
+                                        <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
+                                            href="{{ route('dis_coal.index') }}">
+                                            Түлшний мэдээ
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -192,88 +194,90 @@
                 @endphp
 
 
-                <li class="nav-item dropdown {{ $isRegimeActive ? 'active' : '' }}">
-                    <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
-                        data-bs-auto-close="false" role="button" aria-expanded="false">
-                        <span class="nav-link-icon d-md-none d-lg-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                class="icon icon-tabler icons-tabler-outline icon-tabler-mobiledata">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M16 12v-8" />
-                                <path d="M8 20v-8" />
-                                <path d="M13 7l3 -3l3 3" />
-                                <path d="M5 17l3 3l3 -3" />
-                            </svg>
-                        </span>
-                        <span class="nav-link-title">Горим төлөвлөлт</span>
-                    </a>
+                @if (auth()->user()->hasPermission('regimes.view'))
+                    <li class="nav-item dropdown {{ $isRegimeActive ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
+                            data-bs-auto-close="false" role="button" aria-expanded="false">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-mobiledata">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M16 12v-8" />
+                                    <path d="M8 20v-8" />
+                                    <path d="M13 7l3 -3l3 3" />
+                                    <path d="M5 17l3 3l3 -3" />
+                                </svg>
+                            </span>
+                            <span class="nav-link-title">Горим төлөвлөлт</span>
+                        </a>
 
-                    <div class="dropdown-menu {{ $isRegimeActive ? 'show' : '' }}">
-                        <div class="dropdown-menu-columns">
-                            <div class="dropdown-menu-column">
-                                @if ($orgId == 5)
-                                    <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
-                                        href="{{ route('electric_daily_regimes.report') }}">
-                                        Цахилгааны горим
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('station_thermo.report') ? 'active' : '' }}"
-                                        href="{{ route('thermo-daily-regimes.report') }}">
-                                        Дулааны горим
-                                    </a>
-                                    {{-- <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
+                        <div class="dropdown-menu {{ $isRegimeActive ? 'show' : '' }}">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    @if ($orgId == 5)
+                                        <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.report') ? 'active' : '' }}"
+                                            href="{{ route('electric_daily_regimes.report') }}">
+                                            Цахилгааны горим
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('station_thermo.report') ? 'active' : '' }}"
+                                            href="{{ route('thermo-daily-regimes.report') }}">
+                                            Дулааны горим
+                                        </a>
+                                        {{-- <a class="dropdown-item {{ request()->routeIs('station_thermo.news') ? 'active' : '' }}"
                                         href="{{ route('station_thermo.news') }}">
                                         Дулааны мэдээ
                                     </a> --}}
-                                    <a class="dropdown-item {{ request()->routeIs('power-plant-readings.daily-overview') ? 'active' : '' }}"
-                                        href="{{ route('power-plant-readings.daily-overview') }}">
-                                        Дулааны мэдээ
-                                    </a>
+                                        <a class="dropdown-item {{ request()->routeIs('power-plant-readings.daily-overview') ? 'active' : '' }}"
+                                            href="{{ route('power-plant-readings.daily-overview') }}">
+                                            Дулааны мэдээ
+                                        </a>
 
-                                    <a class="dropdown-item" href="{{ route('bufvint.today') }}">
-                                        Импорт, Экспорт
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
-                                        href="{{ route('reports.powerPlantRenewableReport') }}">
-                                        СЭХ-ний горим, гүйцэтгэл
-                                    </a>
-                                    <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
-                                        href="{{ route('reports.powerPlantReport') }}">
-                                        ДЦС-ын горим, гүйцэтгэл
-                                    </a>
-                                @endif
-
-
-                                @if ($orgId != 5)
-                                    <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
-                                        href="{{ route('electric_daily_regimes.index') }}">
-                                        Цахилгааны горим
-                                    </a>
-
-                                    <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
-                                        href="{{ route('thermo-daily-regimes.index') }}">
-                                        Дулааны горим
-                                    </a>
-
-                                    <a class="dropdown-item {{ request()->routeIs('power-plant-readings.index') ? 'active' : '' }}"
-                                        href="{{ route('power-plant-readings.index') }}">
-                                        Дулааны мэдээ
-                                    </a>
-                                @endif
+                                        <a class="dropdown-item" href="{{ route('bufvint.today') }}">
+                                            Импорт, Экспорт
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('reports.powerPlantRenewableReport') ? 'active' : '' }}"
+                                            href="{{ route('reports.powerPlantRenewableReport') }}">
+                                            СЭХ-ний горим, гүйцэтгэл
+                                        </a>
+                                        <a class="dropdown-item {{ request()->routeIs('reports.powerPlantReport') ? 'active' : '' }}"
+                                            href="{{ route('reports.powerPlantReport') }}">
+                                            ДЦС-ын горим, гүйцэтгэл
+                                        </a>
+                                    @endif
 
 
+                                    @if ($orgId != 5)
+                                        <a class="dropdown-item {{ request()->routeIs('electric_daily_regimes.index') ? 'active' : '' }}"
+                                            href="{{ route('electric_daily_regimes.index') }}">
+                                            Цахилгааны горим
+                                        </a>
+
+                                        <a class="dropdown-item {{ request()->routeIs('thermo-daily-regimes.index') ? 'active' : '' }}"
+                                            href="{{ route('thermo-daily-regimes.index') }}">
+                                            Дулааны горим
+                                        </a>
+
+                                        <a class="dropdown-item {{ request()->routeIs('power-plant-readings.index') ? 'active' : '' }}"
+                                            href="{{ route('power-plant-readings.index') }}">
+                                            Дулааны мэдээ
+                                        </a>
+                                    @endif
+
+
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                @endif
 
                 @php
                     $reportRoutes = ['reports.index'];
                     $isReportsActive = request()->routeIs(...$reportRoutes);
                 @endphp
 
-                @if ($orgId == 5)
+                @if (auth()->user()->hasPermission('reports.view'))
                     <li class="nav-item dropdown {{ $isReportsActive ? 'active' : '' }}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="false" role="button" aria-expanded="false">
@@ -325,7 +329,7 @@
                     $isSettingsActive = request()->routeIs(...$settingRoutes);
                 @endphp
 
-                @if ($orgId == 5)
+                @if (auth()->user()->hasPermission('config.view'))
                     <li class="nav-item dropdown {{ $isSettingsActive ? 'active' : '' }}">
                         <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown"
                             data-bs-auto-close="false" role="button" aria-expanded="false">
