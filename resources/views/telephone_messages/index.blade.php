@@ -6,6 +6,13 @@
             <div class="row mb-4">
                 <div class="col-12 d-flex justify-content-between align-items-center">
                     <h2 class="page-title mb-0">Телефон мэдээ</h2>
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
                     <a href="{{ route('telephone_messages.create') }}" class="btn btn-primary">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
