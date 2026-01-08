@@ -14,6 +14,10 @@ class TelephoneMessageController extends Controller
      */
     public function index()
     {
+        if (!auth()->user()->hasPermission('telephone_messages.view')) {
+            abort(403);
+        }
+
         $orgId = (string) auth()->user()->organization_id;
 
 
@@ -36,6 +40,10 @@ class TelephoneMessageController extends Controller
      */
     public function create()
     {
+        if (!auth()->user()->hasPermission('telephone_messages.create')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $organizations = Organization::all();
         return view('telephone_messages.create', compact('organizations'));
     }
@@ -88,6 +96,10 @@ class TelephoneMessageController extends Controller
      */
     public function show(TelephoneMessage $telephoneMessage)
     {
+        if (!auth()->user()->hasPermission('telephone_messages.view')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $userOrgId = auth()->user()->organization_id;
 
         // Pivot table-д тухайн байгууллагын статусыг update
@@ -111,6 +123,10 @@ class TelephoneMessageController extends Controller
      */
     public function edit(TelephoneMessage $telephoneMessage)
     {
+        if (!auth()->user()->hasPermission('telephone_messages.edit')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $organizations = Organization::all();
         return view('telephone_messages.edit', compact('telephoneMessage', 'organizations'));
     }
@@ -148,6 +164,10 @@ class TelephoneMessageController extends Controller
      */
     public function destroy(TelephoneMessage $telephoneMessage)
     {
+        if (!auth()->user()->hasPermission('telephone_messages.delete')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         if ($telephoneMessage->attachment) {
             Storage::disk('public')->delete($telephoneMessage->attachment);
         }

@@ -163,10 +163,12 @@
                                         </a>
                                     @endif
 
-                                    <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
-                                        href="{{ route('telephone_messages.index') }}">
-                                        Телефон мэдээ
-                                    </a>
+                                    @if (auth()->user()->hasPermission('telephone_messages.view'))
+                                        <a class="dropdown-item {{ request()->routeIs('telephone_messages.index') ? 'active' : '' }}"
+                                            href="{{ route('telephone_messages.index') }}">
+                                            Телефон мэдээ
+                                        </a>
+                                    @endif
 
                                     @if (auth()->user()->hasPermission('dis_coal.view'))
                                         <a class="dropdown-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
