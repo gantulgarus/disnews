@@ -156,7 +156,7 @@
                                             Тооцооны журнал БХ
                                         </a>
                                     @endif
-                                    @if (auth()->user()->hasPermission('daily_power_hour_reports.view'))
+                                    @if (auth()->user()->hasPermission('daily-balance-import-exports.view'))
                                         <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
                                             href="{{ route('daily-balance-import-exports.index') }}">
                                             Тооцооны журнал Импорт/Экспорт
