@@ -36,10 +36,10 @@ class DisCoalController extends Controller
                 $query->where('power_plant_id', $request->power_plant_id);
             }
 
-            // PowerPlant table-тай join хийж, order баганаар эрэмбэлэх
-            $query->leftJoin('power_plants', 'dis_coals.power_plant_id', '=', 'power_plants.id')
-                ->orderBy('power_plants.order', 'asc')  // Энд backtick-г устгасан
-                ->select('dis_coals.*');
+            // Join хийхдээ зөв table нэр ашиглах
+            $query->leftJoin('power_plants', 'dis_coal.power_plant_id', '=', 'power_plants.id')
+                ->orderBy('power_plants.order', 'asc')
+                ->select('dis_coal.*');  // dis_coals биш dis_coal
 
             $month = null;
 
