@@ -26,9 +26,16 @@
                     value="{{ request('order_number') }}">
             </div>
             <div class="col-md-2">
-                <input type="text" name="organization_name" class="form-control" placeholder="Байгууллага нэр"
-                    value="{{ request('organization_name') }}">
+                <select name="organization_id" class="form-select">
+                    <option value="">Байгууллага сонгох</option>
+                    @foreach ($organizations as $org)
+                        <option value="{{ $org->id }}" {{ request('organization_id') == $org->id ? 'selected' : '' }}>
+                            {{ $org->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+
             <div class="col-md-2">
                 <select name="status" class="form-select">
                     <option value="">Төлөв сонгох</option>
@@ -230,8 +237,7 @@
                             </tr>
 
                             <!-- Forward Modal -->
-                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1"
-                                aria-hidden="true">
+                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <form action="{{ route('order-journals.forward', $journal->id) }}"

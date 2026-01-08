@@ -37,10 +37,8 @@ class OrderJournalController extends Controller
         }
 
         // organization_name filter
-        if ($orgName = request('organization_name')) {
-            $query->whereHas('organization', function ($q) use ($orgName) {
-                $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($orgName) . '%']);
-            });
+        if ($organization_id = request('organization_id')) {
+            $query->where('organization_id', $organization_id);
         }
 
         // status filter
@@ -75,8 +73,9 @@ class OrderJournalController extends Controller
             })
             ->get();
 
+        $organizations = Organization::orderBy('name')->get();
 
-        return view('order_journals.index', compact('journals', 'users'));
+        return view('order_journals.index', compact('journals', 'users', 'organizations'));
     }
 
 
