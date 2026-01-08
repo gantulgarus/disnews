@@ -38,8 +38,8 @@ class DisCoalController extends Controller
 
             // PowerPlant table-тай join хийж, order баганаар эрэмбэлэх
             $query->leftJoin('power_plants', 'dis_coals.power_plant_id', '=', 'power_plants.id')
-                ->orderBy('power_plants.`Order`', 'asc')
-                ->select('dis_coals.*'); // essential, эсвэл бүх багануудыг select хийх
+                ->orderBy('power_plants.order', 'asc')  // Энд backtick-г устгасан
+                ->select('dis_coals.*');
 
             $month = null;
 
