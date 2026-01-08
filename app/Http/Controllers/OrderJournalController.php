@@ -78,6 +78,10 @@ class OrderJournalController extends Controller
      */
     public function create()
     {
+        if (!auth()->user()->hasPermission('order_journals.create')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $user = Auth::user();
 
         // Хэрэв хэрэглэгч админ бол бүх байгууллагыг харуулна
@@ -126,15 +130,11 @@ class OrderJournalController extends Controller
      */
     public function edit(OrderJournal $orderJournal)
     {
-        $user = Auth::user();
+        if (!auth()->user()->hasPermission('order_journals.edit')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
 
-        // Хэрэв хэрэглэгч админ бол бүх байгууллагыг харуулна
-        // if ($user->permissionLevel?->code === 'ADM') {
-        //     $organizations = Organization::all();
-        // } else {
-        //     // Админ биш бол зөвхөн хэрэглэгчийн байгууллага
-        //     $organizations = Organization::where('id', $user->organization_id)->get();
-        // }
+        $user = Auth::user();
 
         $organizations = Organization::all();
 
@@ -168,6 +168,10 @@ class OrderJournalController extends Controller
      */
     public function destroy(OrderJournal $orderJournal)
     {
+        if (!auth()->user()->hasPermission('order_journals.delete')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $orderJournal->delete();
 
         return redirect()->route('order-journals.index')->with('success', 'Order Journal deleted successfully.');
