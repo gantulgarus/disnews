@@ -9,6 +9,13 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <a href="{{ route('dis_coal.create') }}" class="btn btn-primary mb-3">
             + мэдээ оруулах
         </a>
@@ -19,8 +26,7 @@
 
                 <form method="GET" action="{{ route('dis_coal.index') }}" class="row g-2 align-items-end mb-0">
                     <div class="col-12 col-md-auto">
-                        <input type="date" name="date" value="{{ request('date', now()->toDateString()) }}"
-                            class="form-control">
+                        <input type="date" name="date" value="{{ $date }}" class="form-control">
                     </div>
 
                     {{-- ДҮТ --}}
@@ -138,25 +144,31 @@
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('CAME_TRAIN') }}</strong></td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('UNLOADING_TRAIN') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('UNLOADING_TRAIN') }}</strong>
+                                </td>
                                 <td class="text-center"><strong>{{ $disCoals->sum('ULDSEIN_TRAIN') }}</strong></td>
 
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_INCOME') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('COAL_INCOME') }}</strong>
+                                </td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_OUTCOME') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('COAL_OUTCOME') }}</strong>
+                                </td>
                                 <td class="text-center"><strong>{{ $disCoals->sum('COAL_TRAIN_QUANTITY') }}</strong></td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_REMAIN') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN') }}</strong>
+                                </td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_REMAIN_BYDAY') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('COAL_REMAIN_BYDAY') }}</strong>
+                                </td>
                                 <td class="text-center"><strong>{{ $disCoals->sum('COAL_REMAIN_BYWINTERDAY') }}</strong>
                                 </td>
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_INCOME') }}</strong></td>
                                 <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_OUTCOME') }}</strong></td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('MAZUT_REMAIN') }}</strong></td>
+                                    <strong>{{ $disCoals->sum('MAZUT_REMAIN') }}</strong>
+                                </td>
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('BAGANUUR_MINING_COAL_D') }}</strong>
                                 </td>

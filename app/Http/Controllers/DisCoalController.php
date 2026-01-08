@@ -12,14 +12,19 @@ class DisCoalController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DisCoal::query();
-
-        // Огноогоор фильтр хийх
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
+        if (!auth()->user()->hasPermission('dis_coal.view')) {
+            abort(403);
         }
 
         $userOrgId = auth()->user()->organization_id;
+
+        // Хэрэглэгч огноо өгөөгүй бол default-оор өнөөдрийн огноо
+        $date = $request->filled('date') ? $request->date : now()->toDateString();
+
+        $query = DisCoal::query();
+
+        // Огноогоор фильтр
+        $query->whereDate('date', $date);
 
         if ($userOrgId != 5) {
             // ДҮТ биш бол зөвхөн өөрийн байгууллагын ДЦС-ууд
@@ -53,12 +58,17 @@ class DisCoalController extends Controller
             $powerPlants = collect();
         }
 
-        return view('dis_coal.index', compact('disCoals', 'powerPlants', 'userOrgId'));
+        return view('dis_coal.index', compact('disCoals', 'powerPlants', 'userOrgId', 'date'));
     }
+
 
 
     public function create()
     {
+        if (!auth()->user()->hasPermission('dis_coal.create')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $orgId = auth()->user()->organization_id;
         $powerPlantType = PowerPlantType::where('name', 'ДЦС')->first();
 
@@ -126,6 +136,10 @@ class DisCoalController extends Controller
 
     public function edit(string $id)
     {
+        if (!auth()->user()->hasPermission('dis_coal.edit')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         $disCoal = DisCoal::findOrFail($id);
 
         $orgId = auth()->user()->organization_id;
@@ -174,6 +188,10 @@ class DisCoalController extends Controller
 
     public function destroy(string $id)
     {
+        if (!auth()->user()->hasPermission('dis_coal.delete')) {
+            return redirect()->back()->with('error', 'Танд энэ үйлдлийг хийх эрх байхгүй байна!');
+        }
+
         DisCoal::findOrFail($id)->delete();
 
         return redirect()->route('dis_coal.index')
