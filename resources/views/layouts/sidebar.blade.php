@@ -137,11 +137,13 @@
                                         </a>
                                     @endif
 
-                                    @if ($orgId != 5)
+                                    @if (auth()->user()->hasPermission('daily-balance-journals.view'))
                                         <a class="dropdown-item {{ request()->routeIs('daily-balance-journals.index') ? 'active' : '' }}"
                                             href="{{ route('daily-balance-journals.index') }}">
                                             Тооцооны журнал
                                         </a>
+                                    @endif
+                                    @if (auth()->user()->hasPermission('daily_power_hour_reports.view'))
                                         <a class="dropdown-item {{ request()->routeIs('daily_power_hour_reports.index') ? 'active' : '' }}"
                                             href="{{ route('daily_power_hour_reports.index') }}">
                                             Ачааллын график
@@ -154,7 +156,7 @@
                                             Тооцооны журнал БХ
                                         </a>
                                     @endif
-                                    @if ($orgId == 27)
+                                    @if (auth()->user()->hasPermission('daily_power_hour_reports.view'))
                                         <a class="dropdown-item {{ request()->routeIs('daily-balance-import-exports.index') ? 'active' : '' }}"
                                             href="{{ route('daily-balance-import-exports.index') }}">
                                             Тооцооны журнал Импорт/Экспорт
