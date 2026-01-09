@@ -251,26 +251,61 @@ class OrderJournalController extends Controller
             'comment' => 'nullable|string|max:1000',
         ]);
 
-        $newApprovers = $request->approvers;
+        $newApprovers = collect($request->approvers);
 
-        // 1️⃣ Одоогийн approval-уудыг шинэчилнэ
-        $orderJournal->approvals()->whereNotIn('user_id', $newApprovers)->delete();
+        /**
+         * 🔒 1️⃣ Санал өгсөн хэрэглэгчийг хасах гэж байгаа эсэхийг шалгах
+         */
+        $approvedUserIds = $orderJournal->approvals()
+            ->whereNotNull('approved')
+            ->pluck('user_id');
 
-        foreach ($newApprovers as $userId) {
-            $orderJournal->approvals()->updateOrCreate(
-                ['user_id' => $userId],
-                ['approved' => null] // Санал өгөөгүй гэж тохируулна
+        // approved хэрэглэгч newApprovers дотор байхгүй бол = хасах гэж байна
+        if ($approvedUserIds->diff($newApprovers)->isNotEmpty()) {
+            return back()->with(
+                'error',
+                'Санал өгсөн хэрэглэгчийг хасах боломжгүй'
             );
         }
 
-        // 2️⃣ Forward тайлбар хадгалах
-        if ($request->comment) {
+        /**
+         * 2️⃣ Одоогийн approval-ууд
+         */
+        $existingUserIds = $orderJournal->approvals()
+            ->pluck('user_id');
+
+        /**
+         * 3️⃣ ХАСАГДСАН хэрэглэгчдийг устгах
+         */
+        $orderJournal->approvals()
+            ->whereNotIn('user_id', $newApprovers)
+            ->delete();
+
+        /**
+         * 4️⃣ ШИНЭЭР нэмэгдсэн хэрэглэгчдэд approval үүсгэх
+         */
+        $newApprovers
+            ->diff($existingUserIds)
+            ->each(function ($userId) use ($orderJournal) {
+                $orderJournal->approvals()->create([
+                    'user_id' => $userId,
+                    'approved' => null,
+                ]);
+            });
+
+        /**
+         * 5️⃣ Forward тайлбар хадгалах
+         */
+        if ($request->filled('comment')) {
             $orderJournal->forward_comment = $request->comment;
             $orderJournal->save();
         }
 
-        return redirect()->back()->with('success', 'Санал өгөх хэрэглэгчид шинэчлэгдлээ.');
+        return redirect()->back()
+            ->with('success', 'Санал өгөх хэрэглэгчид амжилттай шинэчлэгдлээ');
     }
+
+
 
 
     // Санал өгөх (approval дээр санал өгөх)
