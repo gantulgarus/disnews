@@ -105,12 +105,12 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Орлого</label>
-                        <input type="number" step="0.01" name="MAZUT_INCOME" class="form-control"
+                        <input type="number" step="0.001" name="MAZUT_INCOME" class="form-control"
                             value="{{ old('MAZUT_INCOME') }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Зарлага</label>
-                        <input type="number" step="0.01" name="MAZUT_OUTCOME" class="form-control"
+                        <input type="number" step="0.001" name="MAZUT_OUTCOME" class="form-control"
                             value="{{ old('MAZUT_OUTCOME') }}">
                     </div>
                     <div class="col-md-4">

@@ -125,7 +125,7 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Орлого</label>
-                        <input type="number" step="0.01" name="MAZUT_INCOME"
+                        <input type="number" step="0.001" name="MAZUT_INCOME"
                             class="form-control @error('MAZUT_INCOME') is-invalid @enderror"
                             value="{{ old('MAZUT_INCOME', $disCoal->MAZUT_INCOME) }}">
                         @error('MAZUT_INCOME')
@@ -134,7 +134,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Зарлага</label>
-                        <input type="number" step="0.01" name="MAZUT_OUTCOME"
+                        <input type="number" step="0.001" name="MAZUT_OUTCOME"
                             class="form-control @error('MAZUT_OUTCOME') is-invalid @enderror"
                             value="{{ old('MAZUT_OUTCOME', $disCoal->MAZUT_OUTCOME) }}">
                         @error('MAZUT_OUTCOME')
@@ -143,7 +143,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Үлдэгдэл</label>
-                        <input type="number" step="0.01" name="MAZUT_REMAIN"
+                        <input type="number" step="0.001" name="MAZUT_REMAIN"
                             class="form-control @error('MAZUT_REMAIN') is-invalid @enderror"
                             value="{{ old('MAZUT_REMAIN', $disCoal->MAZUT_REMAIN) }}">
                         @error('MAZUT_REMAIN')
