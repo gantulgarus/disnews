@@ -138,19 +138,23 @@
                                         @endphp
 
                                         @if ($isDut || $isToday)
-                                            <a href="{{ route('dis_coal.edit', $disCoal->id) }}"
-                                                class="btn btn-warning btn-sm">
-                                                <i class="ti ti-edit"></i>
-                                            </a>
+                                            @if (auth()->user()->hasPermission('dis_coal.edit'))
+                                                <a href="{{ route('dis_coal.edit', $disCoal->id) }}"
+                                                    class="btn btn-warning btn-sm">
+                                                    <i class="ti ti-edit"></i>
+                                                </a>
+                                            @endif
 
-                                            <form action="{{ route('dis_coal.destroy', $disCoal->id) }}" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Устгах уу?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-danger btn-sm">
-                                                    <i class="ti ti-trash"></i>
-                                                </button>
-                                            </form>
+                                            @if (auth()->user()->hasPermission('dis_coal.delete'))
+                                                <form action="{{ route('dis_coal.destroy', $disCoal->id) }}" method="POST"
+                                                    class="d-inline" onsubmit="return confirm('Устгах уу?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-danger btn-sm">
+                                                        <i class="ti ti-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>

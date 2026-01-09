@@ -12,7 +12,7 @@ class DisCoalController extends Controller
 {
     public function index(Request $request)
     {
-        if (!auth()->user()->hasPermission('dis_coal.view')) {
+        if (!auth()->user()->hasPermission('dis_coal.view') && !auth()->user()->hasPermission('dis_coal.index')) {
             return redirect()->back()->with('error', 'Танд харах эрх байхгүй байна');
         }
 
