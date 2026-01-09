@@ -55,7 +55,9 @@ window.flatpickrConfig = {
         enableTime: true,
         dateFormat: "Y-m-d H:i",
         time_24hr: true,
+        minuteIncrement: 1,
         locale: MongolianLocale,
+        allowInput: true,
     },
     date: {
         dateFormat: "Y-m-d",
@@ -70,7 +72,9 @@ window.flatpickrConfig = {
         noCalendar: true,
         dateFormat: "H:i",
         time_24hr: true,
+        minuteIncrement: 1, // ✅ 1 минутын алхам
         locale: MongolianLocale,
+        allowInput: true,
     },
 };
 
