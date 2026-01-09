@@ -46,7 +46,8 @@
 
                 @if (auth()->user()->hasPermission('dis_coal.index'))
                     <li class="nav-item {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}">
-                        <a class="nav-link {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}" href="/">
+                        <a class="nav-link {{ request()->routeIs('dis_coal.index') ? 'active' : '' }}"
+                            href="{{ route('dis_coal.index') }}">
                             <span
                                 class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
