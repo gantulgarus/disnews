@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 
 // Schedule::command('fetch:station-thermo')->hourly();
 Schedule::command('powerplant:fetch')->hourly();
-Schedule::command('sync:zconclusion')->everyTenMinutes();
+// Schedule::command('sync:zconclusion')->everyTenMinutes();
