@@ -24,7 +24,7 @@ class DisCoalController extends Controller
         /* =========================
        ДҮТ (ӨДӨРӨӨР)
     ========================= */
-        if ($userOrgId == 5) {
+        if ($userOrgId == 5 || $userOrgId == 1) {
 
             $date = $request->filled('date')
                 ? $request->date
