@@ -27,7 +27,7 @@
                 <form method="GET" action="{{ route('dis_coal.index') }}" class="row g-2 align-items-end mb-0">
 
                     {{-- ДҮТ хэрэглэгч --}}
-                    @if ($userOrgId == 5)
+                    @if ($userOrgId == 5 || $userOrgId == 1)
                         <div class="col-12 col-md-auto">
                             <input type="date" name="date" value="{{ $date }}" class="form-control">
                         </div>
@@ -62,7 +62,7 @@
                     <table class="table table-bordered table-sm table-striped">
                         <thead class="text-center">
                             <tr>
-                                @if ($userOrgId != 5)
+                                @if ($userOrgId != 5 || $userOrgId != 1)
                                     <th rowspan="2">Огноо</th>
                                 @endif
                                 <th rowspan="2">Станц</th>
@@ -100,7 +100,7 @@
                         <tbody>
                             @foreach ($disCoals as $disCoal)
                                 <tr>
-                                    @if ($userOrgId != 5)
+                                    @if ($userOrgId != 5 || $userOrgId != 1)
                                         <td class="text-center">
                                             {{ \Carbon\Carbon::parse($disCoal->date)->format('Y-m-d') }}
                                         </td>
@@ -164,7 +164,7 @@
 
                         <tfoot class="table-info">
                             <tr>
-                                @if ($userOrgId != 5)
+                                @if ($userOrgId != 5 || $userOrgId != 1)
                                     <td class="text-center">
                                     </td>
                                 @endif
