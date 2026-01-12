@@ -161,6 +161,7 @@
                 'Дулааны цахилгаан станц' => 'power-plant.svg',
                 'Салхин цахилгаан станц' => 'wind-power.svg',
                 'Нарны цахилгаан станц' => 'solar-power.svg',
+                'Усан цахилгаан станц' => 'hydro-power.svg',
                 'Батарей хуримтлуур' => 'battery-bolt.svg',
                 'Импорт' => 'power-tower.svg',
             ];

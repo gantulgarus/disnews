@@ -27,6 +27,7 @@ class DashboardController extends Controller
                 'DALANZADGAD_PP_TOTAL_P',
                 'UHAAHUDAG_PP_TOTAL_P',
                 'BUURULJUUT_TOTAL_P',
+                'TOSON_PP_TOTAL_P'
             ]
         ],
         'wind' => [
@@ -46,7 +47,16 @@ class DashboardController extends Controller
                 'SUMBER_SPP_TOTAL_P',
                 'BUHUG_SPP_TOTAL_P',
                 'GOVI_SPP_TOTAL_P',
-                'ERDENE_SPP_TOTAL_P'
+                'ERDENE_SPP_TOTAL_P',
+                'DELGEREKH_SPP_M_ANALOG_P',
+                'SERVEN_SPP_N_BAY_1_1_ANALOG_P',
+                'BORKH_SPP_N_ALDRHN_ANALOG_001'
+            ]
+        ],
+        'hydro' => [
+            'name' => 'Усан цахилгаан станц',
+            'stations' => [
+                'TAISHIR_HPP_TOTAL_P',
             ]
         ],
         'battery' => [
@@ -81,6 +91,15 @@ class DashboardController extends Controller
         $powerPlants = $user->organization->powerPlants;
 
         if ($powerPlants->isEmpty()) {
+            return null;
+        }
+
+        // Хэрэв аль нэг нь "Дэд станц" бол → бүх станц
+        $hasSubStation = $powerPlants->contains(function ($plant) {
+            return $plant->power_plant_type_id == 7; // Дэд станц
+        });
+
+        if ($hasSubStation) {
             return null;
         }
 
@@ -251,6 +270,8 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
+
         $date = $request->input('date', now()->format('Y-m-d'));
 
         // Хэрэглэгчийн эрхээр шүүсэн станцуудыг дамжуулах
@@ -260,7 +281,13 @@ class DashboardController extends Controller
         // Realtime мэдээллийг server-side-д авах
         $realtimeData = $this->getRealtimeDataForView();
 
-        return view('dashboard', compact('date', 'stationGroups', 'isSystemView', 'realtimeData'));
+        // Хянах самбар харах эрхтэй
+        if ($user->hasPermission('dashboard.view')) {
+            return view('dashboard', compact('date', 'stationGroups', 'isSystemView', 'realtimeData'));
+        }
+
+        // Эрхгүй → welcome / empty page
+        return view('welcome');
     }
 
     public function data(Request $request)

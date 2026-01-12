@@ -124,7 +124,7 @@
                             @foreach ($permissions as $perm)
                                 <option value="{{ $perm->id }}"
                                     {{ old('permission_level_id') == $perm->id ? 'selected' : '' }}>
-                                    {{ $perm->name }}
+                                    {{ $perm->code }} | {{ $perm->name }}
                                 </option>
                             @endforeach
                         </select>

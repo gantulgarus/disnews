@@ -22,15 +22,37 @@ class OrderJournalController extends Controller
         }
 
         $user = Auth::user();
+        $userOrgCode = (string) ($user->organization?->org_code ?? '');
+        $userPermissionCode = $user->permissionLevel?->code ?? '';
 
         // Query эхлүүлэх
         $query = OrderJournal::with('organization')->latest();
 
         // ДҮТ хэрэглэгч биш бол зөвхөн өөрийн байгууллагын захиалгууд
-        $userOrgCode = (string) ($user->organization?->org_code ?? '');
         if ($userOrgCode !== '102') {
             $query->where('organization_id', $user->organization_id);
+        } else {
+            // ДҮТ-ийн хэрэглэгчдийн хандалтын эрх
+            if ($userPermissionCode === 'DISP') {
+                // Диспетчер инженер - бүх захиалгууд (STATUS_NEW болон бусад бүх төлөв)
+                // Нэмэлт шүүлт хэрэггүй
+            } elseif ($userPermissionCode === 'DISP_LEAD' || $userPermissionCode === 'GEN_DISP') {
+                // Диспетчерийн албаны дарга болон Ерөнхий диспетчер
+                // STATUS_NEW-с бусад бүх төлөвтэй захиалгууд
+                $query->where('status', '!=', OrderJournal::STATUS_NEW);
+            } else {
+                // ДҮТ-ийн бусад хэрэглэгчид - зөвхөн санал авахаар сонгогдсон захиалгууд
+                $query->whereHas('approvals', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            }
         }
+
+
+
+
+
+
         // order_number filter
         if ($orderNumber = request('order_number')) {
             $query->where('order_number', $orderNumber);
@@ -195,26 +217,42 @@ class OrderJournalController extends Controller
     }
 
     // Бусад алба руу санал авахаар илгээх
+    // Бусад алба руу санал авахаар илгээх
     public function forward(Request $request, OrderJournal $orderJournal)
     {
         $request->validate([
-            'approvers' => 'required|array',
+            'approvers' => 'nullable|array',
             'approvers.*' => 'exists:users,id',
         ]);
 
         $oldStatus = $orderJournal->status;
         $newStatus = OrderJournal::STATUS_FORWARDED;
 
-        // Илгээгдсэн хэрэглэгчдийн мэдээлэл авах
-        $approverUsers = User::whereIn('id', $request->approvers)
-            ->get()
-            ->map(function ($user) {
-                return $user->name . ' (' . ($user->division?->Div_name ?? 'Алба тодорхойгүй') . ')';
-            })
-            ->toArray();
+        $comment = $request->comment ?? '';
 
-        $comment = $request->comment . ' ' . count($request->approvers) . ' хэрэглэгчид рүү санал авахаар илгээв: ' . PHP_EOL;
-        $comment .= implode(', ', $approverUsers);
+        // Санал авах хэрэглэгчид байгаа эсэхийг шалгах
+        if (!empty($request->approvers)) {
+            // Илгээгдсэн хэрэглэгчдийн мэдээлэл авах
+            $approverUsers = User::whereIn('id', $request->approvers)
+                ->get()
+                ->map(function ($user) {
+                    return $user->name . ' (' . ($user->division?->Div_name ?? 'Алба тодорхойгүй') . ')';
+                })
+                ->toArray();
+
+            $comment .= ' ' . count($request->approvers) . ' хэрэглэгчид рүү санал авахаар илгээв: ' . PHP_EOL;
+            $comment .= implode(', ', $approverUsers);
+
+            // Approvals үүсгэх
+            foreach ($request->approvers as $userId) {
+                $orderJournal->approvals()->create([
+                    'user_id' => $userId,
+                    'approved' => null,
+                ]);
+            }
+        } else {
+            $comment .= ' Санал авахгүйгээр шууд илгээв.';
+        }
 
         // Захиалгыг Хянагдаж байгаа төлөвт оруулах
         $orderJournal->status = OrderJournal::STATUS_IN_REVIEW;
@@ -229,14 +267,6 @@ class OrderJournalController extends Controller
             'new_status' => $newStatus,
             'comment' => $comment,
         ]);
-
-        // Approvals үүсгэх
-        foreach ($request->approvers as $userId) {
-            $orderJournal->approvals()->create([
-                'user_id' => $userId,
-                'approved' => null,
-            ]);
-        }
 
         return redirect()->route('order-journals.show', $orderJournal)
             ->with('success', 'Захиалгыг forward хийлээ, санал авах хүсэлт илгээгдлээ.');
@@ -304,9 +334,6 @@ class OrderJournalController extends Controller
         return redirect()->back()
             ->with('success', 'Санал өгөх хэрэглэгчид амжилттай шинэчлэгдлээ');
     }
-
-
-
 
     // Санал өгөх (approval дээр санал өгөх)
     public function approveOpinion(Request $request, OrderJournalApproval $approval)
