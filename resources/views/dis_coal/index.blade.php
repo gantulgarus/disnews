@@ -62,7 +62,7 @@
                     <table class="table table-bordered table-sm table-striped">
                         <thead class="text-center">
                             <tr>
-                                @if ($userOrgId != 5 || $userOrgId != 1)
+                                @if (!in_array($userOrgId, [1, 5]))
                                     <th rowspan="2">Огноо</th>
                                 @endif
                                 <th rowspan="2">Станц</th>
@@ -100,7 +100,7 @@
                         <tbody>
                             @foreach ($disCoals as $disCoal)
                                 <tr>
-                                    @if ($userOrgId != 5 || $userOrgId != 1)
+                                    @if (!in_array($userOrgId, [1, 5]))
                                         <td class="text-center">
                                             {{ \Carbon\Carbon::parse($disCoal->date)->format('Y-m-d') }}
                                         </td>
@@ -168,7 +168,7 @@
 
                         <tfoot class="table-info">
                             <tr>
-                                @if ($userOrgId != 5 || $userOrgId != 1)
+                                @if (!in_array($userOrgId, [1, 5]))
                                     <td class="text-center">
                                     </td>
                                 @endif
