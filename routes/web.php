@@ -76,6 +76,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/users/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::resource('users', UserController::class);
+
+    Route::post('/profile/avatar', [UserController::class, 'updateAvatar'])->name('profile.updateAvatar');
+
     // Тусдаа нууц үг солих route-ууд
     Route::get('users/{user}/password', [UserController::class, 'editPassword'])
         ->name('users.edit-password');

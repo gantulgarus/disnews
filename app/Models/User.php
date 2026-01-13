@@ -32,6 +32,7 @@ class User extends Authenticatable
         'div_code',
         'permission_level_id',
         'usercode',
+        'avatar'
     ];
 
     public function username()

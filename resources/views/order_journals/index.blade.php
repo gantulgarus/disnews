@@ -71,7 +71,14 @@
                 </select>
             </div>
 
-            <div class="col-md-3 d-flex">
+            <div class="col-md-2">
+                <input type="date" name="planned_start_date" class="form-control"
+                    value="{{ request('planned_start_date') }}">
+            </div>
+
+
+
+            <div class="col-md-2 d-flex">
                 <button type="submit" class="btn btn-primary me-2">Хайх</button>
                 <a href="{{ route('order-journals.index') }}" class="btn btn-secondary">Цэвэрлэх</a>
             </div>
@@ -104,7 +111,9 @@
                     <tbody>
                         @foreach ($journals as $journal)
                             <tr @class([
-                                'table-warning' => $journal->approvals->where('user_id', auth()->id())->whereNull('approved')->count(),
+                                'table-info' => $journal->approvals->where('user_id', auth()->id())->whereNull('approved')->count(),
+                                'table-warning text-muted' =>
+                                    $journal->status === \App\Models\OrderJournal::STATUS_OPEN,
                                 'table-secondary text-muted' =>
                                     $journal->status === \App\Models\OrderJournal::STATUS_CLOSED,
                             ])>
@@ -115,7 +124,7 @@
                                             0 => 'badge bg-gray text-black',
                                             3 => 'badge bg-green text-white',
                                             4 => 'badge bg-red text-white',
-                                            7 => 'badge bg-lime text-white',
+                                            7 => 'badge bg-orange text-white',
                                             8 => 'badge bg-dark text-white',
                                             10 => 'badge bg-yellow text-white',
                                             default => 'badge bg-secondary text-white',
@@ -237,7 +246,8 @@
                             </tr>
 
                             <!-- Forward Modal -->
-                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal fade" id="forwardModal{{ $journal->id }}" tabindex="-1"
+                                aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <form action="{{ route('order-journals.forward', $journal->id) }}"

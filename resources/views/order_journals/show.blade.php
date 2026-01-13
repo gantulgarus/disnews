@@ -45,7 +45,11 @@
 
         // Засах, устгах боломжтой эсэх
         $isCreator = $orderJournal->created_user_id === $user->id;
-        $canEditOrDelete = ($isCreator && $orderJournal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDisp;
+        $isClosed = $orderJournal->status === \App\Models\OrderJournal::STATUS_CLOSED;
+
+        $canEdit = ($isCreator && $orderJournal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDisp;
+        $canDelete =
+            !$isClosed && (($isCreator && $orderJournal->status === \App\Models\OrderJournal::STATUS_NEW) || $isDisp);
 
         // Санал авахаар илгээх/засах товч харуулах эсэх
         $excludedStatuses = [
@@ -54,7 +58,7 @@
             \App\Models\OrderJournal::STATUS_CLOSED, // Хаалттай
         ];
 
-        $canForward = $isDisp && !$isDispLead && !$isGenDisp && !in_array($orderJournal->status, $excludedStatuses);
+        $canForward = $isDisp && !in_array($orderJournal->status, $excludedStatuses);
     @endphp
 
     <div class="container-fluid py-4">
@@ -94,7 +98,7 @@
                             @endif
 
                             {{-- Засах --}}
-                            @if ($canEditOrDelete)
+                            @if ($canEdit)
                                 <a href="{{ route('order-journals.edit', $orderJournal->id) }}"
                                     class="btn btn-yellow btn-icon" title="Засах">
                                     <i class="ti ti-edit"></i>
@@ -123,7 +127,7 @@
                                             0 => 'bg-gray text-black',
                                             3 => 'bg-green text-white',
                                             4 => 'bg-red text-white',
-                                            7 => 'bg-lime text-white',
+                                            7 => 'bg-orange text-white',
                                             8 => 'bg-dark text-white',
                                             10 => 'bg-yellow text-white',
                                             default => 'bg-secondary text-white',
@@ -165,8 +169,8 @@
                                     <i class="ti ti-tools me-1"></i> Засварын ажлын агуулга
                                 </label>
 
-                                <div class="p-2 bg-light border rounded">
-                                    <p class="mb-0">
+                                <div class="p-3 bg-body-secondary border rounded-3 shadow-sm">
+                                    <p class="mb-0 fw-medium text-dark lh-lg">
                                         {{ $orderJournal->content }}
                                     </p>
                                 </div>
@@ -311,7 +315,7 @@
                                                 3 => 'bg-success',
                                                 4 => 'bg-danger',
                                                 6 => 'bg-primary',
-                                                7 => 'bg-lime',
+                                                7 => 'bg-orange',
                                                 8 => 'bg-dark',
                                                 10 => 'bg-yellow',
                                                 default => 'bg-secondary',
@@ -474,7 +478,7 @@
                     <div class="d-grid">
                         {{-- Нээх товч --}}
                         @if ($canOpen)
-                            <button class="btn btn-primary btn-lg w-100 mb-3" data-bs-toggle="modal"
+                            <button class="btn btn-orange btn-lg w-100 py-5 mb-3" data-bs-toggle="modal"
                                 data-bs-target="#openOrderModal">
                                 <i class="ti ti-play me-2"></i>Захиалга нээх
                             </button>
@@ -482,7 +486,7 @@
 
                         {{-- Хаах товч --}}
                         @if ($canClose)
-                            <button class="btn btn-success btn-lg w-100 mb-3" data-bs-toggle="modal"
+                            <button class="btn btn-dark btn-lg w-100 py-5 mb-3" data-bs-toggle="modal"
                                 data-bs-target="#closeOrderModal">
                                 <i class="ti ti-square-rounded-check me-2"></i>Захиалга хаах
                             </button>
@@ -491,7 +495,7 @@
 
                     {{-- Санал өгөх хэсэг --}}
                     <div class="card shadow-sm">
-                        <div class="card-header bg-success text-white">
+                        <div class="card-header bg-secondary text-white">
                             <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Санал</h5>
                         </div>
                         <div class="card-body">
@@ -649,7 +653,7 @@
         </div>
 
         {{-- Устгах --}}
-        @if ($canEditOrDelete)
+        @if ($canDelete)
             <div>
                 <form action="{{ route('order-journals.destroy', $orderJournal->id) }}" method="POST"
                     onsubmit="return confirm('Та устгахдаа итгэлтэй байна уу?')">

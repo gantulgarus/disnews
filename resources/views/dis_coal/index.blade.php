@@ -134,10 +134,13 @@
                                     <td class="text-center">
                                         @php
                                             $isDut = auth()->user()->organization_id == 5;
-                                            $isToday = $disCoal->date == now()->toDateString();
+                                            // Өнөөдрөөс хойш 3 хоног (өнөөдөр + өмнөх 2 өдөр)
+                                            $isEditableDate = Carbon::parse($disCoal->date)->greaterThanOrEqualTo(
+                                                now()->subDays(2)->startOfDay(),
+                                            );
                                         @endphp
 
-                                        @if ($isDut || $isToday)
+                                        @if ($isDut || $isEditableDate)
                                             @if (auth()->user()->hasPermission('dis_coal.edit'))
                                                 <a href="{{ route('dis_coal.edit', $disCoal->id) }}"
                                                     class="btn btn-warning btn-sm">
@@ -170,11 +173,11 @@
                                 @endif
                                 <td class="text-center"><strong>Нийт:</strong></td>
 
-                                <td class="text-center"><strong>{{ $disCoals->sum('CAME_TRAIN') }}</strong></td>
+                                <td class="text-center"></td>
                                 <td class="text-center table-secondary">
                                     <strong>{{ $disCoals->sum('UNLOADING_TRAIN') }}</strong>
                                 </td>
-                                <td class="text-center"><strong>{{ $disCoals->sum('ULDSEIN_TRAIN') }}</strong></td>
+                                <td class="text-center"></td>
 
                                 <td class="text-center table-secondary">
                                     <strong>{{ $disCoals->sum('COAL_INCOME') }}</strong>
@@ -182,20 +185,17 @@
                                 <td class="text-center table-secondary">
                                     <strong>{{ $disCoals->sum('COAL_OUTCOME') }}</strong>
                                 </td>
-                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_TRAIN_QUANTITY') }}</strong></td>
+                                <td class="text-center"></td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_REMAIN') }}</strong>
                                 </td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('COAL_REMAIN_BYDAY') }}</strong>
                                 </td>
-                                <td class="text-center"><strong>{{ $disCoals->sum('COAL_REMAIN_BYWINTERDAY') }}</strong>
+                                <td class="text-center">
                                 </td>
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_INCOME') }}</strong></td>
                                 <td class="text-center"><strong>{{ $disCoals->sum('MAZUT_OUTCOME') }}</strong></td>
                                 <td class="text-center table-secondary">
-                                    <strong>{{ $disCoals->sum('MAZUT_REMAIN') }}</strong>
                                 </td>
 
                                 <td class="text-center"><strong>{{ $disCoals->sum('BAGANUUR_MINING_COAL_D') }}</strong>

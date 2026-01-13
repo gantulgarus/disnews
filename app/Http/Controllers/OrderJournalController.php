@@ -48,11 +48,6 @@ class OrderJournalController extends Controller
             }
         }
 
-
-
-
-
-
         // order_number filter
         if ($orderNumber = request('order_number')) {
             $query->where('order_number', $orderNumber);
@@ -83,6 +78,11 @@ class OrderJournalController extends Controller
         if ($order_type = request('order_type')) {
             $query->where('order_type', $order_type);
         }
+
+        if ($plannedDate = request('planned_start_date')) {
+            $query->whereDate('planned_start_date', $plannedDate);
+        }
+
 
         $journals = $query->paginate(25)->withQueryString();
 

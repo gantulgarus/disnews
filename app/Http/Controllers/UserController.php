@@ -8,6 +8,7 @@ use App\Models\Permission;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Models\PermissionLevel;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -203,5 +204,18 @@ class UserController extends Controller
         $user->permissions()->sync($validated['permissions'] ?? []);
 
         return redirect()->route('users.index')->with('success', 'Хэрэглэгчийн эрх амжилттай шинэчлэгдлээ.');
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+        $user->avatar = $request->avatar;
+        $user->save();
+
+        return back()->with('success', 'Аватар амжилттай хадгалагдлаа.');
     }
 }
