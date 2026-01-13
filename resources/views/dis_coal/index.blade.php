@@ -135,9 +135,10 @@
                                         @php
                                             $isDut = auth()->user()->organization_id == 5;
                                             // Өнөөдрөөс хойш 3 хоног (өнөөдөр + өмнөх 2 өдөр)
-                                            $isEditableDate = Carbon::parse($disCoal->date)->greaterThanOrEqualTo(
-                                                now()->subDays(2)->startOfDay(),
-                                            );
+                                            $isEditableDate = \Carbon\Carbon::parse(
+                                                $disCoal->date,
+                                            )->greaterThanOrEqualTo(now()->subDays(2)->startOfDay());
+
                                         @endphp
 
                                         @if ($isDut || $isEditableDate)
