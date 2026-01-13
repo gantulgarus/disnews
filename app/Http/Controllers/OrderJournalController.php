@@ -36,7 +36,7 @@ class OrderJournalController extends Controller
             if ($userPermissionCode === 'DISP') {
                 // Диспетчер инженер - бүх захиалгууд (STATUS_NEW болон бусад бүх төлөв)
                 // Нэмэлт шүүлт хэрэггүй
-            } elseif ($userPermissionCode === 'DISP_LEAD' || $userPermissionCode === 'GEN_DISP') {
+            } elseif ($userPermissionCode === 'DISP_LEAD' || $userPermissionCode === 'GEN_DISP' || $userPermissionCode === 'THA_LEAD') {
                 // Диспетчерийн албаны дарга болон Ерөнхий диспетчер
                 // STATUS_NEW-с бусад бүх төлөвтэй захиалгууд
                 $query->where('status', '!=', OrderJournal::STATUS_NEW);

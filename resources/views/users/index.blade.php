@@ -18,11 +18,49 @@
             </div>
         @endif
 
+
+
+
         <div class="card shadow-sm">
-            <div class="card-body p-0">
+            <div class="card-header">
+                <form method="GET" action="{{ route('users.index') }}" class="row g-2 mb-3">
+
+                    <div class="col-md-4">
+                        <select name="organization_id" class="form-select">
+                            <option value="">-- Бүх байгууллага --</option>
+                            @foreach ($organizations as $org)
+                                <option value="{{ $org->id }}"
+                                    {{ request('organization_id') == $org->id ? 'selected' : '' }}>
+                                    {{ $org->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <input type="text" name="usercode" class="form-control" placeholder="Хэрэглэгчийн код"
+                            value="{{ request('usercode') }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100">
+                            <i class="ti ti-search"></i> Хайх
+                        </button>
+                    </div>
+
+                    <div class="col-md-2">
+                        <a href="{{ route('users.index') }}" class="btn btn-secondary w-100">
+                            Цэвэрлэх
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+            <div class="card-body p-4">
                 <table class="table table-hover table-vcenter card-table table-striped mb-0">
                     <thead class="table-dark">
                         <tr>
+                            <th width="60" class="text-center">№</th>
                             <th>Байгууллага</th>
                             <th>Албан тушаал</th>
                             <th>Нэр</th>
@@ -37,6 +75,9 @@
                     <tbody>
                         @foreach ($users as $user)
                             <tr>
+                                <td class="text-center">
+                                    {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
+                                </td>
                                 <td>{{ $user->organization?->name }}</td>
                                 <td>{{ $user->division?->Div_name }}</td>
                                 <td class="fw-semibold">{{ $user->name }}</td>
@@ -84,6 +125,11 @@
                         @endforeach
                     </tbody>
                 </table>
+
+                <div class="mt-3 px-3">
+                    {{ $users->links() }}
+                </div>
+
             </div>
         </div>
 

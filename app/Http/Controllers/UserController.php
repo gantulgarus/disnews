@@ -14,13 +14,29 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 
 {
-
-
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return view('users.index', compact('users'));
+        $query = User::query()
+            ->with(['organization', 'division', 'permissionLevel']);
+
+        // Байгууллагаар шүүх
+        if ($request->filled('organization_id')) {
+            $query->where('organization_id', $request->organization_id);
+        }
+
+        // Хэрэглэгчийн кодоор хайх
+        if ($request->filled('usercode')) {
+            $query->where('usercode', 'like', '%' . $request->usercode . '%');
+        }
+
+        $users = $query->orderBy('usercode')->paginate(30)->withQueryString();
+
+        // Байгууллагын жагсаалт (select-д)
+        $organizations = Organization::orderBy('name')->get();
+
+        return view('users.index', compact('users', 'organizations'));
     }
+
 
 
     public function create()
