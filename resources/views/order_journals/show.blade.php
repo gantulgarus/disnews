@@ -195,6 +195,34 @@
                                 <p class="mb-0 fw-semibold">{{ $orderJournal->planned_end_date->format('Y-m-d H:i') }}</p>
                             </div>
 
+                            {{-- Хэрэглэгч таслах эсэх, Тайлбар --}}
+                            <div class="col-md-6">
+                                <label class="text-muted small mb-1">
+                                    <i class="ti ti-power me-1"></i>
+                                    Хэрэглэгч таслах эсэх
+                                </label>
+                                <p class="mb-0 fw-semibold">
+                                    {{ $orderJournal->is_cut ? 'Тийм' : 'Үгүй' }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                @if ($orderJournal->is_cut)
+                                    <label class="text-muted small mb-1">
+                                        <i class="ti ti-power me-1"></i>
+                                        Тайлбар
+                                    </label>
+                                    <p class="mb-0 fw-semibold">
+                                        {{ $orderJournal->cut_description }}
+                                    </p>
+                                @else
+                                    <label class="text-muted small mb-1">
+                                        <i class="ti ti-power me-1"></i>
+                                        Тайлбар
+                                    </label>
+                                    <p class="mb-0 fw-semibold">
+                                    </p>
+                                @endif
+                            </div>
 
 
                             {{-- Баталсан хүн --}}
@@ -271,12 +299,14 @@
                                             <div class="row g-2 mb-2">
                                                 <div class="col-md-8">
                                                     <div class="d-flex align-items-center mb-2">
-                                                        <i class="ti ti-building text-muted me-2" style="width: 20px;"></i>
+                                                        <i class="ti ti-building text-muted me-2"
+                                                            style="width: 20px;"></i>
                                                         <span
                                                             class="fw-semibold">{{ $orderJournal->createdUser->organization->name ?? 'Байхгүй' }}</span>
                                                     </div>
                                                     <div class="d-flex align-items-center mb-2">
-                                                        <i class="ti ti-briefcase text-muted me-2" style="width: 20px;"></i>
+                                                        <i class="ti ti-briefcase text-muted me-2"
+                                                            style="width: 20px;"></i>
                                                         <span>Диспетчер</span>
                                                     </div>
                                                     <div class="d-flex align-items-center">

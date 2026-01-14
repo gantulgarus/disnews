@@ -138,6 +138,8 @@ class OrderJournalController extends Controller
             'approver_name' => 'nullable|string|max:255',
             'approver_position' => 'nullable|string|max:255',
             'tze_dis_name' => 'nullable|string|max:255',
+            'is_cut' => 'required|boolean',
+            'cut_description' => 'nullable|required_if:is_cut,1|string|max:1000',
         ]);
 
         OrderJournal::create($request->all());
@@ -195,6 +197,8 @@ class OrderJournalController extends Controller
             'approver_name' => 'nullable|string|max:255',
             'approver_position' => 'nullable|string|max:255',
             'tze_dis_name' => 'nullable|string|max:255',
+            'is_cut' => 'required|boolean',
+            'cut_description' => 'nullable|required_if:is_cut,1|string|max:1000',
         ]);
 
         $orderJournal->update($input);

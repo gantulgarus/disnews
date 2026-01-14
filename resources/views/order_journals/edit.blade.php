@@ -50,6 +50,19 @@
                 </div>
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">Хэрэглэгч таслах эсэх</label>
+                <select name="is_cut" class="form-select">
+                    <option value="0" {{ $orderJournal->is_cut ? '' : 'selected' }}>Үгүй</option>
+                    <option value="1" {{ $orderJournal->is_cut ? 'selected' : '' }}>Тийм</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Таслах шалтгаан</label>
+                <textarea name="cut_description" class="form-control" rows="3">{{ $orderJournal->cut_description }}</textarea>
+            </div>
+
             {{-- Баталсан --}}
             <div class="mb-3">
                 <label class="form-label">Баталсан хүний нэр</label>

@@ -50,7 +50,9 @@ class OrderJournal extends Model
         'real_end_date',
         'created_user_id',
         'dut_dispatcher_id',
-        'tze_dis_name'
+        'tze_dis_name',
+        'is_cut',
+        'cut_description'
     ];
 
     protected $casts = [
@@ -60,6 +62,7 @@ class OrderJournal extends Model
         'real_end_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_cut' => 'boolean',
     ];
 
     protected static function booted()
