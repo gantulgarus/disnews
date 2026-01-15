@@ -58,14 +58,17 @@ class ForecastUpdate extends Command
             $process->setWorkingDirectory(dirname($scriptPath));
 
             $this->info("⏳ Python скрипт ажиллуулж байна... (энэ нь хэдэн минут үргэлжилж болно)");
+            Log::info('⏳ Python скрипт ажиллуулж байна... (энэ нь хэдэн минут үргэлжилж болно)');
             $this->newLine();
 
             // Ажиллуулах (output харуулах)
             $process->run(function ($type, $buffer) {
                 if (Process::ERR === $type) {
                     $this->error($buffer);
+                    Log::info($this->error($buffer));
                 } else {
                     $this->line($buffer);
+                    Log::info($this->line($buffer));
                 }
             });
 
