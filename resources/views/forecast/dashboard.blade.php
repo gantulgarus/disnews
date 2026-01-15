@@ -56,7 +56,7 @@
                 <span>Цагийн таамаглал (өнөөдөр)</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span style="width:24px;height:4px;background:#32cd32;display:inline-block;border-radius:2px;"></span>
+                <span style="width:24px;height:4px;background:#fbbf24;display:inline-block;border-radius:2px;"></span>
                 <span>Ирээдүйн таамаглал (3 цаг)</span>
             </div>
             <div class="d-flex align-items-center gap-2">
@@ -254,8 +254,8 @@
                     datasets.push({
                         label: 'Ирээдүйн таамаглал (3 цаг)',
                         data: futureData,
-                        borderColor: '#32cd32',
-                        backgroundColor: 'rgba(50,205,50,0.15)',
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251,191,36,0.2)',
                         borderWidth: 3,
                         borderDash: [8, 4],
                         pointRadius: 6,
