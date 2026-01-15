@@ -257,7 +257,5 @@ Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index
 Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('weather.api');
 
 Route::get('/forecast', [ForecastController::class, 'showDashboard'])->name('forecast.dashboard');
-Route::get('/forecast/today', [ForecastController::class, 'getTodayForecast']);
-Route::post('/forecast/store', [ForecastController::class, 'storeForecast']);
 
 require __DIR__ . '/auth.php';
