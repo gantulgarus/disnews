@@ -11,6 +11,7 @@ use App\Http\Controllers\DisCoalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\ForecastController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\PermissionController;
@@ -254,5 +255,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
 Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('weather.api');
+
+Route::get('/forecast', [ForecastController::class, 'showDashboard'])->name('forecast.dashboard');
+Route::get('/forecast/today', [ForecastController::class, 'getTodayForecast']);
+Route::post('/forecast/store', [ForecastController::class, 'storeForecast']);
 
 require __DIR__ . '/auth.php';
