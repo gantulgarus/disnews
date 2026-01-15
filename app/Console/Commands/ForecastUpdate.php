@@ -27,6 +27,8 @@ class ForecastUpdate extends Command
      */
     public function handle()
     {
+        Log::info('ForecastUpdate command cron-аас дуудагдлаа');
+
         $this->info('═══════════════════════════════════════════════════════');
         $this->info('🔄 Forecast системийг шинэчилж байна...');
         $this->info('═══════════════════════════════════════════════════════');
