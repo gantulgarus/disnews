@@ -13,4 +13,4 @@ Schedule::command('powerplant:fetch')->hourly();
 // Schedule::command('sync:zconclusion')->everyTenMinutes();
 
 // цаг тутмын хэрэглээний таамаглалыг python-оос авах
-Schedule::command('forecast:update')->everyTenMinutes();
+// Schedule::command('forecast:update')->everyTenMinutes();
