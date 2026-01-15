@@ -13,7 +13,7 @@ Schedule::command('powerplant:fetch')->hourly();
 // Schedule::command('sync:zconclusion')->everyTenMinutes();
 
 // цаг тутмын хэрэглээний таамаглалыг python-оос авах
-$schedule->command('forecast:update')
+Schedule::command('forecast:update')
     ->hourly()                      // Цаг тутам
     ->withoutOverlapping()          // Давхцахгүй байх
     ->runInBackground()             // Background-д ажиллана
