@@ -6,6 +6,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
@@ -72,6 +73,7 @@ class ForecastUpdate extends Command
                 $this->info('═══════════════════════════════════════════════════════');
                 $this->info('✅ Forecast амжилттай шинэчлэгдлээ!');
                 $this->info('═══════════════════════════════════════════════════════');
+                Log::info('ForecastUpdate амжилттай шинэчлэгдлээ');
 
                 // Статистик харуулах
                 $this->showStats();
@@ -85,6 +87,7 @@ class ForecastUpdate extends Command
             $this->error('❌ Python скрипт алдаа гарлаа!');
             $this->error('═══════════════════════════════════════════════════════');
             $this->error($exception->getMessage());
+            Log::error('Python скрипт алдаа гарлаа');
             return 1;
         } catch (\Exception $e) {
             $this->error('═══════════════════════════════════════════════════════');
