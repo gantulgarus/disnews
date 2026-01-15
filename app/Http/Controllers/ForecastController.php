@@ -66,6 +66,7 @@ class ForecastController extends Controller
                 ],
                 [
                     'actual_load' => $validated['type'] === 'actual' ? $item['value'] : null,
+                    'system_load' => $item['system_load'] ?? null,
                     'daily_forecast' => $validated['type'] === 'daily' ? $item['value'] : null,
                     'hourly_forecast' => $validated['type'] === 'hourly' ? $item['value'] : null,
                 ]

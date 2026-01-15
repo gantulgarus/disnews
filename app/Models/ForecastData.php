@@ -11,6 +11,7 @@ class ForecastData extends Model
     protected $fillable = [
         'time',
         'actual_load',
+        'system_load',
         'daily_forecast',
         'hourly_forecast',
         'is_actual',
@@ -20,6 +21,7 @@ class ForecastData extends Model
     protected $casts = [
         'time' => 'datetime',
         'actual_load' => 'float',
+        'system_load' => 'float',
         'daily_forecast' => 'float',
         'hourly_forecast' => 'float',
         'is_actual' => 'boolean',
