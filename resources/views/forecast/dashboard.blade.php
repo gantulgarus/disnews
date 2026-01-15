@@ -36,22 +36,33 @@
         {{-- Chart --}}
         <div class="card">
             <div class="card-body">
-                <canvas id="forecastChart" style="height: 400px;"></canvas>
+                <canvas id="forecastChart" style="height: 450px;"></canvas>
             </div>
         </div>
 
         {{-- Legend --}}
         <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
-            <div class="d-flex align-items-center gap-1">
-                <span style="width:20px;height:3px;background:#ef4444;display:inline-block;"></span> Бодит хэрэглээ
+            <div class="d-flex align-items-center gap-2">
+                <span style="width:24px;height:4px;background:#ef4444;display:inline-block;border-radius:2px;"></span>
+                <span>Бодит хэрэглээ</span>
             </div>
-            <div class="d-flex align-items-center gap-1">
-                <span style="width:20px;height:3px;background:#3b82f6;display:inline-block;"></span> Өдрийн таамаглал (24
-                цаг)
+            <div class="d-flex align-items-center gap-2">
+                <span
+                    style="width:24px;height:4px;background:#3b82f6;display:inline-block;border-radius:2px;opacity:0.7;"></span>
+                <span>Өдрийн таамаглал (24 цаг)</span>
             </div>
-            <div class="d-flex align-items-center gap-1">
-                <span style="width:20px;height:3px;background:#10b981;display:inline-block;"></span> Цагийн таамаглал (3
-                цаг)
+            <div class="d-flex align-items-center gap-2">
+                <span style="width:24px;height:4px;background:#10b981;display:inline-block;border-radius:2px;"></span>
+                <span>Цагийн таамаглал (өнөөдөр)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="width:24px;height:4px;background:#32cd32;display:inline-block;border-radius:2px;"></span>
+                <span>Ирээдүйн таамаглал (3 цаг)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span
+                    style="width:12px;height:12px;background:#0a8754;display:inline-block;border-radius:50%;border:2px solid #000;"></span>
+                <span>Сүүлийн бодит цэг</span>
             </div>
         </div>
     </div>
@@ -78,6 +89,16 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' +
+                                        Math.round(context.parsed.y).toLocaleString() + ' МВт';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -85,10 +106,20 @@
                             type: 'time',
                             time: {
                                 unit: 'hour',
-                                tooltipFormat: 'HH:mm'
+                                displayFormats: {
+                                    hour: 'HH:mm'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Цаг'
                             }
                         },
                         y: {
+                            title: {
+                                display: true,
+                                text: 'Хэрэглээ (МВт)'
+                            },
                             ticks: {
                                 callback: v => Math.round(v).toLocaleString()
                             }
@@ -122,45 +153,118 @@
         function updateChart(data) {
             const datasets = [];
 
-            if (data.actual_data.length) datasets.push({
-                label: 'Бодит хэрэглээ',
-                data: data.actual_data.map(d => ({
-                    x: new Date(d.time),
-                    y: d.actual_load
-                })),
-                borderColor: '#ef4444',
-                backgroundColor: '#ef4444',
-                borderWidth: 2,
-                pointRadius: 3,
-                tension: 0.2
-            });
+            // 1️⃣ Бодит хэрэглээ
+            if (data.actual_data && data.actual_data.length) {
+                datasets.push({
+                    label: 'Бодит хэрэглээ',
+                    data: data.actual_data.map(d => ({
+                        x: new Date(d.time),
+                        y: d.actual_load
+                    })),
+                    borderColor: '#ef4444',
+                    backgroundColor: '#ef4444',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.1,
+                    order: 1
+                });
+            }
 
-            if (data.daily_forecast.length) datasets.push({
-                label: 'Өдрийн таамаглал',
-                data: data.daily_forecast.map(d => ({
-                    x: new Date(d.time),
-                    y: d.daily_forecast
-                })),
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59,130,246,0.1)',
-                borderWidth: 2,
-                borderDash: [5, 5],
-                pointRadius: 2,
-                tension: 0.3
-            });
+            // 2️⃣ Өдрийн таамаглал
+            if (data.daily_forecast && data.daily_forecast.length) {
+                datasets.push({
+                    label: 'Өдрийн таамаглал',
+                    data: data.daily_forecast.map(d => ({
+                        x: new Date(d.time),
+                        y: d.daily_forecast
+                    })),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 3,
+                    tension: 0.3,
+                    order: 4
+                });
+            }
 
-            if (data.hourly_forecast.length) datasets.push({
-                label: 'Цагийн таамаглал',
-                data: data.hourly_forecast.map(d => ({
-                    x: new Date(d.time),
-                    y: d.hourly_forecast
-                })),
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16,185,129,0.2)',
-                borderWidth: 2,
-                pointRadius: 2,
-                tension: 0.1
-            });
+            // 3️⃣ Цагийн таамаглал - хоёр хэсэг
+            if (data.hourly_forecast && data.hourly_forecast.length) {
+                // Өнөөдрийн хэсэг (is_future: false/null)
+                const hourlyToday = data.hourly_forecast.filter(d => !d.is_future);
+
+                // Ирээдүйн хэсэг (is_future: true)
+                const hourlyFuture = data.hourly_forecast.filter(d => d.is_future);
+
+                // Сүүлийн бодит цэг (is_actual: true)
+                const actualPoint = data.hourly_forecast.find(d => d.is_actual);
+
+                // Өнөөдрийн цагийн таамаглал
+                if (hourlyToday.length > 0) {
+                    datasets.push({
+                        label: 'Цагийн таамаглал (өнөөдөр)',
+                        data: hourlyToday.map(d => ({
+                            x: new Date(d.time),
+                            y: d.hourly_forecast
+                        })),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.1)',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        tension: 0.1,
+                        order: 2
+                    });
+                }
+
+                // Сүүлийн бодит цэг (том дугуй)
+                if (actualPoint) {
+                    datasets.push({
+                        label: 'Сүүлийн бодит цэг',
+                        data: [{
+                            x: new Date(actualPoint.time),
+                            y: actualPoint.hourly_forecast
+                        }],
+                        borderColor: '#000',
+                        backgroundColor: '#0a8754',
+                        borderWidth: 2,
+                        pointRadius: 10,
+                        pointHoverRadius: 12,
+                        showLine: false,
+                        order: 0
+                    });
+                }
+
+                // Ирээдүйн 3 цагийн таамаглал
+                if (hourlyFuture.length > 0) {
+                    // Сүүлийн бодит цэгээс эхлүүлэх
+                    let futureData = hourlyFuture.map(d => ({
+                        x: new Date(d.time),
+                        y: d.hourly_forecast
+                    }));
+
+                    // Сүүлийн бодит цэгийг нэмж залгах
+                    if (actualPoint) {
+                        futureData.unshift({
+                            x: new Date(actualPoint.time),
+                            y: actualPoint.hourly_forecast
+                        });
+                    }
+
+                    datasets.push({
+                        label: 'Ирээдүйн таамаглал (3 цаг)',
+                        data: futureData,
+                        borderColor: '#32cd32',
+                        backgroundColor: 'rgba(50,205,50,0.15)',
+                        borderWidth: 3,
+                        borderDash: [8, 4],
+                        pointRadius: 6,
+                        pointStyle: 'triangle',
+                        tension: 0.1,
+                        order: 3
+                    });
+                }
+            }
 
             chart.data.datasets = datasets;
             chart.update('none');
@@ -178,6 +282,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initChart();
             fetchData();
+            // 5 минут тутамд шинэчлэх
             setInterval(fetchData, 5 * 60 * 1000);
         });
     </script>
