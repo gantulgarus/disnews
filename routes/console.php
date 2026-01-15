@@ -13,8 +13,4 @@ Schedule::command('powerplant:fetch')->hourly();
 // Schedule::command('sync:zconclusion')->everyTenMinutes();
 
 // цаг тутмын хэрэглээний таамаглалыг python-оос авах
-Schedule::command('forecast:update')
-    ->everyTenMinutes()              // 10 минут тутам
-    ->withoutOverlapping()          // Давхцахгүй байх
-    ->runInBackground()             // Background-д ажиллана
-    ->emailOutputOnFailure('gantulgarus@gmail.com');  // Алдаа гарвал имэйл илгээх
+Schedule::command('forecast:update')->everyTenMinutes();
