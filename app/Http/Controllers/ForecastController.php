@@ -29,7 +29,14 @@ class ForecastController extends Controller
             ->where('forecast_type', 'actual')
             ->whereNotNull('actual_load')
             ->orderBy('time')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'time' => $item->time,
+                    'actual_load' => $item->actual_load,
+                    'system_load' => $item->system_load  // 🔴 НЭМ
+                ];
+            });
 
         return response()->json([
             'success' => true,

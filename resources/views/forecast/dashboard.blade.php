@@ -43,6 +43,11 @@
         {{-- Legend --}}
         <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
             <div class="d-flex align-items-center gap-2">
+                <span
+                    style="width:24px;height:4px;background:#9333ea;display:inline-block;border-radius:2px;opacity:0.7;"></span>
+                <span>Системийн нийт (батарей орсон)</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
                 <span style="width:24px;height:4px;background:#ef4444;display:inline-block;border-radius:2px;"></span>
                 <span>Бодит хэрэглээ</span>
             </div>
@@ -143,10 +148,28 @@
         function updateChart(data) {
             const datasets = [];
 
-            // 1️⃣ Бодит хэрэглээ (улаан)
+            // 1️⃣ Системийн нийт хэрэглээ (ягаан цэг)
             if (data.actual_data && data.actual_data.length) {
                 datasets.push({
-                    label: 'Бодит хэрэглээ',
+                    label: 'Системийн нийт (батарей орсон)',
+                    data: data.actual_data.map(d => ({
+                        x: new Date(d.time),
+                        y: d.system_load // ⚠️ Backend-ээс system_load илгээх хэрэгтэй
+                    })),
+                    borderColor: '#9333ea',
+                    backgroundColor: '#9333ea',
+                    borderWidth: 2.5,
+                    borderDash: [2, 2],
+                    pointRadius: 0,
+                    tension: 0.1,
+                    order: 5
+                });
+            }
+
+            // 2️⃣ Бодит хэрэглээ (улаан)
+            if (data.actual_data && data.actual_data.length) {
+                datasets.push({
+                    label: 'Бодит хэрэглээ (батарей хассан)',
                     data: data.actual_data.map(d => ({
                         x: new Date(d.time),
                         y: d.actual_load
@@ -161,7 +184,7 @@
                 });
             }
 
-            // 2️⃣ Өдрийн таамаглал (цэнхэр)
+            // 3️⃣ Өдрийн таамаглал (цэнхэр)
             if (data.daily_forecast && data.daily_forecast.length) {
                 datasets.push({
                     label: 'Өдрийн таамаглал',
@@ -175,11 +198,11 @@
                     borderDash: [5, 5],
                     pointRadius: 3,
                     tension: 0.3,
-                    order: 3
+                    order: 4
                 });
             }
 
-            // 3️⃣ Цагийн таамаглал (ногоон) - НЭГ ШУГАМ
+            // 4️⃣ Цагийн таамаглал (ногоон)
             if (data.hourly_forecast && data.hourly_forecast.length) {
                 datasets.push({
                     label: 'Цагийн таамаглал',
