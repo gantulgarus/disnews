@@ -31,8 +31,8 @@ class ForecastUpdate extends Command
         $this->info('═══════════════════════════════════════════════════════');
 
         // Python скриптийн зам
-        $pythonPath = '/usr/bin/python3';  // ⚠️ Өөрийн Python замыг оруулах
-        $scriptPath = '/home/ndc-user/system_total/main.py';  // ⚠️ main.py-ны замыг оруулах
+        $pythonPath = '/home/ndc-user/system_total/venv/bin/python';
+        $scriptPath = '/home/ndc-user/system_total/main.py';
 
         // Эсвэл:
         // $scriptPath = '/full/path/to/your/main.py';
