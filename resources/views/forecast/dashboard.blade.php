@@ -53,16 +53,7 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span style="width:24px;height:4px;background:#10b981;display:inline-block;border-radius:2px;"></span>
-                <span>Цагийн таамаглал (өнөөдөр)</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <span style="width:24px;height:4px;background:#fbbf24;display:inline-block;border-radius:2px;"></span>
-                <span>Ирээдүйн таамаглал (3 цаг)</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <span
-                    style="width:12px;height:12px;background:#0a8754;display:inline-block;border-radius:50%;border:2px solid #000;"></span>
-                <span>Сүүлийн бодит цэг</span>
+                <span>Цагийн таамаглал</span>
             </div>
         </div>
     </div>
@@ -144,16 +135,15 @@
                 }
             } catch (e) {
                 console.error('Өгөгдөл татахад алдаа:', e);
-                const statusEl = document.getElementById('status');
-                statusEl.textContent = 'АЛДАА';
-                statusEl.className = 'badge bg-danger';
+                document.getElementById('status').textContent = 'АЛДАА';
+                document.getElementById('status').className = 'badge bg-danger';
             }
         }
 
         function updateChart(data) {
             const datasets = [];
 
-            // 1️⃣ Бодит хэрэглээ
+            // 1️⃣ Бодит хэрэглээ (улаан)
             if (data.actual_data && data.actual_data.length) {
                 datasets.push({
                     label: 'Бодит хэрэглээ',
@@ -171,7 +161,7 @@
                 });
             }
 
-            // 2️⃣ Өдрийн таамаглал
+            // 2️⃣ Өдрийн таамаглал (цэнхэр)
             if (data.daily_forecast && data.daily_forecast.length) {
                 datasets.push({
                     label: 'Өдрийн таамаглал',
@@ -185,85 +175,25 @@
                     borderDash: [5, 5],
                     pointRadius: 3,
                     tension: 0.3,
-                    order: 4
+                    order: 3
                 });
             }
 
-            // 3️⃣ Цагийн таамаглал - хоёр хэсэг
+            // 3️⃣ Цагийн таамаглал (ногоон) - НЭГ ШУГАМ
             if (data.hourly_forecast && data.hourly_forecast.length) {
-                // Өнөөдрийн хэсэг (is_future: false/null)
-                const hourlyToday = data.hourly_forecast.filter(d => !d.is_future);
-
-                // Ирээдүйн хэсэг (is_future: true)
-                const hourlyFuture = data.hourly_forecast.filter(d => d.is_future);
-
-                // Сүүлийн бодит цэг (is_actual: true)
-                const actualPoint = data.hourly_forecast.find(d => d.is_actual);
-
-                // Өнөөдрийн цагийн таамаглал
-                if (hourlyToday.length > 0) {
-                    datasets.push({
-                        label: 'Цагийн таамаглал (өнөөдөр)',
-                        data: hourlyToday.map(d => ({
-                            x: new Date(d.time),
-                            y: d.hourly_forecast
-                        })),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16,185,129,0.1)',
-                        borderWidth: 2.5,
-                        pointRadius: 4,
-                        tension: 0.1,
-                        order: 2
-                    });
-                }
-
-                // Сүүлийн бодит цэг (том дугуй)
-                if (actualPoint) {
-                    datasets.push({
-                        label: 'Сүүлийн бодит цэг',
-                        data: [{
-                            x: new Date(actualPoint.time),
-                            y: actualPoint.hourly_forecast
-                        }],
-                        borderColor: '#000',
-                        backgroundColor: '#0a8754',
-                        borderWidth: 2,
-                        pointRadius: 10,
-                        pointHoverRadius: 12,
-                        showLine: false,
-                        order: 0
-                    });
-                }
-
-                // Ирээдүйн 3 цагийн таамаглал
-                if (hourlyFuture.length > 0) {
-                    // Сүүлийн бодит цэгээс эхлүүлэх
-                    let futureData = hourlyFuture.map(d => ({
+                datasets.push({
+                    label: 'Цагийн таамаглал',
+                    data: data.hourly_forecast.map(d => ({
                         x: new Date(d.time),
                         y: d.hourly_forecast
-                    }));
-
-                    // Сүүлийн бодит цэгийг нэмж залгах
-                    if (actualPoint) {
-                        futureData.unshift({
-                            x: new Date(actualPoint.time),
-                            y: actualPoint.hourly_forecast
-                        });
-                    }
-
-                    datasets.push({
-                        label: 'Ирээдүйн таамаглал (3 цаг)',
-                        data: futureData,
-                        borderColor: '#fbbf24',
-                        backgroundColor: 'rgba(251,191,36,0.2)',
-                        borderWidth: 3,
-                        borderDash: [8, 4],
-                        pointRadius: 6,
-                        pointStyle: 'triangle',
-                        tension: 0.1,
-                        order: 3
-                    });
-                }
+                    })),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    tension: 0.1,
+                    order: 2
+                });
             }
 
             chart.data.datasets = datasets;
@@ -282,7 +212,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             initChart();
             fetchData();
-            // 5 минут тутамд шинэчлэх
             setInterval(fetchData, 5 * 60 * 1000);
         });
     </script>

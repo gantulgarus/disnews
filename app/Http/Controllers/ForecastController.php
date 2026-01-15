@@ -8,13 +8,9 @@ use Illuminate\Http\Request;
 
 class ForecastController extends Controller
 {
-    /**
-     * Өнөөдрийн бүх forecast өгөгдөл авах
-     */
     public function getTodayForecast()
     {
         $today = Carbon::today();
-        $now = Carbon::now();
 
         // Өдрийн таамаглал (24 цаг)
         $dailyForecast = ForecastData::whereDate('time', $today)
@@ -22,19 +18,13 @@ class ForecastController extends Controller
             ->orderBy('time')
             ->get();
 
-        // Цагийн таамаглал (өнөөдрийн 00:00 + дараагийн 3 цаг)
+        // Цагийн таамаглал (бүгд нэг шугам)
         $hourlyForecast = ForecastData::where('forecast_type', 'hourly')
-            ->where('time', '>=', $today)  // Өнөөдрийн 00:00-өөс
+            ->where('time', '>=', $today)
             ->orderBy('time')
-            ->get()
-            ->map(function ($item) use ($now) {
-                // is_future талбарыг нэмж өгөх (JavaScript-д ашиглана)
-                $itemTime = Carbon::parse($item->time);
-                $item->is_future = $itemTime->gt($now);
-                return $item;
-            });
+            ->get();
 
-        // Бодит хэрэглээ (өнөөдөр)
+        // Бодит хэрэглээ
         $actualData = ForecastData::whereDate('time', $today)
             ->where('forecast_type', 'actual')
             ->whereNotNull('actual_load')
@@ -47,14 +37,11 @@ class ForecastController extends Controller
                 'daily_forecast' => $dailyForecast,
                 'hourly_forecast' => $hourlyForecast,
                 'actual_data' => $actualData,
-                'last_update' => $now->toIso8601String(),
+                'last_update' => Carbon::now()->toIso8601String(),
             ]
         ]);
     }
 
-    /**
-     * Python скриптээс датаг хадгалах
-     */
     public function storeForecast(Request $request)
     {
         $validated = $request->validate([
@@ -62,7 +49,6 @@ class ForecastController extends Controller
             'data' => 'required|array',
             'data.*.time' => 'required|date',
             'data.*.value' => 'required|numeric',
-            'data.*.is_actual' => 'sometimes|boolean',
         ]);
 
         foreach ($validated['data'] as $item) {
@@ -75,7 +61,6 @@ class ForecastController extends Controller
                     'actual_load' => $validated['type'] === 'actual' ? $item['value'] : null,
                     'daily_forecast' => $validated['type'] === 'daily' ? $item['value'] : null,
                     'hourly_forecast' => $validated['type'] === 'hourly' ? $item['value'] : null,
-                    'is_actual' => $item['is_actual'] ?? false,
                 ]
             );
         }
@@ -87,28 +72,8 @@ class ForecastController extends Controller
         ]);
     }
 
-    /**
-     * График харуулах view
-     */
     public function showDashboard()
     {
         return view('forecast.dashboard');
-    }
-
-    /**
-     * Өнгөрсөн хоногуудын өгөгдөл устгах (cleanup)
-     */
-    public function cleanup()
-    {
-        $keepDays = 7; // 7 хоногийн өгөгдөл хадгална
-        $cutoffDate = Carbon::now()->subDays($keepDays);
-
-        $deleted = ForecastData::where('time', '<', $cutoffDate)->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => "Хуучин өгөгдөл устгагдлаа",
-            'deleted_count' => $deleted
-        ]);
     }
 }
