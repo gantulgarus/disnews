@@ -58,7 +58,8 @@
             \App\Models\OrderJournal::STATUS_CLOSED, // Хаалттай
         ];
 
-        $canForward = $isDisp && !in_array($orderJournal->status, $excludedStatuses);
+        $canForward = $isDisp && \App\Models\OrderJournal::STATUS_NEW;
+        $canUpdateApprovers = $isDisp && !in_array($orderJournal->status, $excludedStatuses);
     @endphp
 
     <div class="container-fluid py-4">
@@ -526,6 +527,13 @@
                     {{-- Санал өгөх хэсэг --}}
                     <div class="card shadow-sm">
                         <div class="card-header bg-secondary text-white">
+                            @if ($canUpdateApprovers)
+                                <button class="btn btn-orange btn-icon" data-bs-toggle="modal"
+                                    data-bs-target="#forwardUpdateModal{{ $orderJournal->id }}"
+                                    title="Санал авахаар илгээх">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                            @endif
                             <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Санал</h5>
                         </div>
                         <div class="card-body">
@@ -821,8 +829,44 @@
             </div>
         </div>
 
-        {{-- Санал авахаар бусад алба руу илгээх / засварлах --}}
+        {{-- Санал авахаар бусад алба руу илгээх --}}
         <div class="modal fade" id="forwardModal{{ $orderJournal->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('order-journals.forward', $orderJournal->id) }}" method="POST">
+                        @csrf
+
+                        <div class="modal-header">
+                            <h5 class="modal-title">Санал авахаар илгээх</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label>Санал өгөх хэрэглэгчид</label>
+                            <select name="approvers[]" class="form-select select2-approvers" multiple required>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ $orderJournal->approvals->contains('user_id', $user->id) ? 'selected' : '' }}>
+                                        {{ $user->name }} — {{ $user->organization->name }} |
+                                        {{ $user->division?->Div_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <label class="mt-2">Тайлбар</label>
+                            <textarea name="comment" class="form-control" rows="3">{{ old('comment', $orderJournal->forward_comment ?? '') }}</textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-primary">Хадгалах</button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">Буцах</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {{-- Санал авахаар бусад алба руу илгээснийг засварлах --}}
+        <div class="modal fade" id="forwardUpdateModal{{ $orderJournal->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form action="{{ route('order-journals.updateApprovers', $orderJournal->id) }}" method="POST">

@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\OrderJournal;
 use App\Models\Organization;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\OrderJournalApproval;
 use Illuminate\Support\Facades\Auth;
 
@@ -220,7 +221,6 @@ class OrderJournalController extends Controller
         return redirect()->route('order-journals.index')->with('success', 'Захиалгын журнал амжилттай устгагдлаа.');
     }
 
-    // Бусад алба руу санал авахаар илгээх
     // Бусад алба руу санал авахаар илгээх
     public function forward(Request $request, OrderJournal $orderJournal)
     {
