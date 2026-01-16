@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\ForecastData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ForecastController extends Controller
 {
@@ -56,9 +57,13 @@ class ForecastController extends Controller
             'data' => 'required|array',
             'data.*.time' => 'required|date',
             'data.*.value' => 'required|numeric',
+            'data.*.system_load' => 'nullable|numeric',
         ]);
 
+        Log::info('Validated data:', $validated);
+
         foreach ($validated['data'] as $item) {
+            Log::info('Item:', $item);
             ForecastData::updateOrCreate(
                 [
                     'time' => $item['time'],
