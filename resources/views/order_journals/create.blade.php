@@ -106,8 +106,7 @@
                             {{-- Таслалтын тайлбар (default: hidden) --}}
                             <div class="mb-3 {{ old('is_cut') == '1' ? '' : 'd-none' }}" id="cut-description-wrapper">
                                 <label class="form-label required">Таслалтын тайлбар</label>
-                                <textarea name="cut_description" class="form-control" rows="3"
-                                    placeholder="Хэрэглэгч таслах шалтгаан, дэлгэрэнгүй тайлбар оруулна уу">{{ old('cut_description') }}</textarea>
+                                <textarea name="cut_description" class="form-control" rows="3" placeholder="Хэдэн МВт, ямар хэрэглэгч таслах">{{ old('cut_description') }}</textarea>
                             </div>
 
 

@@ -134,7 +134,7 @@
                                 id="cut-description-wrapper">
                                 <label class="form-label required">Таслалтын тайлбар</label>
                                 <textarea name="cut_description" class="form-control @error('cut_description') is-invalid @enderror" rows="3"
-                                    placeholder="Хэрэглэгч таслах шалтгаан, дэлгэрэнгүй тайлбар оруулна уу">{{ old('cut_description', $orderJournal->cut_description) }}</textarea>
+                                    placeholder="Хэдэн МВт, ямар хэрэглэгч таслах">{{ old('cut_description', $orderJournal->cut_description) }}</textarea>
                                 @error('cut_description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

@@ -175,14 +175,15 @@ class DisCoalController extends Controller
         $user = auth()->user();
         $disCoal = DisCoal::findOrFail($id);
 
-        // Станцын хэрэглэгч + өнгөрсөн өдөр бол хориглоно
+        // Станцын хэрэглэгч + сүүлийн 3 хоногоос өмнөх бол хориглоно
+        $threeDaysAgo = now()->subDays(3)->toDateString();
         if (
             $user->organization_id != 5 &&
-            $disCoal->date < now()->toDateString()
+            $disCoal->date < $threeDaysAgo
         ) {
             return redirect()
                 ->route('dis_coal.index')
-                ->with('error', 'Өнгөрсөн өдрийн мэдээг засах боломжгүй');
+                ->with('error', 'Сүүлийн 3 хоногоос өмнөх мэдээг засах боломжгүй');
         }
 
         if (!auth()->user()->hasPermission('dis_coal.edit')) {
@@ -243,13 +244,15 @@ class DisCoalController extends Controller
         $user = auth()->user();
         $disCoal = DisCoal::findOrFail($id);
 
+        // Сүүлийн 3 хоногоос өмнөх мэдээг устгах боломжгүй
+        $threeDaysAgo = now()->subDays(3)->toDateString();
         if (
             $user->organization_id != 5 &&
-            $disCoal->date < now()->toDateString()
+            $disCoal->date < $threeDaysAgo
         ) {
             return redirect()
                 ->route('dis_coal.index')
-                ->with('error', 'Өнгөрсөн өдрийн мэдээг устгах боломжгүй');
+                ->with('error', 'Сүүлийн 3 хоногоос өмнөх мэдээг устгах боломжгүй');
         }
 
         if (!auth()->user()->hasPermission('dis_coal.delete')) {
