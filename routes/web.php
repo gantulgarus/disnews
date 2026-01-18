@@ -124,6 +124,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('station_thermo', StationThermoDataController::class);
 
     Route::get('/electric-daily-regimes/report', [ElectricDailyRegimeController::class, 'report'])->name('electric_daily_regimes.report');
+    Route::post('/electric-daily-regimes/{electricDailyRegime}/approve', [ElectricDailyRegimeController::class, 'approve'])->name('electric_daily_regimes.approve');
+    Route::post('/electric-daily-regimes/{electricDailyRegime}/reject', [ElectricDailyRegimeController::class, 'reject'])->name('electric_daily_regimes.reject');
     Route::resource('electric_daily_regimes', ElectricDailyRegimeController::class);
 
     // Daily Equipment Report Routes

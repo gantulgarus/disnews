@@ -23,7 +23,7 @@ class PermissionLevelController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:10',
+            'code' => 'nullable|string|max:20',
         ]);
 
         PermissionLevel::create($validated);
@@ -48,7 +48,7 @@ class PermissionLevelController extends Controller
         $permissionLevel = PermissionLevel::findOrFail($id); // ID-аар объект авах
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:10',
+            'code' => 'nullable|string|max:20',
         ]);
 
         $permissionLevel->update($validated);

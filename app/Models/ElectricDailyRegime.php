@@ -45,10 +45,14 @@ class ElectricDailyRegime extends Model
         'hour_24',
         'total_mwh',
         'note',
+        'status',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'approved_at' => 'datetime',
     ];
 
     // Хэрэв хүсвэл харилцаа үүсгэж болно
@@ -60,5 +64,10 @@ class ElectricDailyRegime extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

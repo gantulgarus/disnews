@@ -42,7 +42,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-vcenter table-striped table-hover card-table table-sm">
+                        <table class="table table-vcenter table-striped table-hover card-table table-sm compact-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>№</th>
@@ -56,6 +56,7 @@
                                         <th>{{ $i }}</th>
                                     @endfor
                                     <th>Нийт</th>
+                                    <th>Статус</th>
                                     <th>Үйлдэл</th>
                                 </tr>
                             </thead>
@@ -75,20 +76,35 @@
                                         @endfor
                                         <td>{{ number_format($regime->total_mwh, 0) }}</td>
                                         <td>
-                                            <div class="btn-list flex-nowrap">
-                                                <a href="{{ route('electric_daily_regimes.edit', $regime) }}"
-                                                    class="btn btn-sm btn-outline-primary">
-                                                    <i class="ti ti-edit"></i>
-                                                </a>
-                                                <form action="{{ route('electric_daily_regimes.destroy', $regime) }}"
-                                                    method="POST" onsubmit="return confirm('Устгах уу?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                            @if ($regime->status == 'approved')
+                                                <span class="badge bg-success text-white">Батлагдсан</span>
+                                            @elseif($regime->status == 'rejected')
+                                                <span class="badge bg-danger text-white">Буцаагдсан</span>
+                                            @else
+                                                <span class="badge bg-warning text-white">Хүлээгдэж буй</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @php
+                                                $isRegimeLead = auth()->user()->permissionLevel?->code === 'REGIME_LEAD';
+                                            @endphp
+                                            {{-- Батлагдсан горимыг зөвхөн REGIME_LEAD засах/устгах эрхтэй --}}
+                                            @if ($regime->status !== 'approved' || $isRegimeLead)
+                                                <div class="btn-list flex-nowrap">
+                                                    <a href="{{ route('electric_daily_regimes.edit', $regime) }}"
+                                                        class="btn btn-sm btn-outline-primary">
+                                                        <i class="ti ti-edit"></i>
+                                                    </a>
+                                                    <form action="{{ route('electric_daily_regimes.destroy', $regime) }}"
+                                                        method="POST" onsubmit="return confirm('Устгах уу?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="ti ti-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -99,4 +115,30 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('style')
+    <style>
+        .compact-table th,
+        .compact-table td {
+            font-size: 11px !important;
+            padding: 4px 6px !important;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .compact-table .badge {
+            font-size: 10px !important;
+            padding: 2px 6px !important;
+        }
+
+        .compact-table .btn-sm {
+            padding: 2px 4px !important;
+            font-size: 10px !important;
+        }
+
+        .compact-table .btn-list {
+            gap: 2px !important;
+        }
+    </style>
 @endsection

@@ -40,6 +40,8 @@
                                     <th rowspan="2" class="border">{{ $i }}</th>
                                 @endfor
                                 <th rowspan="2" class="border">Нийт</th>
+                                <th rowspan="2" class="border">Статус</th>
+                                <th rowspan="2" class="border">Үйлдэл</th>
                             </tr>
                             <tr>
                                 <th class="border">TPmax</th>
@@ -61,6 +63,59 @@
                                     @endfor
                                     <td class="border">
                                         {{ $regime->total ?? array_sum(array_map(fn($h) => $regime->{'hour_' . $h} ?? 0, range(1, 24))) }}
+                                    </td>
+                                    <td class="border">
+                                        @if ($regime->id)
+                                            @if ($regime->status == 'approved')
+                                                <span class="badge bg-success text-white">Батлагдсан</span>
+                                            @elseif($regime->status == 'rejected')
+                                                <span class="badge bg-danger text-white">Буцаагдсан</span>
+                                            @else
+                                                <span class="badge bg-warning text-white">Хүлээгдэж буй</span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-secondary text-white">Мэдээлэлгүй</span>
+                                        @endif
+                                    </td>
+                                    <td class="border">
+                                        @if ($regime->id)
+                                            <div class="btn-group btn-group-sm">
+                                                @php
+                                                    $isRegimeLead = auth()->user()->permissionLevel?->code === 'REGIME_LEAD';
+                                                @endphp
+                                                {{-- Зөвхөн REGIME_LEAD батлах/буцаах эрхтэй --}}
+                                                @if ($isRegimeLead)
+                                                    @if ($regime->status != 'approved')
+                                                        <form
+                                                            action="{{ route('electric_daily_regimes.approve', $regime->id) }}"
+                                                            method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-success btn-sm"
+                                                                title="Батлах">
+                                                                <i class="ti ti-check"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                    @if ($regime->status != 'rejected')
+                                                        <form
+                                                            action="{{ route('electric_daily_regimes.reject', $regime->id) }}"
+                                                            method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-danger btn-sm" title="Буцаах">
+                                                                <i class="ti ti-x"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                @endif
+                                                {{-- Батлагдсан горимыг зөвхөн REGIME_LEAD засах эрхтэй --}}
+                                                @if ($regime->status !== 'approved' || $isRegimeLead)
+                                                    <a href="{{ route('electric_daily_regimes.edit', $regime->id) }}"
+                                                        class="btn btn-primary btn-sm" title="Засах">
+                                                        <i class="ti ti-edit"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -101,6 +156,8 @@
     <script>
         // Laravel-аас Regime өгөгдлийг JSON хэлбэрээр авна
         const regimes = @json($regimes);
+        // Бодит гүйцэтгэлийн өгөгдөл
+        const actualByPlant = @json($actualByPlant ?? []);
 
         const charts = {};
 
@@ -116,27 +173,48 @@
             // ID-аас индексийг гаргаж авна
             const index = id.replace('chart-', '');
             const regime = regimes[index];
+            const plantId = regime.power_plant_id || regime.power_plant?.id;
 
-            // 24 цагийн өгөгдөл
-            const data = Array.from({
+            // 24 цагийн төлөвлөгөөт горим (hour_1 = 00:00, hour_2 = 01:00, ... hour_24 = 23:00)
+            const plannedData = Array.from({
                 length: 24
             }, (_, i) => parseFloat(regime['hour_' + (i + 1)]) || 0);
+
+            // 24 цагийн бодит гүйцэтгэл (null утгыг хадгалах - өгөгдөл байхгүй гэсэн үг)
+            // 0 индекс = 00:00, 23 индекс = 23:00
+            const actualDataObj = actualByPlant[plantId] || {};
+            const actualData = Array.from({
+                length: 24
+            }, (_, i) => {
+                const val = actualDataObj[i];
+                return val !== null && val !== undefined ? parseFloat(val) : null;
+            });
 
             charts[id] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: Array.from({
                         length: 24
-                    }, (_, i) => (i + 1) + ':00'),
+                    }, (_, i) => String(i).padStart(2, '0') + ':00'),
                     datasets: [{
-                        label: regime.power_plant?.name || 'Тодорхойгүй',
-                        data,
+                        label: 'Горим',
+                        data: plannedData,
                         borderWidth: 2,
                         tension: 0.3,
                         borderColor: 'rgba(54, 162, 235, 0.8)',
                         backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                        fill: true,
+                        fill: false,
                         pointRadius: 3
+                    }, {
+                        label: 'Гүйцэтгэл',
+                        data: actualData,
+                        borderWidth: 2,
+                        tension: 0.3,
+                        borderColor: 'rgba(255, 99, 132, 0.8)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        fill: false,
+                        pointRadius: 3,
+                        spanGaps: false
                     }]
                 },
                 options: {
@@ -147,7 +225,8 @@
                             text: `${regime.power_plant?.name || 'Тодорхойгүй'} станцын 24 цагийн ачаалал`
                         },
                         legend: {
-                            display: false
+                            display: true,
+                            position: 'bottom'
                         }
                     },
                     scales: {
