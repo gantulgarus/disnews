@@ -518,8 +518,12 @@
             if (isToday(dateStr)) {
                 fetchTodayData();
                 autoRefreshInterval = setInterval(fetchTodayData, 5 * 60 * 1000);
+                // Өнөөдөр бол metrics харуулах
+                document.getElementById('metrics-section').style.display = 'flex';
             } else {
                 fetchHistoryData(dateStr);
+                // Түүхэн өдөр бол metrics нуух
+                document.getElementById('metrics-section').style.display = 'none';
             }
         }
 
