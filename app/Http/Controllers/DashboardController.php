@@ -290,6 +290,114 @@ class DashboardController extends Controller
         return view('welcome');
     }
 
+    /**
+     * API: Dashboard realtime data (public/external use)
+     * Returns: totalP, typeSums (by station type), timestamp
+     */
+    public function apiRealtimeData()
+    {
+        try {
+            $currentDate = now()->toDateString();
+            $startTimestamp = Carbon::parse($currentDate)->startOfDay()->timestamp;
+            $endTimestamp = Carbon::parse($currentDate)->endOfDay()->timestamp;
+
+            // Бүх станцуудыг авах (системийн түвшинд)
+            $allStations = collect($this->stationGroups)->flatMap(function ($group) {
+                return $group['stations'];
+            })->toArray();
+
+            // Сүүлийн мэдээллийг авах
+            $latestData = collect($allStations)->mapWithKeys(function ($station) use ($startTimestamp, $endTimestamp) {
+                $record = ZConclusion::select('VAR', 'VALUE', 'TIMESTAMP_S')
+                    ->where('VAR', $station)
+                    ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
+                    ->where('CALCULATION', 50)
+                    ->orderByDesc('TIMESTAMP_S')
+                    ->first();
+
+                return $record ? [$station => $record] : [];
+            });
+
+            // Хамгийн сүүлийн timestamp
+            $latestRecord = ZConclusion::select('TIMESTAMP_S')
+                ->whereIn('VAR', array_merge($allStations, ['system_total_p']))
+                ->where('CALCULATION', 50)
+                ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
+                ->orderByDesc('TIMESTAMP_S')
+                ->first();
+
+            $latestTimestamp = $latestRecord ? $latestRecord->TIMESTAMP_S : null;
+
+            // Бүлгээр нийлбэр тооцоолох
+            $typeSums = [];
+            foreach ($this->stationGroups as $key => $group) {
+                $sumP = 0;
+                $stationDetails = [];
+
+                foreach ($group['stations'] as $station) {
+                    if (isset($latestData[$station])) {
+                        $value = (float)$latestData[$station]->VALUE;
+                        $sumP += $value;
+                        $stationDetails[] = [
+                            'station' => $station,
+                            'value' => $value
+                        ];
+                    }
+                }
+
+                $typeSums[] = [
+                    'type_key' => $key,
+                    'type_name' => $group['name'],
+                    'total_mw' => round($sumP, 2),
+                    'stations' => $stationDetails
+                ];
+            }
+
+            // Системийн нийт чадал
+            $systemTotal = ZConclusion::where('VAR', 'system_total_p')
+                ->whereBetween('TIMESTAMP_S', [$startTimestamp, $endTimestamp])
+                ->where('CALCULATION', 50)
+                ->orderByDesc('TIMESTAMP_S')
+                ->first();
+
+            $totalP = $systemTotal ? (float)$systemTotal->VALUE : 0;
+
+            // Timestamp форматлах
+            $formattedTimestamp = null;
+            if ($latestTimestamp) {
+                $carbonDate = Carbon::createFromTimestamp($latestTimestamp, 'UTC')
+                    ->setTimezone('Asia/Ulaanbaatar');
+                $formattedTimestamp = $carbonDate->format('Y-m-d H:i:s');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_consumption_mw' => round($totalP, 2),
+                    'timestamp' => $formattedTimestamp,
+                    'timestamp_unix' => $latestTimestamp,
+                    'date' => $currentDate,
+                    'station_types' => $typeSums,
+                    'summary' => [
+                        'thermal' => collect($typeSums)->firstWhere('type_key', 'thermal')['total_mw'] ?? 0,
+                        'wind' => collect($typeSums)->firstWhere('type_key', 'wind')['total_mw'] ?? 0,
+                        'solar' => collect($typeSums)->firstWhere('type_key', 'solar')['total_mw'] ?? 0,
+                        'hydro' => collect($typeSums)->firstWhere('type_key', 'hydro')['total_mw'] ?? 0,
+                        'battery' => collect($typeSums)->firstWhere('type_key', 'battery')['total_mw'] ?? 0,
+                        'import' => collect($typeSums)->firstWhere('type_key', 'import')['total_mw'] ?? 0,
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Dashboard API error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to fetch realtime data'
+            ], 500);
+        }
+    }
+
     public function data(Request $request)
     {
         try {

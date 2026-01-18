@@ -251,11 +251,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/create', [PermissionController::class, 'create'])->name('create');
         Route::post('/', [PermissionController::class, 'store'])->name('store');
     });
+    Route::get('/forecast', [ForecastController::class, 'showDashboard'])->name('forecast.dashboard');
 });
 
 Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
 Route::get('/api/weather', [WeatherController::class, 'getWeather'])->name('weather.api');
 
-Route::get('/forecast', [ForecastController::class, 'showDashboard'])->name('forecast.dashboard');
 
 require __DIR__ . '/auth.php';
