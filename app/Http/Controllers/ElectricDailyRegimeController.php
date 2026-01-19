@@ -146,7 +146,7 @@ class ElectricDailyRegimeController extends Controller
 
         // Зөвхөн "ТБЭХС" бүсийн станцуудыг авна
         $powerPlants = PowerPlant::forDailyReport()->where('region', 'ТБЭХС')
-            ->whereNot('power_plant_type_id', 6)
+            ->whereNotIn('power_plant_type_id', [6, 7])
             ->orderBy('Order')
             ->get();
 
